@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	"golang.org/x/exp/slices"
 )
 
 type SpecReader struct {
@@ -161,6 +162,17 @@ func (r *SpecReader) GetSourceByName(name string) *Source {
 
 func (r *SpecReader) GetDestinationByName(name string) *Destination {
 	return r.destinationsMap[name]
+}
+
+func (r *SpecReader) GetDestinationNamesForSource(name string) []string {
+	var destinations []string
+	source := r.sourcesMap[name]
+	for _, destinationName := range source.Destinations {
+		if slices.Contains(source.Destinations, destinationName) {
+			destinations = append(destinations, r.destinationsMap[destinationName].Name)
+		}
+	}
+	return destinations
 }
 
 func NewSpecReader(paths []string) (*SpecReader, error) {
