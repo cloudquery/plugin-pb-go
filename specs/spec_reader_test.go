@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -285,6 +286,39 @@ spec:
 	if !os.IsNotExist(err) {
 		t.Fatalf("expected error: %s, got: %s", os.ErrNotExist, err)
 	}
+}
+
+func TestExpandFileJSON(t *testing.T) {
+	cfg := []byte(`
+kind: source
+spec:
+  name: gcp
+  path: cloudquery/gcp
+  version: v1.0.0
+  table_concurrency: 10
+  registry: local
+  destinations: [postgresql]
+  service_account_key_json: ${file:./testdata/creds2.json}
+	`)
+	expectedCfg := []byte(`
+kind: source
+spec:
+  name: gcp
+  path: cloudquery/gcp
+  version: v1.0.0
+  table_concurrency: 10
+  registry: local
+  destinations: [postgresql]
+  service_account_key_json: "{\n  \"key\": \"foo\",\n  \"secret\": \"bar<baz>\"\n}\n"
+	`)
+	expandedCfg, err := expandFileConfig(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runtime.GOOS == "windows" {
+		expectedCfg = bytes.ReplaceAll(expectedCfg, []byte(`\n`), []byte(`\r\n`))
+	}
+	assert.Equal(t, expectedCfg, expandedCfg)
 }
 
 func TestExpandEnv(t *testing.T) {
