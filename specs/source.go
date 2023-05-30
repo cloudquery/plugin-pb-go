@@ -62,7 +62,6 @@ func (s *Source) SetDefaults() {
 	}
 	if s.TypeSupport.String() == "" {
 		// Default to limited type support for backwards-compatibility.
-		// This default may change in the future.
 		s.TypeSupport = TypeSupportLimited
 	}
 	if s.Backend.String() == "" {
