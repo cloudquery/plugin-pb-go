@@ -34,11 +34,11 @@ type Source struct {
 	Tables []string `json:"tables,omitempty"`
 	// SkipTables defines tables to skip when syncing data. Useful if a glob pattern is used in Tables
 	SkipTables []string `json:"skip_tables,omitempty"`
-	// SkipDependentTables changes the matching behavior with regard to dependent tables. If set to true, dependent tables will not be synced unless they are explicitly matched by Tables.
+	// SkipDependentTables changes the matching behavior with regard to dependent tables. If set to true,
+	// dependent tables will not be synced unless they are explicitly matched by Tables.
 	SkipDependentTables bool `json:"skip_dependent_tables,omitempty"`
 	// Destinations are the names of destination plugins to send sync data to
 	Destinations []string `json:"destinations,omitempty"`
-
 	// Backend is the name of the state backend to use
 	Backend Backend `json:"backend,omitempty"`
 	// BackendSpec contains any backend-specific configuration
@@ -48,15 +48,22 @@ type Source struct {
 	// Spec defines plugin specific configuration
 	// This is different in every source plugin.
 	Spec any `json:"spec,omitempty"`
-
 	// DeterministicCQID is a flag that indicates whether the source plugin should generate a random UUID as the value of _cq_id
 	// or whether it should calculate a UUID that is a hash of the primary keys (if they exist) or the entire resource.
 	DeterministicCQID bool `json:"deterministic_cq_id,omitempty"`
+	// TypeSupport defines whether to use a limited set of types for backwards-compatibility with
+	// CQTypes (used in the original v1 release of CloudQuery), or the full set of types supported by Arrow.
+	TypeSupport TypeSupport `json:"type_support,omitempty"`
 }
 
 func (s *Source) SetDefaults() {
 	if s.Registry.String() == "" {
 		s.Registry = RegistryGithub
+	}
+	if s.TypeSupport.String() == "" {
+		// Default to limited type support for backwards-compatibility.
+		// This default may change in the future.
+		s.TypeSupport = TypeSupportLimited
 	}
 	if s.Backend.String() == "" {
 		s.Backend = BackendNone
