@@ -368,12 +368,13 @@ spec:
 }
 
 func TestExpandEnvJSONNewlines(t *testing.T) {
-	os.Setenv("TEST_ENV_CREDS3", `{
+	expectedCreds := `{
    "type": "service_account",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIItest\n\n-----END PRIVATE KEY-----\n",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40test.iam.gserviceaccount.com"
 }
-`)
+`
+	os.Setenv("TEST_ENV_CREDS3", expectedCreds)
 	cfg := []byte(`
 kind: source
 spec:
@@ -398,12 +399,6 @@ spec:
 	assert.NoError(t, err)
 	defer os.Remove(f.Name())
 	assert.NoError(t, os.WriteFile(f.Name(), cfg, 0644))
-
-	expectedCreds := map[string]any{
-		"type":                 "service_account",
-		"private_key":          "-----BEGIN PRIVATE KEY-----\nMIItest\n\n-----END PRIVATE KEY-----\n",
-		"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40test.iam.gserviceaccount.com",
-	}
 
 	s, err := NewSpecReader([]string{f.Name()})
 	assert.NoError(t, err)

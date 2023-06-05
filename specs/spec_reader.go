@@ -58,7 +58,10 @@ func expandFileConfig(cfg []byte) ([]byte, error) {
 			expandErr = err
 			return nil
 		}
-		content, expandErr = readEncodeIfJSON(content)
+		content, err = readEncodeIfJSON(content)
+		if expandErr == nil {
+			expandErr = err
+		}
 		return content
 	})
 	return cfg, expandErr
@@ -74,7 +77,11 @@ func expandEnv(cfg []byte) ([]byte, error) {
 			expandErr = fmt.Errorf("env variable %s not found", envVar)
 			return nil
 		}
-		return []byte(content)
+		newcontent, err := readEncodeIfJSON([]byte(content))
+		if expandErr == nil {
+			expandErr = err
+		}
+		return newcontent
 	})
 
 	return cfg, expandErr
