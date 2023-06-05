@@ -318,7 +318,7 @@ spec:
 	if runtime.GOOS == "windows" {
 		expectedCfg = bytes.ReplaceAll(expectedCfg, []byte(`\n`), []byte(`\r\n`))
 	}
-	assert.Equal(t, expectedCfg, expandedCfg)
+	assert.Equal(t, string(expectedCfg), string(expandedCfg))
 }
 
 func TestExpandEnv(t *testing.T) {
@@ -365,4 +365,50 @@ spec:
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
+}
+
+func TestExpandEnvJSONNewlines(t *testing.T) {
+	os.Setenv("TEST_ENV_CREDS3", `{
+   "type": "service_account",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIItest\n\n-----END PRIVATE KEY-----\n",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40test.iam.gserviceaccount.com"
+}
+`)
+	cfg := []byte(`
+kind: source
+spec:
+  name: test
+  registry: local
+  path: /path/to/source
+  version: v1.0.0
+  tables: [ "some_table" ]
+  destinations: [ "test2" ]
+  spec:
+    credentials: ${TEST_ENV_CREDS3}
+    otherstuff: 2
+---
+kind: destination
+spec:
+  name: test2
+  registry: local
+  path: /path/to/dest
+`)
+
+	f, err := os.CreateTemp("", "testcase*.yaml")
+	assert.NoError(t, err)
+	defer os.Remove(f.Name())
+	assert.NoError(t, os.WriteFile(f.Name(), cfg, 0644))
+
+	expectedCreds := map[string]any{
+		"type":                 "service_account",
+		"private_key":          "-----BEGIN PRIVATE KEY-----\nMIItest\n\n-----END PRIVATE KEY-----\n",
+		"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40test.iam.gserviceaccount.com",
+	}
+
+	s, err := NewSpecReader([]string{f.Name()})
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, len(s.Sources))
+	sp := s.Sources[0].Spec.(map[string]any)
+	assert.Equal(t, expectedCreds, sp["credentials"])
 }
