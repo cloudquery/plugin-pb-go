@@ -2,10 +2,12 @@ package specs
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -24,6 +26,29 @@ type SpecReader struct {
 var fileRegex = regexp.MustCompile(`\$\{file:([^}]+)\}`)
 var envRegex = regexp.MustCompile(`\$\{([^}]+)\}`)
 
+// readEncodeIfJSON reads the content of the file and if it is a JSON object or array, it encodes it as a string to satisfy YAML requirements
+// It will suppress any JSON unmarshalling errors and return the original content.
+func readEncodeIfJSON(content []byte) ([]byte, error) {
+	var isJSON any
+	if err := json.Unmarshal(content, &isJSON); err != nil {
+		return content, nil
+	}
+
+	k := reflect.TypeOf(isJSON).Kind()
+	if k == reflect.Map || k == reflect.Slice {
+		buffer := &bytes.Buffer{}
+		encoder := json.NewEncoder(buffer)
+		encoder.SetEscapeHTML(false)
+		if err := encoder.Encode(string(content)); err != nil {
+			return content, err
+		}
+
+		return bytes.TrimSuffix(buffer.Bytes(), []byte{'\n'}), nil
+	}
+
+	return content, nil
+}
+
 func expandFileConfig(cfg []byte) ([]byte, error) {
 	var expandErr error
 	cfg = fileRegex.ReplaceAllFunc(cfg, func(match []byte) []byte {
@@ -32,6 +57,10 @@ func expandFileConfig(cfg []byte) ([]byte, error) {
 		if err != nil {
 			expandErr = err
 			return nil
+		}
+		content, err = readEncodeIfJSON(content)
+		if expandErr == nil {
+			expandErr = err
 		}
 		return content
 	})
@@ -48,7 +77,11 @@ func expandEnv(cfg []byte) ([]byte, error) {
 			expandErr = fmt.Errorf("env variable %s not found", envVar)
 			return nil
 		}
-		return []byte(content)
+		newcontent, err := readEncodeIfJSON([]byte(content))
+		if expandErr == nil {
+			expandErr = err
+		}
+		return newcontent
 	})
 
 	return cfg, expandErr
