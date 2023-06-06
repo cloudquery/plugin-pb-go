@@ -28,7 +28,7 @@ var fileRegex = regexp.MustCompile(`\$\{file:([^}]+)\}`)
 var envRegex = regexp.MustCompile(`\$\{([^}]+)\}`)
 
 // escapeExternalContent escapes the given content if it contains newlines or is a JSON object or array, to satisfy YAML requirements
-// It will suppress any JSON unmarshalling errors and return the original content.
+// It will suppress any JSON unmarshalling errors and may return the original content.
 func escapeExternalContent(content []byte) ([]byte, error) {
 	var isJSON any
 	if err := json.Unmarshal(content, &isJSON); err != nil {
