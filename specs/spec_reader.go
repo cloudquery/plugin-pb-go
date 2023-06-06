@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -26,16 +27,20 @@ type SpecReader struct {
 var fileRegex = regexp.MustCompile(`\$\{file:([^}]+)\}`)
 var envRegex = regexp.MustCompile(`\$\{([^}]+)\}`)
 
-// readEncodeIfJSON reads the content of the file and if it is a JSON object or array, it encodes it as a string to satisfy YAML requirements
+// escapeExternalContent escapes the given content if it contains newlines or is a JSON object or array, to satisfy YAML requirements
 // It will suppress any JSON unmarshalling errors and return the original content.
-func readEncodeIfJSON(content []byte) ([]byte, error) {
+func escapeExternalContent(content []byte) ([]byte, error) {
 	var isJSON any
 	if err := json.Unmarshal(content, &isJSON); err != nil {
+		if bytes.ContainsAny(content, "\n\r") {
+			return []byte(strconv.Quote(string(content))), nil
+		}
 		return content, nil
 	}
 
 	k := reflect.TypeOf(isJSON).Kind()
-	if k == reflect.Map || k == reflect.Slice {
+	switch k {
+	case reflect.Map, reflect.Slice:
 		buffer := &bytes.Buffer{}
 		encoder := json.NewEncoder(buffer)
 		encoder.SetEscapeHTML(false)
@@ -58,7 +63,7 @@ func expandFileConfig(cfg []byte) ([]byte, error) {
 			expandErr = err
 			return nil
 		}
-		content, err = readEncodeIfJSON(content)
+		content, err = escapeExternalContent(content)
 		if expandErr == nil {
 			expandErr = err
 		}
@@ -77,7 +82,7 @@ func expandEnv(cfg []byte) ([]byte, error) {
 			expandErr = fmt.Errorf("env variable %s not found", envVar)
 			return nil
 		}
-		newcontent, err := readEncodeIfJSON([]byte(content))
+		newcontent, err := escapeExternalContent([]byte(content))
 		if expandErr == nil {
 			expandErr = err
 		}
