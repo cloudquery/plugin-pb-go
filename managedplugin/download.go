@@ -49,14 +49,16 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 		if err != nil {
 			return "", fmt.Errorf("failed to get url %s: %w", url, err)
 		}
-		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
+			resp.Body.Close()
 			continue
 		} else if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
 			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", url, resp.StatusCode)
 			return "", errors.New("statusCode != 200")
 		}
+		resp.Body.Close()
 		return url, nil
 	}
 
