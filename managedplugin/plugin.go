@@ -10,11 +10,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
+	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
@@ -134,7 +136,7 @@ func NewClient(ctx context.Context, config Config, opts ...Option) (*Client, err
 			return nil, fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
-		c.LocalPath = filepath.Join(c.directory, "plugins", "plugin", org, name, config.Version, "plugin")
+		c.LocalPath = filepath.Join(c.directory, "plugins", "github.com", org, name, config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
 		if err := DownloadPluginFromGithub(ctx, c.LocalPath, org, name, config.Version); err != nil {
 			return nil, err
@@ -213,6 +215,62 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 		return err
 	}
 	return nil
+}
+
+func (c *Client) Name() string {
+	return c.config.Name
+}
+
+func (c *Client) oldDiscovery(ctx context.Context) ([]int, error) {
+	discoveryClient := pbDiscovery.NewDiscoveryClient(c.Conn)
+	versionsRes, err := discoveryClient.GetVersions(ctx, &pbDiscovery.GetVersions_Request{})
+	if err != nil {
+		if isUnimplemented(err) {
+			// If we get an error here, we assume that the plugin is not a v1 plugin and we try to sync it as a v0 plugin
+			// this is for backward compatibility where we used incorrect versioning mechanism
+			oldDiscoveryClient := pbSource.NewSourceClient(c.Conn)
+			versionRes, err := oldDiscoveryClient.GetProtocolVersion(ctx, &pbBase.GetProtocolVersion_Request{})
+			if err != nil {
+				return nil, err
+			}
+			switch versionRes.Version {
+			case 2:
+				return []int{0}, nil
+			case 1:
+				return []int{-1}, nil
+			default:
+				return nil, fmt.Errorf("unknown protocol version %d", versionRes.Version)
+			}
+		}
+		return nil, err
+	}
+	versions := make([]int, len(versionsRes.Versions))
+	for i, vStr := range versionsRes.Versions {
+		vStr = strings.TrimPrefix(vStr, "v")
+		v, err := strconv.ParseInt(vStr, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse version %s: %w", vStr, err)
+		}
+		versions[i] = int(v)
+	}
+	return versions, nil
+}
+
+func (c *Client) Versions(ctx context.Context) ([]int, error) {
+	discoveryClient := pbDiscoveryV1.NewDiscoveryClient(c.Conn)
+	versionsRes, err := discoveryClient.GetVersions(ctx, &pbDiscoveryV1.GetVersions_Request{})
+	if err != nil {
+		if isUnimplemented(err) {
+			// this was only added post v3 so clients will fallback to using an older discovery service
+			return c.oldDiscovery(ctx)
+		}
+		return nil, err
+	}
+	res := make([]int, len(versionsRes.Versions))
+	for i, v := range versionsRes.Versions {
+		res[i] = int(v)
+	}
+	return res, nil
 }
 
 func (c *Client) MaxVersion(ctx context.Context) (int, error) {
