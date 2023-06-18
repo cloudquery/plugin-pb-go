@@ -18,3 +18,4 @@ gen-proto:
 	protoc --proto_path=. --go_out . --go_opt=module="github.com/cloudquery/plugin-pb-go" --go-grpc_out=. --go-grpc_opt=module="github.com/cloudquery/plugin-pb-go" plugin-pb/source/v1/source.proto
 	protoc --proto_path=. --go_out . --go_opt=module="github.com/cloudquery/plugin-pb-go" --go-grpc_out=. --go-grpc_opt=module="github.com/cloudquery/plugin-pb-go" plugin-pb/source/v2/source.proto
 	protoc --proto_path=. --go_out . --go_opt=module="github.com/cloudquery/plugin-pb-go" --go-grpc_out=. --go-grpc_opt=module="github.com/cloudquery/plugin-pb-go" plugin-pb/destination/v1/destination.proto
+	protoc --proto_path=. --go_out . --go_opt=module="github.com/cloudquery/plugin-pb-go" --go-grpc_out=. --go-grpc_opt=module="github.com/cloudquery/plugin-pb-go" plugin-pb/discovery/v1/discovery.proto
