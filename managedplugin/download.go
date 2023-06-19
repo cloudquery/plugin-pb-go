@@ -30,20 +30,24 @@ const (
 // the latest
 func getURLLocation(ctx context.Context, org string, name string, version string, typ PluginType) (string, error) {
 	urls := []string{
-		fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-plugin-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
+		// TODO: add this back when we move to the new plugin system
+		// fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 		fmt.Sprintf("https://github.com/%s/cq-source-%s/releases/download/%s/cq-source-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 	}
 	if org == "cloudquery" {
-		urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
+		// TODO: add this back when we move to the new plugin system
+		// urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
 		urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-source-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
 	}
 	if typ == PluginDestination {
 		urls = []string{
-			fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-plugin-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
+			// TODO: add this back when we move to the new plugin system
+			// fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 			fmt.Sprintf("https://github.com/%s/cq-destination-%s/releases/download/%s/cq-destination-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 		}
 		if org == "cloudquery" {
-			urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
+			// TODO: add this back when we move to the new plugin system
+			// urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
 			urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-destination-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
 		}
 	}
