@@ -31,7 +31,7 @@ const (
 
 // PluginType specifies if a plugin is a source or a destination
 // it actually doesn't really have any effect as plugins can serve both as source and as destinations
-// but it is here for backward compatability
+// but it is here for backward compatibility
 type PluginType int
 
 const (
