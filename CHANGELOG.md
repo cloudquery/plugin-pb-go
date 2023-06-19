@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.0.9...v1.1.0) (2023-06-19)
+
+
+### Features
+
+* Add managedplugin  ([#16](https://github.com/cloudquery/plugin-pb-go/issues/16)) ([afb3415](https://github.com/cloudquery/plugin-pb-go/commit/afb3415accd4932862cf6df23660dd242164dd6e))
+
 ## [1.0.9](https://github.com/cloudquery/plugin-pb-go/compare/v1.0.8...v1.0.9) (2023-06-06)
 
 
