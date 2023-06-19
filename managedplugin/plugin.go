@@ -29,6 +29,20 @@ const (
 	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
 )
 
+// PluginType specifies if a plugin is a source or a destination
+// it actually doesn't really have any effect as plugins can serve both as source and as destinations
+// but it is here for backward compatability
+type PluginType int
+
+const (
+	PluginSource PluginType = iota
+	PluginDestination
+)
+
+func (p PluginType) String() string {
+	return [...]string{"source", "destination"}[p]
+}
+
 type Clients []*Client
 
 type Config struct {
@@ -70,10 +84,11 @@ func WithNoSentry() func(*Client) {
 	}
 }
 
-func NewClients(ctx context.Context, sourceSpecs []Config, opts ...Option) (Clients, error) {
-	clients := make(Clients, len(sourceSpecs))
-	for i, spec := range sourceSpecs {
-		client, err := NewClient(ctx, spec, opts...)
+// typ will be deprecated soon but now required for a transition period
+func NewClients(ctx context.Context, typ PluginType, specs []Config, opts ...Option) (Clients, error) {
+	clients := make(Clients, len(specs))
+	for i, spec := range specs {
+		client, err := NewClient(ctx, typ, spec, opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +119,7 @@ func (c Clients) Terminate() error {
 // If registrySpec is GitHub then client downloads the plugin, spawns it and creates a gRPC connection.
 // If registrySpec is Local then client spawns the plugin and creates a gRPC connection.
 // If registrySpec is gRPC then clients creates a new connection
-func NewClient(ctx context.Context, config Config, opts ...Option) (*Client, error) {
+func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := Client{
 		directory: defaultDownloadDir,
 		wg:        &sync.WaitGroup{},
@@ -136,9 +151,9 @@ func NewClient(ctx context.Context, config Config, opts ...Option) (*Client, err
 			return nil, fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
-		c.LocalPath = filepath.Join(c.directory, "plugins", "github.com", org, name, config.Version, "plugin")
+		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		if err := DownloadPluginFromGithub(ctx, c.LocalPath, org, name, config.Version); err != nil {
+		if err := DownloadPluginFromGithub(ctx, c.LocalPath, org, name, config.Version, typ); err != nil {
 			return nil, err
 		}
 		if err := c.startLocal(ctx, c.LocalPath); err != nil {

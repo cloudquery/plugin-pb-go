@@ -28,16 +28,24 @@ const (
 // we store the plugins on GitHub
 // TODO: we can improve this by just embedding all plugins and last version that exist in different places then
 // the latest
-func getURLLocation(ctx context.Context, org string, name string, version string) (string, error) {
+func getURLLocation(ctx context.Context, org string, name string, version string, typ PluginType) (string, error) {
 	urls := []string{
 		fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-plugin-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 		fmt.Sprintf("https://github.com/%s/cq-source-%s/releases/download/%s/cq-source-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
-		fmt.Sprintf("https://github.com/%s/cq-destination-%s/releases/download/%s/cq-destination-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
 	}
 	if org == "cloudquery" {
 		urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
 		urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-source-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
-		urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-destination-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
+	}
+	if typ == PluginDestination {
+		urls = []string{
+			fmt.Sprintf("https://github.com/%s/cq-plugin-%s/releases/download/%s/cq-plugin-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
+			fmt.Sprintf("https://github.com/%s/cq-destination-%s/releases/download/%s/cq-destination-%s_%s_%s.zip", org, name, version, name, runtime.GOOS, runtime.GOARCH),
+		}
+		if org == "cloudquery" {
+			urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
+			urls = append(urls, fmt.Sprintf("https://github.com/cloudquery/cloudquery/releases/download/plugins-destination-%s-%s/%s_%s_%s.zip", name, version, name, runtime.GOOS, runtime.GOARCH))
+		}
 	}
 
 	for _, url := range urls {
@@ -65,7 +73,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
 }
 
-func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string) error {
+func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string, typ PluginType) error {
 	downloadDir := filepath.Dir(localPath)
 	pluginZipPath := localPath + ".zip"
 
@@ -77,7 +85,7 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
-	url, err := getURLLocation(ctx, org, name, version)
+	url, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
