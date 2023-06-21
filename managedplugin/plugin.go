@@ -48,6 +48,7 @@ type Client struct {
 	Conn           *grpc.ClientConn
 	config         Config
 	noSentry       bool
+	metrics        *Metrics
 }
 
 type Option func(*Client)
@@ -109,6 +110,7 @@ func NewClient(ctx context.Context, config Config, opts ...Option) (*Client, err
 		directory: defaultDownloadDir,
 		wg:        &sync.WaitGroup{},
 		config:    config,
+		metrics:   &Metrics{},
 	}
 	for _, opt := range opts {
 		opt(&c)
@@ -147,6 +149,10 @@ func NewClient(ctx context.Context, config Config, opts ...Option) (*Client, err
 	}
 
 	return &c, nil
+}
+
+func (c *Client) Metrics() Metrics {
+	return *c.metrics
 }
 
 func (c *Client) startLocal(ctx context.Context, path string) error {
@@ -191,7 +197,7 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 			if err := json.Unmarshal(line, &structuredLogLine); err != nil {
 				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from destination plugin")
 			} else {
-				JSONToLog(c.logger, structuredLogLine)
+				c.jsonToLog(c.logger, structuredLogLine)
 			}
 		}
 	}()
