@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.1.0...v1.2.0) (2023-06-21)
+
+
+### Features
+
+* **ci:** Add Windows and MacOS tests ([#19](https://github.com/cloudquery/plugin-pb-go/issues/19)) ([ba7d275](https://github.com/cloudquery/plugin-pb-go/commit/ba7d275721bbfa4cb8c80014a44c790ea6f7f876))
+
 ## [1.1.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.0.9...v1.1.0) (2023-06-19)
 
 
