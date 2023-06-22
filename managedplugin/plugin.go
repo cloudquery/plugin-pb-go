@@ -186,7 +186,7 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = getSysProcAttr()
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start destination plugin %s: %w", path, err)
+		return fmt.Errorf("failed to start plugin %s: %w", path, err)
 	}
 
 	c.cmd = cmd
@@ -201,16 +201,16 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 				break
 			}
 			if errors.Is(err, ErrLogLineToLong) {
-				c.logger.Info().Str("line", string(line)).Msg("truncated destination plugin log line")
+				c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
 				continue
 			}
 			if err != nil {
-				c.logger.Err(err).Msg("failed to read log line from destination plugin")
+				c.logger.Err(err).Msg("failed to read log line from plugin")
 				break
 			}
 			var structuredLogLine map[string]any
 			if err := json.Unmarshal(line, &structuredLogLine); err != nil {
-				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from destination plugin")
+				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
 			} else {
 				c.jsonToLog(c.logger, structuredLogLine)
 			}
