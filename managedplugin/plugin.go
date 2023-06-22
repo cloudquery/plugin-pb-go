@@ -125,6 +125,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		directory: defaultDownloadDir,
 		wg:        &sync.WaitGroup{},
 		config:    config,
+		metrics:   &Metrics{},
 	}
 	for _, opt := range opts {
 		opt(&c)
