@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	MetadataTableName        = "cq:table_name"
+	MetadataTableName = "cq:table_name"
 )
 
 type Schemas []*arrow.Schema
