@@ -38,7 +38,7 @@ func TestRecordRoundTrip(t *testing.T) {
 	bldr.Field(1).(*array.Float64Builder).AppendValues([]float64{1.1, 2.2, 3.3}, nil)
 	rec := bldr.NewRecord()
 	defer rec.Release()
-	
+
 	b, err := RecordToBytes(rec)
 	if err != nil {
 		t.Fatal(err)
