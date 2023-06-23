@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.0...v1.3.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* Update schema encoding/deocoding in v2 ([#28](https://github.com/cloudquery/plugin-pb-go/issues/28)) ([6678004](https://github.com/cloudquery/plugin-pb-go/commit/66780042358299e25d0e2d30f4ecd49c15766f77))
+
 ## [1.3.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.2.1...v1.3.0) (2023-06-23)
 
 
