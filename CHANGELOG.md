@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.1.0...v1.2.0) (2023-06-23)
+
+
+### Features
+
+* Add Plugin Proto V3 ([#21](https://github.com/cloudquery/plugin-pb-go/issues/21)) ([50ec9d9](https://github.com/cloudquery/plugin-pb-go/commit/50ec9d90942e74677e39e8379cba6631cde40e04))
+
 ## [1.1.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.0.9...v1.1.0) (2023-06-19)
 
 
