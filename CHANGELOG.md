@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.2.1...v1.3.0) (2023-06-23)
+
+
+### Features
+
+* Add arrow schema encoding to v2 ([#26](https://github.com/cloudquery/plugin-pb-go/issues/26)) ([a7399f5](https://github.com/cloudquery/plugin-pb-go/commit/a7399f57a6f612f579321b0dedf11e425f1e6a32))
+
 ## [1.2.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.2.0...v1.2.1) (2023-06-23)
 
 
