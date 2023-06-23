@@ -62,6 +62,7 @@ type Client struct {
 	Conn           *grpc.ClientConn
 	config         Config
 	noSentry       bool
+	metrics        *Metrics
 }
 
 type Option func(*Client)
@@ -124,6 +125,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		directory: defaultDownloadDir,
 		wg:        &sync.WaitGroup{},
 		config:    config,
+		metrics:   &Metrics{},
 	}
 	for _, opt := range opts {
 		opt(&c)
@@ -164,6 +166,10 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	return &c, nil
 }
 
+func (c *Client) Metrics() Metrics {
+	return *c.metrics
+}
+
 func (c *Client) startLocal(ctx context.Context, path string) error {
 	c.grpcSocketName = GenerateRandomUnixSocketName()
 	// spawn the plugin first and then connect
@@ -180,7 +186,7 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = getSysProcAttr()
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start destination plugin %s: %w", path, err)
+		return fmt.Errorf("failed to start plugin %s: %w", path, err)
 	}
 
 	c.cmd = cmd
@@ -195,18 +201,18 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 				break
 			}
 			if errors.Is(err, ErrLogLineToLong) {
-				c.logger.Info().Str("line", string(line)).Msg("truncated destination plugin log line")
+				c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
 				continue
 			}
 			if err != nil {
-				c.logger.Err(err).Msg("failed to read log line from destination plugin")
+				c.logger.Err(err).Msg("failed to read log line from plugin")
 				break
 			}
 			var structuredLogLine map[string]any
 			if err := json.Unmarshal(line, &structuredLogLine); err != nil {
-				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from destination plugin")
+				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
 			} else {
-				JSONToLog(c.logger, structuredLogLine)
+				c.jsonToLog(c.logger, structuredLogLine)
 			}
 		}
 	}()
