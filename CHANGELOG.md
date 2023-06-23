@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.1...v1.3.2) (2023-06-23)
+
+
+### Bug Fixes
+
+* Add Schemas encoding/decoding to plugin v3 proto ([#30](https://github.com/cloudquery/plugin-pb-go/issues/30)) ([a549e89](https://github.com/cloudquery/plugin-pb-go/commit/a549e89cb7b34e72db9d9018bf6be47b12182f3d))
+
 ## [1.3.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.0...v1.3.1) (2023-06-23)
 
 
