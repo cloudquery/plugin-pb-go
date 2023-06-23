@@ -25,6 +25,19 @@ func TestSchemaRoundTrip(t *testing.T) {
 	if !sc.Equal(sc2) {
 		t.Errorf("expected %v, got %v", sc, sc2)
 	}
+
+	schemasBytes, err := SchemasToBytes([]*arrow.Schema{sc})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	schemas, err := NewSchemasFromBytes(schemasBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !sc.Equal(schemas[0]) {
+		t.Errorf("expected %v, got %v", sc, schemas[0])
+	}
 }
 
 func TestRecordRoundTrip(t *testing.T) {
