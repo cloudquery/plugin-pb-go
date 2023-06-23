@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.2.0...v1.2.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* Discovery V1 regen ([#24](https://github.com/cloudquery/plugin-pb-go/issues/24)) ([5c5dd27](https://github.com/cloudquery/plugin-pb-go/commit/5c5dd27d950f8ef2d528cdfe512d2ff51346e3d8))
+
 ## [1.2.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.1.0...v1.2.0) (2023-06-23)
 
 
