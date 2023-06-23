@@ -24,6 +24,30 @@ func NewSchemaFromBytes(b []byte) (*arrow.Schema, error) {
 	return rdr.Schema(), nil
 }
 
+func SchemasToBytes(schemas []*arrow.Schema) ([][]byte, error) {
+	ret := make([][]byte, len(schemas))
+	for i, sc := range schemas {
+		buf, err := SchemaToBytes(sc)
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = buf
+	}
+	return ret, nil
+}
+
+func NewSchemasFromBytes(b [][]byte) ([]*arrow.Schema, error) {
+	schemas := make([]*arrow.Schema, len(b))
+	for i, buf := range b {
+		sc, err := NewSchemaFromBytes(buf)
+		if err != nil {
+			return nil, err
+		}
+		schemas[i] = sc
+	}
+	return schemas, nil
+}
+
 func RecordToBytes(record arrow.Record) ([]byte, error) {
 	var buf bytes.Buffer
 	wr := ipc.NewWriter(&buf, ipc.WithSchema(record.Schema()))
