@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.2...v1.3.3) (2023-06-24)
+
+
+### Bug Fixes
+
+* Add record enc/dec to destv1 sourcev2 ([#33](https://github.com/cloudquery/plugin-pb-go/issues/33)) ([40797be](https://github.com/cloudquery/plugin-pb-go/commit/40797be0bb62422984845597fbd984b877c76032))
+
 ## [1.3.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.1...v1.3.2) (2023-06-23)
 
 
