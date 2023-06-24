@@ -18,3 +18,16 @@ func NewSchemasFromBytes(b [][]byte) ([]*arrow.Schema, error) {
 	}
 	return ret, nil
 }
+
+func NewRecordFromBytes(b []byte) (arrow.Record, error) {
+	rdr, err := ipc.NewReader(bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+	for rdr.Next() {
+		rec := rdr.Record()
+		rec.Retain()
+		return rec, nil
+	}
+	return nil, nil
+}
