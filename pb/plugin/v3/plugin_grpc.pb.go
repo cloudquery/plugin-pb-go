@@ -30,9 +30,9 @@ type PluginClient interface {
 	Init(ctx context.Context, in *Init_Request, opts ...grpc.CallOption) (*Init_Response, error)
 	// Get all tables the source plugin supports. Must be called after Init
 	GetTables(ctx context.Context, in *GetTables_Request, opts ...grpc.CallOption) (*GetTables_Response, error)
-	// Start the sync the source plugin
+	// Start a sync on the source plugin. It streams messages as output.
 	Sync(ctx context.Context, in *Sync_Request, opts ...grpc.CallOption) (Plugin_SyncClient, error)
-	// Write resources
+	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(ctx context.Context, opts ...grpc.CallOption) (Plugin_WriteClient, error)
 	// Send signal to flush and close open connections
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
@@ -169,9 +169,9 @@ type PluginServer interface {
 	Init(context.Context, *Init_Request) (*Init_Response, error)
 	// Get all tables the source plugin supports. Must be called after Init
 	GetTables(context.Context, *GetTables_Request) (*GetTables_Response, error)
-	// Start the sync the source plugin
+	// Start a sync on the source plugin. It streams messages as output.
 	Sync(*Sync_Request, Plugin_SyncServer) error
-	// Write resources
+	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(Plugin_WriteServer) error
 	// Send signal to flush and close open connections
 	Close(context.Context, *Close_Request) (*Close_Response, error)
