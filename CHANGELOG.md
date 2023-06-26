@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.3...v1.3.4) (2023-06-26)
+
+
+### Bug Fixes
+
+* Regenerate V3, remove backend from proto ([#35](https://github.com/cloudquery/plugin-pb-go/issues/35)) ([78ae019](https://github.com/cloudquery/plugin-pb-go/commit/78ae019b01322dd8ab4f48daa5a6e00d02f8a2cf))
+
 ## [1.3.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.2...v1.3.3) (2023-06-24)
 
 
