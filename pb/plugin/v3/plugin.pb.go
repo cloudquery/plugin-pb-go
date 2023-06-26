@@ -930,7 +930,6 @@ type Sync_Response struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Message:
-	//
 	//	*Sync_Response_MigrateTable
 	//	*Sync_Response_Insert
 	//	*Sync_Response_Delete
@@ -1025,7 +1024,6 @@ type Write_Request struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Message:
-	//
 	//	*Write_Request_Options
 	//	*Write_Request_MigrateTable
 	//	*Write_Request_Insert
