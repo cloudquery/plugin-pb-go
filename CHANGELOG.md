@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.6...v1.4.0) (2023-06-27)
+
+
+### Features
+
+* Add migrate_force to Write.InsertMessage ([#42](https://github.com/cloudquery/plugin-pb-go/issues/42)) ([600815d](https://github.com/cloudquery/plugin-pb-go/commit/600815dcc9faef6518a8ab6cbdba476a0ac6a483))
+
 ## [1.3.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.5...v1.3.6) (2023-06-27)
 
 
