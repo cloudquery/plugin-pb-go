@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.4...v1.3.5) (2023-06-27)
+
+
+### Bug Fixes
+
+* Remove migrate_force from plugin v3 ([#37](https://github.com/cloudquery/plugin-pb-go/issues/37)) ([6e1cf13](https://github.com/cloudquery/plugin-pb-go/commit/6e1cf13c8359d9387730173e3fa3c8fb5de8a4be))
+
 ## [1.3.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.3...v1.3.4) (2023-06-26)
 
 
