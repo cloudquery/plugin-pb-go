@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.5...v1.3.6) (2023-06-27)
+
+
+### Bug Fixes
+
+* Split Sync and Write messages to it's own proto messages ([#40](https://github.com/cloudquery/plugin-pb-go/issues/40)) ([1bd6271](https://github.com/cloudquery/plugin-pb-go/commit/1bd62719f0eac5d6f58e10abf6b48566e5ee3352))
+
 ## [1.3.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.4...v1.3.5) (2023-06-27)
 
 
