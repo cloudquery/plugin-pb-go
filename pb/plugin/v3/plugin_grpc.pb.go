@@ -32,6 +32,9 @@ type PluginClient interface {
 	GetTables(ctx context.Context, in *GetTables_Request, opts ...grpc.CallOption) (*GetTables_Response, error)
 	// Start a sync on the source plugin. It streams messages as output.
 	Sync(ctx context.Context, in *Sync_Request, opts ...grpc.CallOption) (Plugin_SyncClient, error)
+	// Start a Read on the source plugin for a given table and schema. It streams messages as output.
+	// The plugin assume that that schema was used to also write the data beforehand
+	Read(ctx context.Context, in *Read_Request, opts ...grpc.CallOption) (Plugin_ReadClient, error)
 	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(ctx context.Context, opts ...grpc.CallOption) (Plugin_WriteClient, error)
 	// Send signal to flush and close open connections
@@ -114,8 +117,40 @@ func (x *pluginSyncClient) Recv() (*Sync_Response, error) {
 	return m, nil
 }
 
+func (c *pluginClient) Read(ctx context.Context, in *Read_Request, opts ...grpc.CallOption) (Plugin_ReadClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[1], "/cloudquery.plugin.v3.Plugin/Read", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pluginReadClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Plugin_ReadClient interface {
+	Recv() (*Read_Response, error)
+	grpc.ClientStream
+}
+
+type pluginReadClient struct {
+	grpc.ClientStream
+}
+
+func (x *pluginReadClient) Recv() (*Read_Response, error) {
+	m := new(Read_Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *pluginClient) Write(ctx context.Context, opts ...grpc.CallOption) (Plugin_WriteClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[1], "/cloudquery.plugin.v3.Plugin/Write", opts...)
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[2], "/cloudquery.plugin.v3.Plugin/Write", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +206,9 @@ type PluginServer interface {
 	GetTables(context.Context, *GetTables_Request) (*GetTables_Response, error)
 	// Start a sync on the source plugin. It streams messages as output.
 	Sync(*Sync_Request, Plugin_SyncServer) error
+	// Start a Read on the source plugin for a given table and schema. It streams messages as output.
+	// The plugin assume that that schema was used to also write the data beforehand
+	Read(*Read_Request, Plugin_ReadServer) error
 	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(Plugin_WriteServer) error
 	// Send signal to flush and close open connections
@@ -196,6 +234,9 @@ func (UnimplementedPluginServer) GetTables(context.Context, *GetTables_Request) 
 }
 func (UnimplementedPluginServer) Sync(*Sync_Request, Plugin_SyncServer) error {
 	return status.Errorf(codes.Unimplemented, "method Sync not implemented")
+}
+func (UnimplementedPluginServer) Read(*Read_Request, Plugin_ReadServer) error {
+	return status.Errorf(codes.Unimplemented, "method Read not implemented")
 }
 func (UnimplementedPluginServer) Write(Plugin_WriteServer) error {
 	return status.Errorf(codes.Unimplemented, "method Write not implemented")
@@ -309,6 +350,27 @@ func (x *pluginSyncServer) Send(m *Sync_Response) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Plugin_Read_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Read_Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PluginServer).Read(m, &pluginReadServer{stream})
+}
+
+type Plugin_ReadServer interface {
+	Send(*Read_Response) error
+	grpc.ServerStream
+}
+
+type pluginReadServer struct {
+	grpc.ServerStream
+}
+
+func (x *pluginReadServer) Send(m *Read_Response) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _Plugin_Write_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(PluginServer).Write(&pluginWriteServer{stream})
 }
@@ -385,6 +447,11 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Sync",
 			Handler:       _Plugin_Sync_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Read",
+			Handler:       _Plugin_Read_Handler,
 			ServerStreams: true,
 		},
 		{
