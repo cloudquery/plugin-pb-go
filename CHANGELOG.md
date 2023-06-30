@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.4.0...v1.5.0) (2023-06-30)
+
+
+### Features
+
+* Expose Read via gRPC ([#47](https://github.com/cloudquery/plugin-pb-go/issues/47)) ([5335b6d](https://github.com/cloudquery/plugin-pb-go/commit/5335b6dc66ff9013b8f600ac3cb2c76073fda7cb))
+
+
+### Bug Fixes
+
+* Add table_name to DeleteStale in proto v3 ([#45](https://github.com/cloudquery/plugin-pb-go/issues/45)) ([23eeffc](https://github.com/cloudquery/plugin-pb-go/commit/23eeffc90e0e8f8832fba7dd37cabd13f8a86974))
+
 ## [1.4.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.3.6...v1.4.0) (2023-06-27)
 
 
