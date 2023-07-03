@@ -63,6 +63,7 @@ type Client struct {
 	config         Config
 	noSentry       bool
 	metrics        *Metrics
+	registry       Registry
 }
 
 type Option func(*Client)
@@ -126,6 +127,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		wg:        &sync.WaitGroup{},
 		config:    config,
 		metrics:   &Metrics{},
+		registry:  config.Registry,
 	}
 	for _, opt := range opts {
 		opt(&c)
@@ -164,6 +166,19 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	}
 
 	return &c, nil
+}
+
+func (c *Client) ConnectionString() string {
+	tgt := c.Conn.Target()
+	switch c.registry {
+	case RegistryGrpc:
+		return tgt
+	case RegistryLocal:
+		return "unix://" + tgt
+	case RegistryGithub:
+		return "unix://" + tgt
+	}
+	return tgt
 }
 
 func (c *Client) Metrics() Metrics {
