@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.5.0...v1.5.1) (2023-07-03)
+
+
+### Bug Fixes
+
+* Add backend options to Sync in V3 proto ([#56](https://github.com/cloudquery/plugin-pb-go/issues/56)) ([6182867](https://github.com/cloudquery/plugin-pb-go/commit/6182867ce3f62bcf110f8554759508bb7590b3fd))
+* **deps:** Update github.com/apache/arrow/go/v13 digest to 5a06b2e ([#48](https://github.com/cloudquery/plugin-pb-go/issues/48)) ([cad785a](https://github.com/cloudquery/plugin-pb-go/commit/cad785afd36cc88abf34212e0e42a05266a8ef38))
+* **deps:** Update golang.org/x/exp digest to 97b1e66 ([#49](https://github.com/cloudquery/plugin-pb-go/issues/49)) ([c9fc4d3](https://github.com/cloudquery/plugin-pb-go/commit/c9fc4d31522db282317afef441d6cc18b7222739))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to 9506855 ([#51](https://github.com/cloudquery/plugin-pb-go/issues/51)) ([da2709e](https://github.com/cloudquery/plugin-pb-go/commit/da2709effe871bacfb4ce0c2a656f3333b8d6783))
+* **deps:** Update module github.com/goccy/go-json to v0.10.2 ([#52](https://github.com/cloudquery/plugin-pb-go/issues/52)) ([22857ff](https://github.com/cloudquery/plugin-pb-go/commit/22857ff2ddf478689971c40003bc35136e7fd0c4))
+* **deps:** Update module github.com/klauspost/cpuid/v2 to v2.2.5 ([#53](https://github.com/cloudquery/plugin-pb-go/issues/53)) ([c1d951c](https://github.com/cloudquery/plugin-pb-go/commit/c1d951c08d904cef73bdbcaa7379ee44ba372b2b))
+* **deps:** Update module github.com/mattn/go-isatty to v0.0.19 ([#54](https://github.com/cloudquery/plugin-pb-go/issues/54)) ([3406276](https://github.com/cloudquery/plugin-pb-go/commit/3406276e076bd62a3d25cd710caaac6ac13e3502))
+
 ## [1.5.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.4.0...v1.5.0) (2023-06-30)
 
 
