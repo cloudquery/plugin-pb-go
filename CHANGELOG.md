@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.5.1...v1.6.0) (2023-07-03)
+
+
+### Features
+
+* Expose ConnectionString method in Client ([#57](https://github.com/cloudquery/plugin-pb-go/issues/57)) ([45b234e](https://github.com/cloudquery/plugin-pb-go/commit/45b234ee70ef717c91a247eb2bc7a4704db944df))
+
 ## [1.5.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.5.0...v1.5.1) (2023-07-03)
 
 
