@@ -172,7 +172,7 @@ func (c *Client) ConnectionString() string {
 	tgt := c.Conn.Target()
 	switch c.registry {
 	case RegistryGrpc:
-		return "grpc://" + tgt
+		return tgt
 	case RegistryLocal:
 		return "unix://" + tgt
 	case RegistryGithub:
