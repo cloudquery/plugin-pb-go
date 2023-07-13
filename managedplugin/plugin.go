@@ -146,6 +146,9 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 			return nil, fmt.Errorf("failed to dial grpc source plugin at %s: %w", config.Path, err)
 		}
 	case RegistryLocal:
+		if err := validateLocalExecPath(config.Path); err != nil {
+			return nil, err
+		}
 		if err := c.startLocal(ctx, config.Path); err != nil {
 			return nil, err
 		}
@@ -365,5 +368,24 @@ func (c *Client) Terminate() error {
 		}
 	}
 
+	return nil
+}
+
+func isDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	return fileInfo.IsDir(), err
+}
+
+func validateLocalExecPath(filePath string) error {
+	directory, err := isDirectory(filePath)
+	if err != nil {
+		return fmt.Errorf("error validating plugin path, %s: %w", filePath, err)
+	}
+	if directory {
+		return fmt.Errorf("invalid plugin path: %s. Path cannot point to a directory", filePath)
+	}
 	return nil
 }
