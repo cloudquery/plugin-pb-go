@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.7.0...v1.7.1) (2023-07-14)
+
+
+### Bug Fixes
+
+* Add `NoConnection` to init request ([#62](https://github.com/cloudquery/plugin-pb-go/issues/62)) ([80494f7](https://github.com/cloudquery/plugin-pb-go/commit/80494f7d37096db916aef6cd7148f560613335a9))
+
 ## [1.7.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.6.0...v1.7.0) (2023-07-13)
 
 
