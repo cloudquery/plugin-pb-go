@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.6.0...v1.7.0) (2023-07-13)
+
+
+### Features
+
+* Add local path validation ([#60](https://github.com/cloudquery/plugin-pb-go/issues/60)) ([afa10cc](https://github.com/cloudquery/plugin-pb-go/commit/afa10ccd1d72b484174bc00668d35a19bcd56cb2))
+
 ## [1.6.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.5.1...v1.6.0) (2023-07-03)
 
 
