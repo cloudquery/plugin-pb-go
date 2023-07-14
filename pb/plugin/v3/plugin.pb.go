@@ -501,7 +501,7 @@ type Init_Request struct {
 	unknownFields protoimpl.UnknownFields
 
 	Spec         []byte `protobuf:"bytes,1,opt,name=spec,proto3" json:"spec,omitempty"`                                      // Internal plugin-specific spec
-	NoConnection bool   `protobuf:"varint,2,opt,name=no_connection,json=noConnection,proto3" json:"no_connection,omitempty"` // A flag to indicate plugins should skip connections that require authentication
+	NoConnection bool   `protobuf:"varint,2,opt,name=no_connection,json=noConnection,proto3" json:"no_connection,omitempty"` // A flag to indicate plugins should skip establishing a connection
 }
 
 func (x *Init_Request) Reset() {
