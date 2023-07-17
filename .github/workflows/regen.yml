@@ -25,6 +25,10 @@ jobs:
           key: ${{runner.os}}-go-${{steps.go.outputs.go-version}}-regen-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{runner.os}}-go-${{steps.go.outputs.go-version}}-regen
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.x"
       - name: regenerate services file
         run: |
           make clone
