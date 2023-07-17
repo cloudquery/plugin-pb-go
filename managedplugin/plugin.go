@@ -53,37 +53,19 @@ type Config struct {
 }
 
 type Client struct {
-	directory      string
-	cmd            *exec.Cmd
-	logger         zerolog.Logger
-	LocalPath      string
-	grpcSocketName string
-	wg             *sync.WaitGroup
-	Conn           *grpc.ClientConn
-	config         Config
-	noSentry       bool
-	metrics        *Metrics
-	registry       Registry
-}
-
-type Option func(*Client)
-
-func WithLogger(logger zerolog.Logger) func(*Client) {
-	return func(c *Client) {
-		c.logger = logger
-	}
-}
-
-func WithDirectory(directory string) func(*Client) {
-	return func(c *Client) {
-		c.directory = directory
-	}
-}
-
-func WithNoSentry() func(*Client) {
-	return func(c *Client) {
-		c.noSentry = true
-	}
+	directory            string
+	cmd                  *exec.Cmd
+	logger               zerolog.Logger
+	LocalPath            string
+	grpcSocketName       string
+	wg                   *sync.WaitGroup
+	Conn                 *grpc.ClientConn
+	config               Config
+	noSentry             bool
+	otelEndpoint         string
+	otelEndpointInsecure bool
+	metrics              *Metrics
+	registry             Registry
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -195,6 +177,12 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 		"--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
 	if c.noSentry {
 		args = append(args, "--no-sentry")
+	}
+	if c.otelEndpoint != "" {
+		args = append(args, "--otel-endpoint", c.otelEndpoint)
+	}
+	if c.otelEndpointInsecure {
+		args = append(args, "--otel-endpoint-insecure")
 	}
 	cmd := exec.CommandContext(ctx, path, args...)
 	reader, err := cmd.StdoutPipe()
