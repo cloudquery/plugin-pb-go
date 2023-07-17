@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.7.1...v1.8.0) (2023-07-17)
+
+
+### Features
+
+* Add otel endpoint options for managed plugin ([#69](https://github.com/cloudquery/plugin-pb-go/issues/69)) ([4bb26b4](https://github.com/cloudquery/plugin-pb-go/commit/4bb26b4ff8824b63ac9c5f117ef11cd7f59b1706))
+
+
+### Bug Fixes
+
+* Generate Go Code from `plugin-pb` ([#67](https://github.com/cloudquery/plugin-pb-go/issues/67)) ([21dacdf](https://github.com/cloudquery/plugin-pb-go/commit/21dacdf120624ffdb2c837f4721f3d5a8d086e0f))
+
 ## [1.7.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.7.0...v1.7.1) (2023-07-14)
 
 
