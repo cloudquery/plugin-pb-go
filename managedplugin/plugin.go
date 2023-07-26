@@ -103,6 +103,7 @@ func (c Clients) Terminate() error {
 // If registrySpec is GitHub then client downloads the plugin, spawns it and creates a gRPC connection.
 // If registrySpec is Local then client spawns the plugin and creates a gRPC connection.
 // If registrySpec is gRPC then clients creates a new connection
+// If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := Client{
 		directory: defaultDownloadDir,
@@ -146,6 +147,11 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 			return nil, err
 		}
 		if err := c.startLocal(ctx, c.LocalPath); err != nil {
+			return nil, err
+		}
+	case RegistryDocker:
+		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), config.Path, config.Version, "plugin")
+		if err := PullDockerImage(ctx, config.Path); err != nil {
 			return nil, err
 		}
 	}

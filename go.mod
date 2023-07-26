@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/docker/docker v20.10.25+incompatible // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/flatbuffers v23.1.21+incompatible // indirect
