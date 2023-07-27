@@ -15,8 +15,6 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -285,33 +283,4 @@ func (pr *dockerProgressReader) Read(p []byte) (n int, err error) {
 		}
 	}
 	return
-}
-
-func PullDockerImage(ctx context.Context, imageName string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		return fmt.Errorf("failed to create Docker client: %v", err)
-	}
-
-	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to pull Docker image: %v", err)
-	}
-	defer out.Close()
-
-	pr := &dockerProgressReader{
-		decoder:        json.NewDecoder(out),
-		downloadedByID: map[string]int64{},
-		bar:            nil,
-	}
-	_, err = io.Copy(io.Discard, pr)
-	if err != nil {
-		return fmt.Errorf("failed to copy image pull output: %v", err)
-	}
-	if pr.bar != nil {
-		pr.bar.Finish()
-		pr.bar.Close()
-	}
-
-	return nil
 }

@@ -13,11 +13,19 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
+	"github.com/google/uuid"
+	containerSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
@@ -115,18 +123,11 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	for _, opt := range opts {
 		opt(&c)
 	}
-	var err error
 	switch config.Registry {
 	case RegistryGrpc:
-		c.Conn, err = grpc.DialContext(ctx, config.Path,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithDefaultCallOptions(
-				grpc.MaxCallRecvMsgSize(maxMsgSize),
-				grpc.MaxCallSendMsgSize(maxMsgSize),
-			),
-		)
+		err := c.connectUsingTCP(ctx, config.Path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to dial grpc source plugin at %s: %w", config.Path, err)
+			return nil, err
 		}
 	case RegistryLocal:
 		if err := validateLocalExecPath(config.Path); err != nil {
@@ -150,8 +151,14 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 			return nil, err
 		}
 	case RegistryDocker:
-		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), config.Path, config.Version, "plugin")
-		if err := PullDockerImage(ctx, config.Path); err != nil {
+		if imageAvailable, err := isDockerImageAvailable(ctx, config.Path); err != nil {
+			return nil, err
+		} else if !imageAvailable {
+			if err := pullDockerImage(ctx, config.Path); err != nil {
+				return nil, err
+			}
+		}
+		if err := c.startDockerPlugin(ctx, config.Path); err != nil {
 			return nil, err
 		}
 	}
@@ -176,20 +183,87 @@ func (c *Client) Metrics() Metrics {
 	return *c.metrics
 }
 
+func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error {
+	//c.grpcSocketName = GenerateRandomUnixSocketName()
+	//containerTmpDir := "/tmp" // TODO: check that this will this work in all cases?
+	//containerSocketName := path.Join(containerTmpDir, filepath.Base(c.grpcSocketName))
+	//socketMount := fmt.Sprintf("%s:%s", unixSocketDir, containerTmpDir)
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return fmt.Errorf("failed to create Docker client: %w", err)
+	}
+	pluginArgs := c.getPluginArgs()
+	config := &container.Config{
+		ExposedPorts: nat.PortSet{
+			"7777/tcp": struct{}{},
+		},
+		Image: configPath,
+		Cmd:   pluginArgs,
+	}
+	hostConfig := &container.HostConfig{
+		PortBindings: map[nat.Port][]nat.PortBinding{
+			"7777/tcp": {
+				{
+					HostIP:   "",
+					HostPort: "7777",
+				},
+			},
+		},
+	}
+	networkingConfig := &network.NetworkingConfig{}
+	platform := &containerSpecs.Platform{}
+	containerName := c.config.Name + "-" + uuid.New().String()
+	resp, err := cli.ContainerCreate(ctx, config, hostConfig, networkingConfig, platform, containerName)
+	if err != nil {
+		return fmt.Errorf("failed to create container: %w", err)
+	}
+	fmt.Println("Created container with id", resp.ID)
+	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+		return fmt.Errorf("failed to start container: %w", err)
+	}
+	fmt.Println("Started container with id", resp.ID)
+
+	// get host port from running container
+	// cli.ContainerStats()
+
+	//ins, err := cli.ContainerExecInspect(ctx, resp.ID)
+	//if err != nil {
+	//	return fmt.Errorf("failed to inspect container: %w", err)
+	//}
+	//fmt.Println(ins)
+
+	// args := []string{"run", "--rm", "--name", c.config.Name, "-p", "7777", configPath}
+
+	// args = append(args, "--")
+	// args = append(args, pluginArgs...)
+	//cmd := exec.CommandContext(ctx, "docker", args...)
+	//fmt.Println("running command", cmd.String())
+	//reader, err := cmd.StdoutPipe()
+	//if err != nil {
+	//	return fmt.Errorf("failed to get stdout pipe: %w", err)
+	//}
+	//cmd.Stderr = os.Stderr
+	//cmd.SysProcAttr = getSysProcAttr()
+	//if err := cmd.Start(); err != nil {
+	//	return fmt.Errorf("failed to start plugin %s: %w", configPath, err)
+	//}
+	//
+	//c.cmd = cmd
+	//
+	//c.wg.Add(1)
+	//go c.readLogLines(reader)
+	//
+	//connection, err := getContainerConnectionString(ctx, c.config.Name, "tcp/7777")
+	//if err != nil {
+	//	return fmt.Errorf("failed to get container connection string: %w", err)
+	//}
+	return c.connectUsingTCP(ctx, "localhost:7777")
+}
+
 func (c *Client) startLocal(ctx context.Context, path string) error {
 	c.grpcSocketName = GenerateRandomUnixSocketName()
 	// spawn the plugin first and then connect
-	args := []string{"serve", "--network", "unix", "--address", c.grpcSocketName,
-		"--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
-	if c.noSentry {
-		args = append(args, "--no-sentry")
-	}
-	if c.otelEndpoint != "" {
-		args = append(args, "--otel-endpoint", c.otelEndpoint)
-	}
-	if c.otelEndpointInsecure {
-		args = append(args, "--otel-endpoint-insecure")
-	}
+	args := c.getPluginArgs()
 	cmd := exec.CommandContext(ctx, path, args...)
 	reader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -204,35 +278,78 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	c.cmd = cmd
 
 	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
-		lr := NewLogReader(reader)
-		for {
-			line, err := lr.NextLine()
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			if errors.Is(err, ErrLogLineToLong) {
-				c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
-				continue
-			}
-			if err != nil {
-				c.logger.Err(err).Msg("failed to read log line from plugin")
-				break
-			}
-			var structuredLogLine map[string]any
-			if err := json.Unmarshal(line, &structuredLogLine); err != nil {
-				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
-			} else {
-				c.jsonToLog(c.logger, structuredLogLine)
-			}
-		}
-	}()
+	go c.readLogLines(reader)
 
+	return c.connectToUnixSocket(ctx, cmd)
+}
+
+func (c *Client) getPluginArgs() []string {
+	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
+	if c.grpcSocketName != "" {
+		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
+	} else {
+		args = append(args, "--network", "tcp", "--address", "0.0.0.0:7777")
+	}
+	if c.noSentry {
+		args = append(args, "--no-sentry")
+	}
+	if c.otelEndpoint != "" {
+		args = append(args, "--otel-endpoint", c.otelEndpoint)
+	}
+	if c.otelEndpointInsecure {
+		args = append(args, "--otel-endpoint-insecure")
+	}
+	return args
+}
+
+func (c *Client) readLogLines(reader io.ReadCloser) {
+	defer c.wg.Done()
+	lr := NewLogReader(reader)
+	for {
+		line, err := lr.NextLine()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if errors.Is(err, ErrLogLineToLong) {
+			c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
+			continue
+		}
+		if err != nil {
+			c.logger.Err(err).Msg("failed to read log line from plugin")
+			break
+		}
+		var structuredLogLine map[string]any
+		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
+			c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
+		} else {
+			c.jsonToLog(c.logger, structuredLogLine)
+		}
+	}
+}
+
+func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
+	var err error
+	c.Conn, err = grpc.DialContext(ctx, path,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(maxMsgSize),
+			grpc.MaxCallSendMsgSize(maxMsgSize),
+		),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to dial grpc source plugin at %s: %w", path, err)
+	}
+	return nil
+}
+
+func (c *Client) connectToUnixSocket(ctx context.Context, cmd *exec.Cmd) error {
 	dialer := func(ctx context.Context, addr string) (net.Conn, error) {
-		d := &net.Dialer{}
+		d := &net.Dialer{
+			Timeout: 5 * time.Second,
+		}
 		return d.DialContext(ctx, "unix", addr)
 	}
+	var err error
 	c.Conn, err = grpc.DialContext(ctx, c.grpcSocketName,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
