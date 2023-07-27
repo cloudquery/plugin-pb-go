@@ -228,14 +228,17 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		return fmt.Errorf("failed to start container: %w", err)
 	}
 	// wait for container to start
-	waitForContainerRunning(ctx, cli, resp.ID)
+	err = waitForContainerRunning(ctx, cli, resp.ID)
+	if err != nil {
+		return fmt.Errorf("error while waiting for container to reach running state: %w", err)
+	}
 
 	var hostConnection string
 	err = retry.Do(func() error {
 		hostConnection, err = getHostConnection(ctx, cli, resp.ID)
 		return err
 	}, retry.RetryIf(func(err error) bool {
-		return err != nil
+		return err.Error() == "failed to get port mapping for container"
 	}),
 		// this should generally succeed on first or second try, because we're only waiting for the container to start
 		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
@@ -281,7 +284,7 @@ func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerI
 	return "localhost:" + hostPort, nil
 }
 
-func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) {
+func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
 	err := retry.Do(func() error {
 		containerJSON, err := cli.ContainerInspect(ctx, containerID)
 		if err != nil {
@@ -302,9 +305,7 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 		retry.Attempts(10),
 		retry.Delay(1*time.Second),
 	)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 func (c *Client) startLocal(ctx context.Context, path string) error {
