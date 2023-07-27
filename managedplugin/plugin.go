@@ -211,7 +211,13 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		},
 	}
 	networkingConfig := &network.NetworkingConfig{}
-	platform := &containerSpecs.Platform{}
+	platform := &containerSpecs.Platform{
+		Architecture: "",
+		OS:           "linux", // we assume that all plugins are linux compatible
+		OSVersion:    "",
+		OSFeatures:   nil,
+		Variant:      "",
+	}
 	containerName := c.config.Name + "-" + uuid.New().String()
 	resp, err := cli.ContainerCreate(ctx, config, hostConfig, networkingConfig, platform, containerName)
 	if err != nil {
