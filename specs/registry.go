@@ -47,6 +47,6 @@ func RegistryFromString(s string) (Registry, error) {
 	case "docker":
 		return RegistryDocker, nil
 	default:
-		return RegistryGithub, fmt.Errorf("unknown registry! %s", s)
+		return RegistryGithub, fmt.Errorf("unknown registry %s", s)
 	}
 }
