@@ -3,7 +3,6 @@ package managedplugin
 import (
 	"archive/zip"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -232,55 +231,4 @@ func WithBinarySuffix(filePath string) string {
 		return filePath + ".exe"
 	}
 	return filePath
-}
-
-type dockerProgressReader struct {
-	decoder        *json.Decoder
-	bar            *progressbar.ProgressBar
-	downloadedByID map[string]int64
-	totalBytes     int64
-}
-
-type dockerProgressInfo struct {
-	Status       string `json:"status"`
-	Progress     string `json:"progress"`
-	ProgressData struct {
-		Current int64 `json:"current"`
-		Total   int64 `json:"total"`
-	} `json:"progressDetail"`
-	ID string `json:"id"`
-}
-
-func (pr *dockerProgressReader) Read(p []byte) (n int, err error) {
-	var progress dockerProgressInfo
-	err = pr.decoder.Decode(&progress)
-	if err != nil {
-		if err == io.EOF {
-			return 0, io.EOF
-		}
-		return 0, fmt.Errorf("failed to decode JSON: %v", err)
-	}
-	if progress.Status == "Downloading" {
-		if pr.bar == nil {
-			pr.bar = downloadProgressBar(1, "Downloading")
-			pr.bar.RenderBlank()
-		}
-		if _, seen := pr.downloadedByID[progress.ID]; !seen {
-			pr.downloadedByID[progress.ID] = 0
-			pr.totalBytes += progress.ProgressData.Total
-			pr.bar.ChangeMax64(pr.totalBytes)
-		}
-		pr.downloadedByID[progress.ID] = progress.ProgressData.Current
-		total := int64(0)
-		for _, v := range pr.downloadedByID {
-			total += v
-		}
-		if total < pr.totalBytes {
-			// progressbar stops responding if it reaches 100%, so as a workaround we don't update
-			// the bar if we're at 100%, because there may be more layers of the image
-			// coming that we don't know about.
-			pr.bar.Set64(total)
-		}
-	}
-	return
 }
