@@ -29,7 +29,7 @@ type dockerProgressInfo struct {
 	ID string `json:"id"`
 }
 
-func (pr *dockerProgressReader) Read(p []byte) (n int, err error) {
+func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
 	var progress dockerProgressInfo
 	err = pr.decoder.Decode(&progress)
 	if err != nil {
@@ -41,7 +41,7 @@ func (pr *dockerProgressReader) Read(p []byte) (n int, err error) {
 	if progress.Status == "Downloading" {
 		if pr.bar == nil {
 			pr.bar = downloadProgressBar(1, "Downloading")
-			pr.bar.RenderBlank()
+			_ = pr.bar.RenderBlank()
 		}
 		if _, seen := pr.downloadedByID[progress.ID]; !seen {
 			pr.downloadedByID[progress.ID] = 0
@@ -57,10 +57,10 @@ func (pr *dockerProgressReader) Read(p []byte) (n int, err error) {
 			// progressbar stops responding if it reaches 100%, so as a workaround we don't update
 			// the bar if we're at 100%, because there may be more layers of the image
 			// coming that we don't know about.
-			pr.bar.Set64(total)
+			_ = pr.bar.Set64(total)
 		}
 	}
-	return
+	return 0, nil
 }
 
 func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error) {
@@ -105,7 +105,7 @@ func pullDockerImage(ctx context.Context, imageName string) error {
 		return fmt.Errorf("failed to copy image pull output: %v", err)
 	}
 	if pr.bar != nil {
-		pr.bar.Finish()
+		_ = pr.bar.Finish()
 		pr.bar.Close()
 	}
 

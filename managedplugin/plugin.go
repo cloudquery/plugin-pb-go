@@ -23,7 +23,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
+	dockerClient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
 	containerSpecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -188,7 +188,7 @@ func (c *Client) Metrics() Metrics {
 }
 
 func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %w", err)
 	}
@@ -253,7 +253,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	return c.connectUsingTCP(ctx, hostConnection)
 }
 
-func getHostConnection(ctx context.Context, cli *client.Client, containerID string) (string, error) {
+func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string) (string, error) {
 	// Retrieve the dynamically assigned HOST port
 	containerJSON, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
@@ -482,7 +482,7 @@ func (c *Client) Terminate() error {
 		}()
 	}
 	if c.containerID != "" {
-		cli, err := client.NewClientWithOpts(client.FromEnv)
+		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
 		if err != nil {
 			return fmt.Errorf("failed to create Docker client: %w", err)
 		}
