@@ -237,7 +237,6 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
 	}
-
 	reader, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
