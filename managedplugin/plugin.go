@@ -464,14 +464,15 @@ func (c *Client) MaxVersion(ctx context.Context) (int, error) {
 
 func (c *Client) Terminate() error {
 	// wait for log streaming to complete before returning from this function
-	defer c.wg.Wait()
-
-	if c.logReader != nil {
-		err := c.logReader.Close()
-		if err != nil {
-			c.logger.Error().Err(err).Msg("failed to close log reader")
+	defer func() {
+		c.wg.Wait()
+		if c.logReader != nil {
+			err := c.logReader.Close()
+			if err != nil {
+				c.logger.Error().Err(err).Msg("failed to close log reader")
+			}
 		}
-	}
+	}()
 
 	if c.grpcSocketName != "" {
 		defer func() {
