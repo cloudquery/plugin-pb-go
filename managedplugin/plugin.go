@@ -221,6 +221,9 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return fmt.Errorf("failed to start container: %w", err)
 	}
+	// wait for container to start
+	waitForContainerRunning(ctx, cli, resp.ID)
+
 	var hostConnection string
 	err = retry.Do(func() error {
 		hostConnection, err = getHostConnection(ctx, cli, resp.ID)
@@ -259,11 +262,43 @@ func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerI
 	if err != nil {
 		return "", fmt.Errorf("failed to inspect container: %w", err)
 	}
+	if containerJSON.State != nil {
+		switch containerJSON.State.Status {
+		case "removing", "exited", "dead":
+			return "", errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+		}
+	}
 	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports["7777/tcp"]) == 0 {
 		return "", errors.New("failed to get port mapping for container")
 	}
 	hostPort := containerJSON.NetworkSettings.Ports["7777/tcp"][0].HostPort
 	return "localhost:" + hostPort, nil
+}
+
+func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) {
+	err := retry.Do(func() error {
+		containerJSON, err := cli.ContainerInspect(ctx, containerID)
+		if err != nil {
+			return fmt.Errorf("failed to inspect container: %w", err)
+		}
+		if containerJSON.State != nil {
+			switch containerJSON.State.Status {
+			case "removing", "exited", "dead":
+				return errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+			case "running":
+				return nil
+			}
+		}
+		return errors.New("container not running")
+	}, retry.RetryIf(func(err error) bool {
+		return err != nil
+	}),
+		retry.Attempts(10),
+		retry.Delay(1*time.Second),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (c *Client) startLocal(ctx context.Context, path string) error {
