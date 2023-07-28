@@ -30,12 +30,23 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
-	defaultDownloadDir   = ".cq"
-	maxMsgSize           = 100 * 1024 * 1024 // 100 MiB
+	defaultDownloadDir = ".cq"
+	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
+
+	containerPortMappingRetries           = 30
+	containerPortMappingInitialRetryDelay = 100 * time.Millisecond
+
+	containerRunningRetries           = 30
+	containerRunningInitialRetryDelay = 100 * time.Millisecond
+
+	containerServerHealthyRetries           = 30
+	containerServerHealthyInitialRetryDelay = 100 * time.Millisecond
+
 	containerStopTimeout = 10 * time.Second
 )
 
@@ -239,8 +250,10 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		// this should generally succeed on first or second try, because we're only waiting for the container to start
 		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
 		// connection.
-		retry.Attempts(10),
-		retry.Delay(1*time.Second),
+		retry.Attempts(containerPortMappingRetries),
+		retry.Delay(containerPortMappingInitialRetryDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
@@ -298,8 +311,10 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 	}, retry.RetryIf(func(err error) bool {
 		return err != nil
 	}),
-		retry.Attempts(10),
-		retry.Delay(1*time.Second),
+		retry.Attempts(containerRunningRetries),
+		retry.Delay(containerRunningInitialRetryDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
 	)
 	return err
 }
@@ -384,7 +399,26 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to dial grpc source plugin at %s: %w", path, err)
 	}
-	return nil
+
+	return retry.Do(
+		func() error {
+			state := c.Conn.GetState()
+			if state == connectivity.Idle || state == connectivity.Ready {
+				return nil
+			}
+			if state == connectivity.Shutdown {
+				return fmt.Errorf("connection shutdown")
+			}
+			return fmt.Errorf("connection not ready")
+		},
+		retry.RetryIf(func(err error) bool {
+			return err.Error() == "connection not ready"
+		}),
+		retry.Delay(containerServerHealthyInitialRetryDelay),
+		retry.Attempts(containerServerHealthyRetries),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
+	)
 }
 
 func (c *Client) connectToUnixSocket(ctx context.Context, cmd *exec.Cmd) error {
