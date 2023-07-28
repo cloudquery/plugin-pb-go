@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/docker/docker/client"
@@ -61,6 +62,12 @@ func TestManagedPluginDocker(t *testing.T) {
 	if err != nil {
 		t.Skip("docker not running")
 	}
+	if runtime.GOOS == "windows" {
+		// the docker image is not built for Windows, so would require enabling of experimental
+		// linux compatibility. We skip this test in CI for now.
+		t.Skip("this test is not supported on windows")
+	}
+
 	tmpDir := t.TempDir()
 	cfg := Config{
 		Name:     "test",
