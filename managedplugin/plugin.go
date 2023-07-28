@@ -38,13 +38,16 @@ const (
 	defaultDownloadDir = ".cq"
 	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
 
-	containerPortMappingRetries      = 300 // 30 seconds
-	containerPortMappingRetryDelay   = 100 * time.Millisecond
-	containerServerHealthyRetryDelay = 100 * time.Millisecond
-	containerRunningRetries          = 300 // 30 seconds
-	containerRunningRetryDelay       = 100 * time.Millisecond
-	containerServerHealthyRetries    = 300 // 30 seconds
-	containerStopTimeout             = 10 * time.Second
+	containerPortMappingRetries           = 30
+	containerPortMappingInitialRetryDelay = 100 * time.Millisecond
+
+	containerRunningRetries           = 30
+	containerRunningInitialRetryDelay = 100 * time.Millisecond
+
+	containerServerHealthyRetries           = 30
+	containerServerHealthyInitialRetryDelay = 100 * time.Millisecond
+
+	containerStopTimeout = 10 * time.Second
 )
 
 // PluginType specifies if a plugin is a source or a destination
@@ -248,8 +251,9 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
 		// connection.
 		retry.Attempts(containerPortMappingRetries),
-		retry.Delay(containerPortMappingRetryDelay),
-		retry.DelayType(retry.FixedDelay),
+		retry.Delay(containerPortMappingInitialRetryDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
@@ -308,8 +312,9 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 		return err != nil
 	}),
 		retry.Attempts(containerRunningRetries),
-		retry.Delay(containerRunningRetryDelay),
-		retry.DelayType(retry.FixedDelay),
+		retry.Delay(containerRunningInitialRetryDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
 	)
 	return err
 }
@@ -409,9 +414,10 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 		retry.RetryIf(func(err error) bool {
 			return err.Error() == "connection not ready"
 		}),
-		retry.Delay(containerServerHealthyRetryDelay),
+		retry.Delay(containerServerHealthyInitialRetryDelay),
 		retry.Attempts(containerServerHealthyRetries),
-		retry.DelayType(retry.FixedDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1*time.Second),
 	)
 }
 
