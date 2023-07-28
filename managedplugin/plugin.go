@@ -38,10 +38,10 @@ const (
 	defaultDownloadDir = ".cq"
 	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
 
-	containerPortMappingRetries      = 100 // 10 seconds
+	containerPortMappingRetries      = 300 // 30 seconds
 	containerPortMappingRetryDelay   = 100 * time.Millisecond
 	containerServerHealthyRetryDelay = 100 * time.Millisecond
-	containerRunningRetries          = 100 // 10 seconds
+	containerRunningRetries          = 300 // 30 seconds
 	containerRunningRetryDelay       = 100 * time.Millisecond
 	containerServerHealthyRetries    = 300 // 30 seconds
 	containerStopTimeout             = 10 * time.Second
