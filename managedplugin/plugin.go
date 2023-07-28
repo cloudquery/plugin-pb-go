@@ -178,6 +178,8 @@ func (c *Client) ConnectionString() string {
 	case RegistryLocal:
 		return "unix://" + tgt
 	case RegistryGithub:
+		return "unix://" + tgt
+	case RegistryDocker:
 		return tgt
 	}
 	return tgt
