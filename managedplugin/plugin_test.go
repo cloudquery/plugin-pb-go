@@ -72,7 +72,7 @@ func TestManagedPluginDocker(t *testing.T) {
 	cfg := Config{
 		Name:     "test",
 		Registry: RegistryDocker,
-		Path:     "ghcr.io/cloudquery/cq-source-test:1.0.0",
+		Path:     "ghcr.io/cloudquery/cq-source-test:3.0.3",
 	}
 	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
