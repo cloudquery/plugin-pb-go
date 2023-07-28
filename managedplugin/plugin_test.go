@@ -4,7 +4,10 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+
+	"github.com/docker/docker/client"
 )
 
 func TestManagedPluginGitHub(t *testing.T) {
@@ -49,6 +52,48 @@ func TestManagedPluginGitHub(t *testing.T) {
 	}
 }
 
+func TestManagedPluginDocker(t *testing.T) {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = cli.Ping(ctx)
+	if err != nil {
+		t.Skip("docker not running")
+	}
+	if runtime.GOOS == "windows" {
+		// the docker image is not built for Windows, so would require enabling of experimental
+		// linux compatibility. We skip this test in CI for now.
+		t.Skip("this test is not supported on windows")
+	}
+
+	tmpDir := t.TempDir()
+	cfg := Config{
+		Name:     "test",
+		Registry: RegistryDocker,
+		Path:     "ghcr.io/cloudquery/cq-source-test:3.0.3",
+	}
+	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
+	if err != nil {
+		t.Fatal(err)
+	}
+	testClient := clients.ClientByName("test")
+	if testClient == nil {
+		t.Fatal("test client not found")
+	}
+	v, err := testClient.Versions(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(v) < 1 {
+		t.Fatal("expected at least 1 version, got 0")
+	}
+	if err := clients.Terminate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestIsDirectory(t *testing.T) {
 	tempDir := t.TempDir()
 	directoryBool, err := isDirectory(tempDir)
@@ -73,7 +118,7 @@ func TestIsDirectory(t *testing.T) {
 	}
 }
 
-func TestValidatevLocalExecPath(t *testing.T) {
+func TestValidateLocalExecPath(t *testing.T) {
 	tempDir := t.TempDir()
 	// passing a directory should result in an error
 	err := validateLocalExecPath(tempDir)

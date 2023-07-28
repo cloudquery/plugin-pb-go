@@ -12,11 +12,13 @@ const (
 	RegistryGithub Registry = iota
 	RegistryLocal
 	RegistryGrpc
+	RegistryDocker
 )
 
 func (r Registry) String() string {
-	return [...]string{"github", "local", "grpc"}[r]
+	return [...]string{"github", "local", "grpc", "docker"}[r]
 }
+
 func (r Registry) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
 	buffer.WriteString(r.String())
@@ -43,6 +45,8 @@ func RegistryFromString(s string) (Registry, error) {
 		return RegistryLocal, nil
 	case "grpc":
 		return RegistryGrpc, nil
+	case "docker":
+		return RegistryDocker, nil
 	default:
 		return RegistryGithub, fmt.Errorf("unknown registry %s", s)
 	}

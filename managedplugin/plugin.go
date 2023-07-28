@@ -13,11 +13,20 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+	dockerClient "github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
+	"github.com/google/uuid"
+	containerSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
@@ -25,8 +34,9 @@ import (
 )
 
 const (
-	defaultDownloadDir = ".cq"
-	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
+	defaultDownloadDir   = ".cq"
+	maxMsgSize           = 100 * 1024 * 1024 // 100 MiB
+	containerStopTimeout = 10 * time.Second
 )
 
 // PluginType specifies if a plugin is a source or a destination
@@ -58,6 +68,8 @@ type Client struct {
 	logger               zerolog.Logger
 	LocalPath            string
 	grpcSocketName       string
+	containerID          string
+	logReader            io.ReadCloser
 	wg                   *sync.WaitGroup
 	Conn                 *grpc.ClientConn
 	config               Config
@@ -103,6 +115,7 @@ func (c Clients) Terminate() error {
 // If registrySpec is GitHub then client downloads the plugin, spawns it and creates a gRPC connection.
 // If registrySpec is Local then client spawns the plugin and creates a gRPC connection.
 // If registrySpec is gRPC then clients creates a new connection
+// If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := Client{
 		directory: defaultDownloadDir,
@@ -114,18 +127,11 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	for _, opt := range opts {
 		opt(&c)
 	}
-	var err error
 	switch config.Registry {
 	case RegistryGrpc:
-		c.Conn, err = grpc.DialContext(ctx, config.Path,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithDefaultCallOptions(
-				grpc.MaxCallRecvMsgSize(maxMsgSize),
-				grpc.MaxCallSendMsgSize(maxMsgSize),
-			),
-		)
+		err := c.connectUsingTCP(ctx, config.Path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to dial grpc source plugin at %s: %w", config.Path, err)
+			return nil, err
 		}
 	case RegistryLocal:
 		if err := validateLocalExecPath(config.Path); err != nil {
@@ -148,6 +154,17 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		if err := c.startLocal(ctx, c.LocalPath); err != nil {
 			return nil, err
 		}
+	case RegistryDocker:
+		if imageAvailable, err := isDockerImageAvailable(ctx, config.Path); err != nil {
+			return nil, err
+		} else if !imageAvailable {
+			if err := pullDockerImage(ctx, config.Path); err != nil {
+				return nil, err
+			}
+		}
+		if err := c.startDockerPlugin(ctx, config.Path); err != nil {
+			return nil, err
+		}
 	}
 
 	return &c, nil
@@ -162,6 +179,8 @@ func (c *Client) ConnectionString() string {
 		return "unix://" + tgt
 	case RegistryGithub:
 		return "unix://" + tgt
+	case RegistryDocker:
+		return tgt
 	}
 	return tgt
 }
@@ -170,20 +189,125 @@ func (c *Client) Metrics() Metrics {
 	return *c.metrics
 }
 
+func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error {
+	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+	if err != nil {
+		return fmt.Errorf("failed to create Docker client: %w", err)
+	}
+	pluginArgs := c.getPluginArgs()
+	config := &container.Config{
+		ExposedPorts: nat.PortSet{
+			"7777/tcp": struct{}{},
+		},
+		Image: configPath,
+		Cmd:   pluginArgs,
+	}
+	hostConfig := &container.HostConfig{
+		PortBindings: map[nat.Port][]nat.PortBinding{
+			"7777/tcp": {
+				{
+					HostIP:   "localhost",
+					HostPort: "", // let host assign a random unused port
+				},
+			},
+		},
+	}
+	networkingConfig := &network.NetworkingConfig{}
+	platform := &containerSpecs.Platform{}
+	containerName := c.config.Name + "-" + uuid.New().String()
+	resp, err := cli.ContainerCreate(ctx, config, hostConfig, networkingConfig, platform, containerName)
+	if err != nil {
+		return fmt.Errorf("failed to create container: %w", err)
+	}
+	c.containerID = resp.ID
+	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+		return fmt.Errorf("failed to start container: %w", err)
+	}
+	// wait for container to start
+	err = waitForContainerRunning(ctx, cli, resp.ID)
+	if err != nil {
+		return fmt.Errorf("error while waiting for container to reach running state: %w", err)
+	}
+
+	var hostConnection string
+	err = retry.Do(func() error {
+		hostConnection, err = getHostConnection(ctx, cli, resp.ID)
+		return err
+	}, retry.RetryIf(func(err error) bool {
+		return err.Error() == "failed to get port mapping for container"
+	}),
+		// this should generally succeed on first or second try, because we're only waiting for the container to start
+		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
+		// connection.
+		retry.Attempts(10),
+		retry.Delay(1*time.Second),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to get host connection: %w", err)
+	}
+	reader, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     true,
+		Details:    false,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get reader for container logs: %w", err)
+	}
+	c.logReader = reader
+	c.wg.Add(1)
+	go c.readLogLines(reader)
+
+	return c.connectUsingTCP(ctx, hostConnection)
+}
+
+func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string) (string, error) {
+	// Retrieve the dynamically assigned HOST port
+	containerJSON, err := cli.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return "", fmt.Errorf("failed to inspect container: %w", err)
+	}
+	if containerJSON.State != nil {
+		switch containerJSON.State.Status {
+		case "removing", "exited", "dead":
+			return "", errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+		}
+	}
+	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports["7777/tcp"]) == 0 {
+		return "", errors.New("failed to get port mapping for container")
+	}
+	hostPort := containerJSON.NetworkSettings.Ports["7777/tcp"][0].HostPort
+	return "localhost:" + hostPort, nil
+}
+
+func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
+	err := retry.Do(func() error {
+		containerJSON, err := cli.ContainerInspect(ctx, containerID)
+		if err != nil {
+			return fmt.Errorf("failed to inspect container: %w", err)
+		}
+		if containerJSON.State != nil {
+			switch containerJSON.State.Status {
+			case "removing", "exited", "dead":
+				return errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+			case "running":
+				return nil
+			}
+		}
+		return errors.New("container not running")
+	}, retry.RetryIf(func(err error) bool {
+		return err != nil
+	}),
+		retry.Attempts(10),
+		retry.Delay(1*time.Second),
+	)
+	return err
+}
+
 func (c *Client) startLocal(ctx context.Context, path string) error {
 	c.grpcSocketName = GenerateRandomUnixSocketName()
 	// spawn the plugin first and then connect
-	args := []string{"serve", "--network", "unix", "--address", c.grpcSocketName,
-		"--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
-	if c.noSentry {
-		args = append(args, "--no-sentry")
-	}
-	if c.otelEndpoint != "" {
-		args = append(args, "--otel-endpoint", c.otelEndpoint)
-	}
-	if c.otelEndpointInsecure {
-		args = append(args, "--otel-endpoint-insecure")
-	}
+	args := c.getPluginArgs()
 	cmd := exec.CommandContext(ctx, path, args...)
 	reader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -197,36 +321,80 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 
 	c.cmd = cmd
 
+	c.logReader = reader
 	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
-		lr := NewLogReader(reader)
-		for {
-			line, err := lr.NextLine()
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			if errors.Is(err, ErrLogLineToLong) {
-				c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
-				continue
-			}
-			if err != nil {
-				c.logger.Err(err).Msg("failed to read log line from plugin")
-				break
-			}
-			var structuredLogLine map[string]any
-			if err := json.Unmarshal(line, &structuredLogLine); err != nil {
-				c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
-			} else {
-				c.jsonToLog(c.logger, structuredLogLine)
-			}
-		}
-	}()
+	go c.readLogLines(reader)
 
+	return c.connectToUnixSocket(ctx, cmd)
+}
+
+func (c *Client) getPluginArgs() []string {
+	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
+	if c.grpcSocketName != "" {
+		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
+	} else {
+		args = append(args, "--network", "tcp", "--address", "0.0.0.0:7777")
+	}
+	if c.noSentry {
+		args = append(args, "--no-sentry")
+	}
+	if c.otelEndpoint != "" {
+		args = append(args, "--otel-endpoint", c.otelEndpoint)
+	}
+	if c.otelEndpointInsecure {
+		args = append(args, "--otel-endpoint-insecure")
+	}
+	return args
+}
+
+func (c *Client) readLogLines(reader io.ReadCloser) {
+	defer c.wg.Done()
+	lr := NewLogReader(reader)
+	for {
+		line, err := lr.NextLine()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if errors.Is(err, ErrLogLineToLong) {
+			c.logger.Info().Str("line", string(line)).Msg("truncated plugin log line")
+			continue
+		}
+		if err != nil {
+			c.logger.Err(err).Msg("failed to read log line from plugin")
+			break
+		}
+		var structuredLogLine map[string]any
+		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
+			c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
+		} else {
+			c.jsonToLog(c.logger, structuredLogLine)
+		}
+	}
+}
+
+func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
+	var err error
+	c.Conn, err = grpc.DialContext(ctx, path,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(maxMsgSize),
+			grpc.MaxCallSendMsgSize(maxMsgSize),
+		),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to dial grpc source plugin at %s: %w", path, err)
+	}
+	return nil
+}
+
+func (c *Client) connectToUnixSocket(ctx context.Context, cmd *exec.Cmd) error {
 	dialer := func(ctx context.Context, addr string) (net.Conn, error) {
-		d := &net.Dialer{}
+		d := &net.Dialer{
+			Timeout: 5 * time.Second,
+		}
 		return d.DialContext(ctx, "unix", addr)
 	}
+	var err error
 	c.Conn, err = grpc.DialContext(ctx, c.grpcSocketName,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
@@ -334,7 +502,15 @@ func (c *Client) MaxVersion(ctx context.Context) (int, error) {
 
 func (c *Client) Terminate() error {
 	// wait for log streaming to complete before returning from this function
-	defer c.wg.Wait()
+	defer func() {
+		c.wg.Wait()
+		if c.logReader != nil {
+			err := c.logReader.Close()
+			if err != nil {
+				c.logger.Error().Err(err).Msg("failed to close log reader")
+			}
+		}
+	}()
 
 	if c.grpcSocketName != "" {
 		defer func() {
@@ -342,6 +518,19 @@ func (c *Client) Terminate() error {
 				c.logger.Error().Err(err).Msg("failed to remove source socket file")
 			}
 		}()
+	}
+	if c.containerID != "" {
+		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+		if err != nil {
+			return fmt.Errorf("failed to create Docker client: %w", err)
+		}
+		timeout := containerStopTimeout
+		if err := cli.ContainerStop(context.Background(), c.containerID, &timeout); err != nil {
+			return fmt.Errorf("failed to stop container: %w", err)
+		}
+		if err := cli.ContainerRemove(context.Background(), c.containerID, types.ContainerRemoveOptions{}); err != nil {
+			return fmt.Errorf("failed to remove container: %w", err)
+		}
 	}
 
 	if c.Conn != nil {
