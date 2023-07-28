@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.8.0...v1.9.0) (2023-07-28)
+
+
+### Features
+
+* Docker registry ([#70](https://github.com/cloudquery/plugin-pb-go/issues/70)) ([5bc1f60](https://github.com/cloudquery/plugin-pb-go/commit/5bc1f603676f6c49f8e504696e73341b93f670d4))
+
 ## [1.8.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.7.1...v1.8.0) (2023-07-17)
 
 
