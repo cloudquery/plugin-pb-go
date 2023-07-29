@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.0...v1.9.1) (2023-07-28)
+
+
+### Bug Fixes
+
+* Wait for gRPC TCP connection in Docker registry ([#72](https://github.com/cloudquery/plugin-pb-go/issues/72)) ([98f3334](https://github.com/cloudquery/plugin-pb-go/commit/98f3334b7c1569989363982e4b20ac4d03e828fc))
+
 ## [1.9.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.8.0...v1.9.0) (2023-07-28)
 
 
