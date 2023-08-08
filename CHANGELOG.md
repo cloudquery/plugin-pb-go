@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.9.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.1...v1.9.2) (2023-08-08)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v13 digest to 112f949 ([#74](https://github.com/cloudquery/plugin-pb-go/issues/74)) ([a204890](https://github.com/cloudquery/plugin-pb-go/commit/a204890b005e5b1427228d42edcffb1671932a48))
+* **deps:** Update golang.org/x/exp digest to b0cb94b ([#75](https://github.com/cloudquery/plugin-pb-go/issues/75)) ([2a62da5](https://github.com/cloudquery/plugin-pb-go/commit/2a62da512d6e49b7c9905d74a483fac5bd2f3fed))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to e0aa005 ([#77](https://github.com/cloudquery/plugin-pb-go/issues/77)) ([b273d9b](https://github.com/cloudquery/plugin-pb-go/commit/b273d9b0bf966ebaa8add42fb4747e6631e97fe6))
+* **deps:** Update module github.com/google/flatbuffers to v23.5.26+incompatible ([#81](https://github.com/cloudquery/plugin-pb-go/issues/81)) ([4da6f65](https://github.com/cloudquery/plugin-pb-go/commit/4da6f6510e227539ce867e26754ac6532771358e))
+* **deps:** Update module github.com/klauspost/compress to v1.16.7 ([#82](https://github.com/cloudquery/plugin-pb-go/issues/82)) ([12e9d67](https://github.com/cloudquery/plugin-pb-go/commit/12e9d670b6260fc6e15f3dcd5bfc6528b7c6cc05))
+* **deps:** Update module github.com/mattn/go-runewidth to v0.0.15 ([#78](https://github.com/cloudquery/plugin-pb-go/issues/78)) ([f25ab8e](https://github.com/cloudquery/plugin-pb-go/commit/f25ab8e1f03ec4f789e15cebc913df34fcb82764))
+* **deps:** Update module github.com/pierrec/lz4/v4 to v4.1.18 ([#79](https://github.com/cloudquery/plugin-pb-go/issues/79)) ([d94768e](https://github.com/cloudquery/plugin-pb-go/commit/d94768e5de70ce4ee771a8bb79381056711e8112))
+* Generate Go Code from `plugin-pb` ([#83](https://github.com/cloudquery/plugin-pb-go/issues/83)) ([f898aa9](https://github.com/cloudquery/plugin-pb-go/commit/f898aa945651dfd646f3bb2736c6476a09d1c632))
+* Generate Go Code from `plugin-pb` ([#84](https://github.com/cloudquery/plugin-pb-go/issues/84)) ([d0c9fa0](https://github.com/cloudquery/plugin-pb-go/commit/d0c9fa0087d1e37ef80b5adb5bc81ae76597986c))
+
 ## [1.9.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.0...v1.9.1) (2023-07-28)
 
 
