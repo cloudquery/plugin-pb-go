@@ -11,13 +11,15 @@ type Registry int
 const (
 	RegistryGithub Registry = iota
 	RegistryLocal
+	RegistryGo
 	RegistryGrpc
 	RegistryDocker
 )
 
 func (r Registry) String() string {
-	return [...]string{"github", "local", "grpc", "docker"}[r]
+	return [...]string{"github", "local", "go", "grpc", "docker"}[r]
 }
+
 func (r Registry) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
 	buffer.WriteString(r.String())
@@ -42,6 +44,8 @@ func RegistryFromString(s string) (Registry, error) {
 		return RegistryGithub, nil
 	case "local":
 		return RegistryLocal, nil
+	case "go":
+		return RegistryGo, nil
 	case "grpc":
 		return RegistryGrpc, nil
 	case "docker":

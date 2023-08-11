@@ -125,6 +125,7 @@ func (c Clients) Terminate() error {
 // NewClient creates a new plugin client.
 // If registrySpec is GitHub then client downloads the plugin, spawns it and creates a gRPC connection.
 // If registrySpec is Local then client spawns the plugin and creates a gRPC connection.
+// If registrySpec is Go then client builds the plugin with "go build" then runs as Local.
 // If registrySpec is gRPC then clients creates a new connection
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
@@ -149,6 +150,10 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 			return nil, err
 		}
 		if err := c.startLocal(ctx, config.Path); err != nil {
+			return nil, err
+		}
+	case RegistryGo:
+		if err := c.startGoLocal(ctx, config.Path); err != nil {
 			return nil, err
 		}
 	case RegistryGithub:
@@ -341,6 +346,37 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	go c.readLogLines(reader)
 
 	return c.connectToUnixSocket(ctx, cmd)
+}
+
+func (c *Client) startGoLocal(ctx context.Context, path string) error {
+	// Choose a random, temporary name for the binary.
+	tmpdir, err := os.MkdirTemp("", filepath.Base(path))
+	if err != nil {
+		return fmt.Errorf("getting temp dir: %w", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// Choose a name for the plugin.
+	base := filepath.Base(path)
+	if base == "." {
+		base = "plugin"
+	}
+	tmpexe := filepath.Join(tmpdir, base)
+
+	// Build. We "go build -C path ." instead of "go build path" because Go can
+	// get upset that we're not in a module, otherwise. This allows you to build
+	// without creating a module or go.work file, but may ignore a previous
+	// go.work file if it's not in a parent directory. Which is the lesser evil?
+	build := exec.CommandContext(ctx, "go", "build", "-C", path, "-o", tmpexe, ".")
+	build.Stdout = os.Stdout
+	build.Stderr = os.Stderr
+	err = build.Run()
+	if err != nil {
+		return fmt.Errorf("building plugin: %w", err)
+	}
+
+	// Run.
+	return c.startLocal(ctx, tmpexe)
 }
 
 func (c *Client) getPluginArgs() []string {
