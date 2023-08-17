@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.2...v1.9.3) (2023-08-17)
+
+
+### Bug Fixes
+
+* Create docker container with Tty true ([#87](https://github.com/cloudquery/plugin-pb-go/issues/87)) ([4c70f9a](https://github.com/cloudquery/plugin-pb-go/commit/4c70f9ad6979b5eae4b47dff774b4ffeb92d1246))
+
 ## [1.9.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.1...v1.9.2) (2023-08-08)
 
 
