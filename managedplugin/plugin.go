@@ -212,6 +212,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		},
 		Image: configPath,
 		Cmd:   pluginArgs,
+		Tty:   true,
 	}
 	hostConfig := &container.HostConfig{
 		PortBindings: map[nat.Port][]nat.PortBinding{
