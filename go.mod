@@ -3,7 +3,7 @@ module github.com/cloudquery/plugin-pb-go
 go 1.19
 
 require (
-	github.com/apache/arrow/go/v13 v13.0.0-20230731205701-112f94971882
+	github.com/apache/arrow/go/v14 v14.0.0-20230826001106-a069d71cc1bcd
 	github.com/avast/retry-go/v4 v4.3.4
 	github.com/docker/docker v20.10.25+incompatible
 	github.com/docker/go-connections v0.4.0
@@ -19,6 +19,8 @@ require (
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+replace github.com/apache/arrow/go/v14 => github.com/cloudquery/arrow/go/v14 v14.0.0-20230826001106-a069d71cc1bc
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
