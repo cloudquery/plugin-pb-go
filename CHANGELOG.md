@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.10.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.4...v1.10.0) (2023-09-19)
+
+
+### Features
+
+* Add option `WithNoExec()` to skip executing of plugins ([#103](https://github.com/cloudquery/plugin-pb-go/issues/103)) ([0a7a456](https://github.com/cloudquery/plugin-pb-go/commit/0a7a456532f93a1f7326b7a0c17996048a39ca03))
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v14 digest to 84583d6 ([#91](https://github.com/cloudquery/plugin-pb-go/issues/91)) ([08e403e](https://github.com/cloudquery/plugin-pb-go/commit/08e403e7e5f92f2f96f46304a2fb2fd676dc75f8))
+* **deps:** Update github.com/apache/arrow/go/v14 digest to b6c0ea4 ([#98](https://github.com/cloudquery/plugin-pb-go/issues/98)) ([192f7f9](https://github.com/cloudquery/plugin-pb-go/commit/192f7f97a9d01e55cbfaef9b65f9927ebde09d6e))
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to 483f6b2 ([#101](https://github.com/cloudquery/plugin-pb-go/issues/101)) ([32abe81](https://github.com/cloudquery/plugin-pb-go/commit/32abe8169bee91ea910d7d6f26efcc5467f2c0e4))
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to cd3d411 ([#100](https://github.com/cloudquery/plugin-pb-go/issues/100)) ([4d562a3](https://github.com/cloudquery/plugin-pb-go/commit/4d562a358e6edc2d8813c37ea00c557fc27ac120))
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to ffb7089 ([#102](https://github.com/cloudquery/plugin-pb-go/issues/102)) ([6bbb806](https://github.com/cloudquery/plugin-pb-go/commit/6bbb806d8d55ec6d25eabc99bced98f541e3a61d))
+* **deps:** Update golang.org/x/exp digest to d852ddb ([#92](https://github.com/cloudquery/plugin-pb-go/issues/92)) ([8369961](https://github.com/cloudquery/plugin-pb-go/commit/83699610a103a4736727ccacd673bd36ef75a12b))
+* **deps:** Update golang.org/x/tools digest to 914b218 ([#94](https://github.com/cloudquery/plugin-pb-go/issues/94)) ([5a77d8b](https://github.com/cloudquery/plugin-pb-go/commit/5a77d8b8ea0195c443b6cbc12e1b3ce63f85d2cf))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to b8732ec ([#95](https://github.com/cloudquery/plugin-pb-go/issues/95)) ([c0770eb](https://github.com/cloudquery/plugin-pb-go/commit/c0770eb1d59a6ba1864bbef39704a652b72d00a8))
+* **deps:** Update module github.com/avast/retry-go/v4 to v4.5.0 ([#99](https://github.com/cloudquery/plugin-pb-go/issues/99)) ([5c8cfe1](https://github.com/cloudquery/plugin-pb-go/commit/5c8cfe142417f2f0c2e7835298c1f82360accf49))
+* **deps:** Update module github.com/google/uuid to v1.3.1 ([#96](https://github.com/cloudquery/plugin-pb-go/issues/96)) ([79747eb](https://github.com/cloudquery/plugin-pb-go/commit/79747eb8871fb967a2ba42412913cb90332e7be9))
+
 ## [1.9.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.9.3...v1.9.4) (2023-08-28)
 
 
