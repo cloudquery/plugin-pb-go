@@ -85,6 +85,7 @@ type Client struct {
 	Conn                 *grpc.ClientConn
 	config               Config
 	noSentry             bool
+	noExec               bool
 	otelEndpoint         string
 	otelEndpointInsecure bool
 	metrics              *Metrics
@@ -128,7 +129,7 @@ func (c Clients) Terminate() error {
 // If registrySpec is gRPC then clients creates a new connection
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
-	c := Client{
+	c := &Client{
 		directory: defaultDownloadDir,
 		wg:        &sync.WaitGroup{},
 		config:    config,
@@ -136,49 +137,60 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		registry:  config.Registry,
 	}
 	for _, opt := range opts {
-		opt(&c)
+		opt(c)
 	}
-	switch config.Registry {
-	case RegistryGrpc:
-		err := c.connectUsingTCP(ctx, config.Path)
-		if err != nil {
-			return nil, err
-		}
-	case RegistryLocal:
-		if err := validateLocalExecPath(config.Path); err != nil {
-			return nil, err
-		}
-		if err := c.startLocal(ctx, config.Path); err != nil {
-			return nil, err
-		}
-	case RegistryGithub:
-		pathSplit := strings.Split(config.Path, "/")
-		if len(pathSplit) != 2 {
-			return nil, fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", config.Path)
-		}
-		org, name := pathSplit[0], pathSplit[1]
-		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, config.Version, "plugin")
-		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		if err := DownloadPluginFromGithub(ctx, c.LocalPath, org, name, config.Version, typ); err != nil {
-			return nil, err
-		}
-		if err := c.startLocal(ctx, c.LocalPath); err != nil {
-			return nil, err
-		}
-	case RegistryDocker:
-		if imageAvailable, err := isDockerImageAvailable(ctx, config.Path); err != nil {
-			return nil, err
-		} else if !imageAvailable {
-			if err := pullDockerImage(ctx, config.Path); err != nil {
-				return nil, err
-			}
-		}
-		if err := c.startDockerPlugin(ctx, config.Path); err != nil {
+	if err := c.downloadPlugin(ctx, typ); err != nil {
+		return nil, err
+	}
+	if !c.noExec {
+		if err := c.execPlugin(ctx); err != nil {
 			return nil, err
 		}
 	}
 
-	return &c, nil
+	return c, nil
+}
+
+func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
+	switch c.config.Registry {
+	case RegistryGrpc:
+		return nil // GRPC plugins are not downloaded
+	case RegistryLocal:
+		return validateLocalExecPath(c.config.Path)
+	case RegistryGithub:
+		pathSplit := strings.Split(c.config.Path, "/")
+		if len(pathSplit) != 2 {
+			return fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", c.config.Path)
+		}
+		org, name := pathSplit[0], pathSplit[1]
+		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
+		c.LocalPath = WithBinarySuffix(c.LocalPath)
+		return DownloadPluginFromGithub(ctx, c.LocalPath, org, name, c.config.Version, typ)
+	case RegistryDocker:
+		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
+			return err
+		} else if !imageAvailable {
+			return pullDockerImage(ctx, c.config.Path)
+		}
+		return nil
+	default:
+		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
+	}
+}
+
+func (c *Client) execPlugin(ctx context.Context) error {
+	switch c.config.Registry {
+	case RegistryGrpc:
+		return c.connectUsingTCP(ctx, c.config.Path)
+	case RegistryLocal:
+		return c.startLocal(ctx, c.config.Path)
+	case RegistryGithub:
+		return c.startLocal(ctx, c.LocalPath)
+	case RegistryDocker:
+		return c.startDockerPlugin(ctx, c.config.Path)
+	default:
+		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
+	}
 }
 
 func (c *Client) ConnectionString() string {
