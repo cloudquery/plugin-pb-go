@@ -22,6 +22,12 @@ func WithNoSentry() Option {
 	}
 }
 
+func WithNoExec() Option {
+	return func(c *Client) {
+		c.noExec = true
+	}
+}
+
 func WithOtelEndpoint(endpoint string) Option {
 	return func(c *Client) {
 		c.otelEndpoint = endpoint
