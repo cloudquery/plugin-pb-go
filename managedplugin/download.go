@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -21,6 +22,7 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
+	APIBaseURL         = "https://api.cloudquery.io"
 )
 
 // getURLLocation return the URL of the plugin
@@ -75,6 +77,63 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	}
 
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
+}
+
+func DownloadPluginFromHub(ctx context.Context, localPath string, team string, name string, version string, typ PluginType) error {
+	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+	// We don't want to follow redirects because we want to get the download URL and show progress bar while downloading
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	c, err := cloudquery_api.NewClient(APIBaseURL)
+	c.Client = client
+	if err != nil {
+		return fmt.Errorf("failed to create Hub API client: %w", err)
+	}
+
+	downloadURL, err := c.DownloadPluginAsset(ctx, team, cloudquery_api.PluginKind(typ.String()), name, version, target)
+	if err != nil {
+		return fmt.Errorf("failed to get plugin url: %w", err)
+	}
+	location, ok := downloadURL.Header["Location"]
+	if !ok {
+		return fmt.Errorf("failed to get plugin url: missing location header from response")
+	}
+	if len(location) == 0 {
+		return fmt.Errorf("failed to get plugin url: empty location header from response")
+	}
+	pluginZipPath := localPath + ".zip"
+	err = downloadFile(ctx, pluginZipPath, location[0])
+	if err != nil {
+		return fmt.Errorf("failed to download plugin: %w", err)
+	}
+
+	archive, err := zip.OpenReader(pluginZipPath)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+	defer archive.Close()
+
+	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", name, version, runtime.GOOS, runtime.GOARCH))
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+
+	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string, typ PluginType) error {

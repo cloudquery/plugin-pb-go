@@ -33,3 +33,26 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestDownloadPluginFromHubIntegration(t *testing.T) {
+	tmp := t.TempDir()
+	cases := []struct {
+		testName string
+		team     string
+		plugin   string
+		version  string
+		wantErr  bool
+		typ      PluginType
+	}{
+		{testName: "should download test plugin from Hub", team: "cloudquery", plugin: "test", version: "v3.1.9", typ: PluginSource},
+	}
+	for _, tc := range cases {
+		t.Run(tc.testName, func(t *testing.T) {
+			err := DownloadPluginFromHub(context.Background(), path.Join(tmp, tc.testName), tc.team, tc.plugin, tc.version, tc.typ)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("DownloadPluginFromHub() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+		})
+	}
+}
