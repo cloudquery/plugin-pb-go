@@ -80,6 +80,15 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 }
 
 func DownloadPluginFromHub(ctx context.Context, localPath string, team string, name string, version string, typ PluginType) error {
+	downloadDir := filepath.Dir(localPath)
+	if _, err := os.Stat(localPath); err == nil {
+		return nil
+	}
+
+	if err := os.MkdirAll(downloadDir, 0755); err != nil {
+		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
+	}
+
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 	// We don't want to follow redirects because we want to get the download URL and show progress bar while downloading
 	client := &http.Client{
