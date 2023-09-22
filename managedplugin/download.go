@@ -97,6 +97,7 @@ func DownloadPluginFromHub(ctx context.Context, localPath string, team string, n
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
+	defer downloadURL.Body.Close()
 	location, ok := downloadURL.Header["Location"]
 	if !ok {
 		return fmt.Errorf("failed to get plugin url: missing location header from response")
