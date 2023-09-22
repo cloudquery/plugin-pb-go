@@ -197,6 +197,8 @@ func (c *Client) execPlugin(ctx context.Context) error {
 		return c.startLocal(ctx, c.LocalPath)
 	case RegistryDocker:
 		return c.startDockerPlugin(ctx, c.config.Path)
+	case RegistryHub:
+		return c.startLocal(ctx, c.LocalPath)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
