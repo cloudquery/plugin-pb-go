@@ -1,6 +1,6 @@
 module github.com/cloudquery/plugin-pb-go
 
-go 1.20
+go 1.21.1
 
 require (
 	github.com/apache/arrow/go/v14 v14.0.0-20230901024001-b6c0ea455d08
