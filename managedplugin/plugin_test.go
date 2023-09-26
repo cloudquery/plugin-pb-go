@@ -52,7 +52,7 @@ func TestManagedPluginGitHub(t *testing.T) {
 	}
 }
 
-func TestManagedPluginCloudquery(t *testing.T) {
+func TestManagedPluginCloudQuery(t *testing.T) {
 	ctx := context.Background()
 	tmpDir := t.TempDir()
 	cfg := Config{
@@ -65,8 +65,8 @@ func TestManagedPluginCloudquery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client := clients.ClientByName("test")
-	if client == nil {
+	testClient := clients.ClientByName("test")
+	if testClient == nil {
 		t.Fatal("test client not found")
 	}
 	if err := clients.Terminate(); err != nil {
@@ -85,8 +85,8 @@ func TestManagedPluginCloudquery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client = clients.ClientByName("test")
-	if client == nil {
+	testClient = clients.ClientByName("test")
+	if testClient == nil {
 		t.Fatal("test client not found")
 	}
 	if err := clients.Terminate(); err != nil {
