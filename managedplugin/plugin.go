@@ -173,7 +173,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 			return pullDockerImage(ctx, c.config.Path)
 		}
 		return nil
-	case RegistryHub:
+	case RegistryCloudQuery:
 		pathSplit := strings.Split(c.config.Path, "/")
 		if len(pathSplit) != 2 {
 			return fmt.Errorf("invalid github plugin path: %s. format should be team/name", c.config.Path)
@@ -197,7 +197,7 @@ func (c *Client) execPlugin(ctx context.Context) error {
 		return c.startLocal(ctx, c.LocalPath)
 	case RegistryDocker:
 		return c.startDockerPlugin(ctx, c.config.Path)
-	case RegistryHub:
+	case RegistryCloudQuery:
 		return c.startLocal(ctx, c.LocalPath)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
