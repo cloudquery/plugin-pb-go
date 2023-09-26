@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -225,29 +226,36 @@ func downloadFile(ctx context.Context, localPath string, url string) error {
 	return nil
 }
 
-func downloadFileFromURL(ctx context.Context, out *os.File, url string) error {
+func downloadFileFromURL(ctx context.Context, out *os.File, downloadUrl string) error {
 	err := retry.Do(func() error {
 		// Get the data
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadUrl, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", url, err)
+			return fmt.Errorf("failed create request %s: %w", downloadUrl, err)
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", url, err)
+			return fmt.Errorf("failed to get url %s: %w", downloadUrl, err)
 		}
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errors.New("not found")
 		} else if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", url, resp.StatusCode)
+			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadUrl, resp.StatusCode)
 			return errors.New("statusCode != 200")
 		}
 
-		fmt.Printf("Downloading %s\n", url)
+		urlForLog := downloadUrl
+		parsedUrl, err := url.Parse(downloadUrl)
+		if err == nil {
+			parsedUrl.RawQuery = ""
+			parsedUrl.Fragment = ""
+			urlForLog = parsedUrl.String()
+		}
+		fmt.Printf("Downloading %s\n", urlForLog)
 		bar := downloadProgressBar(resp.ContentLength, "Downloading")
 
 		// Writer the body to file
@@ -268,7 +276,7 @@ func downloadFileFromURL(ctx context.Context, out *os.File, url string) error {
 				return e
 			}
 		}
-		return fmt.Errorf("failed downloading URL %q. Error %w", url, err)
+		return fmt.Errorf("failed downloading URL %q. Error %w", downloadUrl, err)
 	}
 	return nil
 }
