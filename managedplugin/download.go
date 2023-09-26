@@ -55,14 +55,14 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 		}
 	}
 
-	for _, url := range urls {
-		req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
+	for _, downloadURL := range urls {
+		req, err := http.NewRequestWithContext(ctx, http.MethodHead, downloadURL, nil)
 		if err != nil {
-			return "", fmt.Errorf("failed create request %s: %w", url, err)
+			return "", fmt.Errorf("failed create request %s: %w", downloadURL, err)
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return "", fmt.Errorf("failed to get url %s: %w", url, err)
+			return "", fmt.Errorf("failed to get url %s: %w", downloadURL, err)
 		}
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
@@ -70,11 +70,11 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			continue
 		} else if resp.StatusCode != http.StatusOK {
 			resp.Body.Close()
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", url, resp.StatusCode)
+			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 			return "", errors.New("statusCode != 200")
 		}
 		resp.Body.Close()
-		return url, nil
+		return downloadURL, nil
 	}
 
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
@@ -159,11 +159,11 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
-	url, err := getURLLocation(ctx, org, name, version, typ)
+	downloadURL, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	if err := downloadFile(ctx, pluginZipPath, url); err != nil {
+	if err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
 
@@ -175,20 +175,20 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 
 	var pathInArchive string
 	switch {
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin"):
 		pathInArchive = fmt.Sprintf("plugins/plugin/%s", name)
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-source"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-source"):
 		pathInArchive = fmt.Sprintf("plugins/source/%s", name)
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-destination"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-destination"):
 		pathInArchive = fmt.Sprintf("plugins/destination/%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-plugin", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-plugin", org)):
 		pathInArchive = fmt.Sprintf("cq-plugin-%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-source", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-source", org)):
 		pathInArchive = fmt.Sprintf("cq-source-%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-destination", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-destination", org)):
 		pathInArchive = fmt.Sprintf("cq-destination-%s", name)
 	default:
-		return fmt.Errorf("unknown GitHub %s", url)
+		return fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
 	pathInArchive = WithBinarySuffix(pathInArchive)
@@ -211,7 +211,7 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 	return nil
 }
 
-func downloadFile(ctx context.Context, localPath string, url string) error {
+func downloadFile(ctx context.Context, localPath string, downloadURL string) error {
 	// Create the file
 	out, err := os.Create(localPath)
 	if err != nil {
@@ -219,41 +219,41 @@ func downloadFile(ctx context.Context, localPath string, url string) error {
 	}
 	defer out.Close()
 
-	err = downloadFileFromURL(ctx, out, url)
+	err = downloadFileFromURL(ctx, out, downloadURL)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func downloadFileFromURL(ctx context.Context, out *os.File, downloadUrl string) error {
+func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) error {
 	err := retry.Do(func() error {
 		// Get the data
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadUrl, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", downloadUrl, err)
+			return fmt.Errorf("failed create request %s: %w", downloadURL, err)
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", downloadUrl, err)
+			return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
 		}
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errors.New("not found")
 		} else if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadUrl, resp.StatusCode)
+			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 			return errors.New("statusCode != 200")
 		}
 
-		urlForLog := downloadUrl
-		parsedUrl, err := url.Parse(downloadUrl)
+		urlForLog := downloadURL
+		parsedURL, err := url.Parse(downloadURL)
 		if err == nil {
-			parsedUrl.RawQuery = ""
-			parsedUrl.Fragment = ""
-			urlForLog = parsedUrl.String()
+			parsedURL.RawQuery = ""
+			parsedURL.Fragment = ""
+			urlForLog = parsedURL.String()
 		}
 		fmt.Printf("Downloading %s\n", urlForLog)
 		bar := downloadProgressBar(resp.ContentLength, "Downloading")
@@ -276,7 +276,7 @@ func downloadFileFromURL(ctx context.Context, out *os.File, downloadUrl string) 
 				return e
 			}
 		}
-		return fmt.Errorf("failed downloading URL %q. Error %w", downloadUrl, err)
+		return fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
 	}
 	return nil
 }
