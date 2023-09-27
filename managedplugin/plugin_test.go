@@ -52,6 +52,48 @@ func TestManagedPluginGitHub(t *testing.T) {
 	}
 }
 
+func TestManagedPluginCloudQuery(t *testing.T) {
+	ctx := context.Background()
+	tmpDir := t.TempDir()
+	cfg := Config{
+		Name:     "test",
+		Registry: RegistryCloudQuery,
+		Path:     "cloudquery/test",
+		Version:  "v3.1.11",
+	}
+	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
+	if err != nil {
+		t.Fatal(err)
+	}
+	testClient := clients.ClientByName("test")
+	if testClient == nil {
+		t.Fatal("test client not found")
+	}
+	if err := clients.Terminate(); err != nil {
+		t.Fatal(err)
+	}
+	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "test", cfg.Version, "plugin")
+	localPath = WithBinarySuffix(localPath)
+	cfg = Config{
+		Name:     "test",
+		Registry: RegistryLocal,
+		Path:     localPath,
+		Version:  "v3.1.11",
+	}
+
+	clients, err = NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
+	if err != nil {
+		t.Fatal(err)
+	}
+	testClient = clients.ClientByName("test")
+	if testClient == nil {
+		t.Fatal("test client not found")
+	}
+	if err := clients.Terminate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestManagedPluginDocker(t *testing.T) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -21,6 +23,7 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
+	APIBaseURL         = "https://api.cloudquery.io"
 )
 
 // getURLLocation return the URL of the plugin
@@ -52,14 +55,14 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 		}
 	}
 
-	for _, url := range urls {
-		req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
+	for _, downloadURL := range urls {
+		req, err := http.NewRequestWithContext(ctx, http.MethodHead, downloadURL, nil)
 		if err != nil {
-			return "", fmt.Errorf("failed create request %s: %w", url, err)
+			return "", fmt.Errorf("failed create request %s: %w", downloadURL, err)
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return "", fmt.Errorf("failed to get url %s: %w", url, err)
+			return "", fmt.Errorf("failed to get url %s: %w", downloadURL, err)
 		}
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
@@ -67,14 +70,84 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			continue
 		} else if resp.StatusCode != http.StatusOK {
 			resp.Body.Close()
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", url, resp.StatusCode)
+			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 			return "", errors.New("statusCode != 200")
 		}
 		resp.Body.Close()
-		return url, nil
+		return downloadURL, nil
 	}
 
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
+}
+
+func DownloadPluginFromHub(ctx context.Context, localPath string, team string, name string, version string, typ PluginType) error {
+	downloadDir := filepath.Dir(localPath)
+	if _, err := os.Stat(localPath); err == nil {
+		return nil
+	}
+
+	if err := os.MkdirAll(downloadDir, 0755); err != nil {
+		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
+	}
+
+	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+	// We don't want to follow redirects because we want to get the download URL and show progress bar while downloading
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	c, err := cloudquery_api.NewClient(APIBaseURL)
+	c.Client = client
+	if err != nil {
+		return fmt.Errorf("failed to create Hub API client: %w", err)
+	}
+
+	downloadURL, err := c.DownloadPluginAsset(ctx, team, cloudquery_api.PluginKind(typ.String()), name, version, target)
+	if err != nil {
+		return fmt.Errorf("failed to get plugin url: %w", err)
+	}
+	defer downloadURL.Body.Close()
+	if downloadURL.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found", typ, team, name, version)
+	}
+	location, ok := downloadURL.Header["Location"]
+	if !ok {
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing location header from response", typ, team, name, version)
+	}
+	if len(location) == 0 {
+		return fmt.Errorf("failed to get plugin url: empty location header from response")
+	}
+	pluginZipPath := localPath + ".zip"
+	err = downloadFile(ctx, pluginZipPath, location[0])
+	if err != nil {
+		return fmt.Errorf("failed to download plugin: %w", err)
+	}
+
+	archive, err := zip.OpenReader(pluginZipPath)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+	defer archive.Close()
+
+	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", name, version, runtime.GOOS, runtime.GOARCH))
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+
+	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string, typ PluginType) error {
@@ -89,11 +162,11 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
-	url, err := getURLLocation(ctx, org, name, version, typ)
+	downloadURL, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	if err := downloadFile(ctx, pluginZipPath, url); err != nil {
+	if err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
 
@@ -105,20 +178,20 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 
 	var pathInArchive string
 	switch {
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-plugin"):
 		pathInArchive = fmt.Sprintf("plugins/plugin/%s", name)
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-source"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-source"):
 		pathInArchive = fmt.Sprintf("plugins/source/%s", name)
-	case strings.HasPrefix(url, "https://github.com/cloudquery/cloudquery/releases/download/plugins-destination"):
+	case strings.HasPrefix(downloadURL, "https://github.com/cloudquery/cloudquery/releases/download/plugins-destination"):
 		pathInArchive = fmt.Sprintf("plugins/destination/%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-plugin", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-plugin", org)):
 		pathInArchive = fmt.Sprintf("cq-plugin-%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-source", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-source", org)):
 		pathInArchive = fmt.Sprintf("cq-source-%s", name)
-	case strings.HasPrefix(url, fmt.Sprintf("https://github.com/%s/cq-destination", org)):
+	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-destination", org)):
 		pathInArchive = fmt.Sprintf("cq-destination-%s", name)
 	default:
-		return fmt.Errorf("unknown GitHub %s", url)
+		return fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
 	pathInArchive = WithBinarySuffix(pathInArchive)
@@ -141,7 +214,7 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 	return nil
 }
 
-func downloadFile(ctx context.Context, localPath string, url string) error {
+func downloadFile(ctx context.Context, localPath string, downloadURL string) error {
 	// Create the file
 	out, err := os.Create(localPath)
 	if err != nil {
@@ -149,36 +222,43 @@ func downloadFile(ctx context.Context, localPath string, url string) error {
 	}
 	defer out.Close()
 
-	err = downloadFileFromURL(ctx, out, url)
+	err = downloadFileFromURL(ctx, out, downloadURL)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func downloadFileFromURL(ctx context.Context, out *os.File, url string) error {
+func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) error {
 	err := retry.Do(func() error {
 		// Get the data
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", url, err)
+			return fmt.Errorf("failed create request %s: %w", downloadURL, err)
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", url, err)
+			return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
 		}
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errors.New("not found")
 		} else if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", url, resp.StatusCode)
+			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 			return errors.New("statusCode != 200")
 		}
 
-		fmt.Printf("Downloading %s\n", url)
+		urlForLog := downloadURL
+		parsedURL, err := url.Parse(downloadURL)
+		if err == nil {
+			parsedURL.RawQuery = ""
+			parsedURL.Fragment = ""
+			urlForLog = parsedURL.String()
+		}
+		fmt.Printf("Downloading %s\n", urlForLog)
 		bar := downloadProgressBar(resp.ContentLength, "Downloading")
 
 		// Writer the body to file
@@ -199,7 +279,7 @@ func downloadFileFromURL(ctx context.Context, out *os.File, url string) error {
 				return e
 			}
 		}
-		return fmt.Errorf("failed downloading URL %q. Error %w", url, err)
+		return fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
 	}
 	return nil
 }
