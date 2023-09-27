@@ -44,7 +44,7 @@ func TestDownloadPluginFromCloudQueryIntegration(t *testing.T) {
 		wantErr  bool
 		typ      PluginType
 	}{
-		{testName: "should download test plugin from cloudquery registry", team: "cloudquery", plugin: "test", version: "v3.1.10", typ: PluginSource},
+		{testName: "should download test plugin from cloudquery registry", team: "cloudquery", plugin: "test", version: "v3.1.11", typ: PluginSource},
 	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {

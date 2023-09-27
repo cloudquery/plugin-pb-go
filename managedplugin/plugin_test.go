@@ -59,7 +59,7 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 		Name:     "test",
 		Registry: RegistryCloudQuery,
 		Path:     "cloudquery/test",
-		Version:  "v3.1.10",
+		Version:  "v3.1.11",
 	}
 	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
@@ -78,7 +78,7 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 		Name:     "test",
 		Registry: RegistryLocal,
 		Path:     localPath,
-		Version:  "v3.1.10",
+		Version:  "v3.1.11",
 	}
 
 	clients, err = NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
