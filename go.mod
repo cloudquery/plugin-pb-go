@@ -3,7 +3,7 @@ module github.com/cloudquery/plugin-pb-go
 go 1.21.1
 
 require (
-	github.com/apache/arrow/go/v14 v14.0.0-20230901024001-b6c0ea455d08
+	github.com/apache/arrow/go/v14 v14.0.0-20230929201650-00efb06dc0de
 	github.com/avast/retry-go/v4 v4.5.0
 	github.com/cloudquery/cloudquery-api-go v1.2.1
 	github.com/docker/docker v20.10.25+incompatible
