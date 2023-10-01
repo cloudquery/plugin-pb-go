@@ -57,7 +57,7 @@ require (
 	github.com/iris-contrib/schema v0.0.6 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kataras/blocks v0.0.7 // indirect
+	github.com/kataras/blocks v0.0.8 // indirect
 	github.com/kataras/golog v0.1.9 // indirect
 	github.com/kataras/iris/v12 v12.2.6-0.20230908161203-24ba4e8933b9 // indirect
 	github.com/kataras/pio v0.0.12 // indirect
