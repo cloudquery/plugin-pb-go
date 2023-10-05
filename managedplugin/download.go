@@ -111,6 +111,12 @@ func DownloadPluginFromHub(ctx context.Context, localPath string, team string, n
 	if downloadURL.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found", typ, team, name, version)
 	}
+	if downloadURL.StatusCode == http.StatusTooManyRequests {
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: too many requests. Try logging in via `cloudquery login` to increase rate limits", typ, team, name, version)
+	}
+	if downloadURL.StatusCode != http.StatusFound {
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: unexpected status code %v", typ, team, name, version, downloadURL.StatusCode)
+	}
 	location, ok := downloadURL.Header["Location"]
 	if !ok {
 		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing location header from response", typ, team, name, version)
