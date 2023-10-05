@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.12.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.11.1...v1.12.0) (2023-10-05)
+
+
+### Features
+
+* Add more error handling to downloading Hub plugins ([#120](https://github.com/cloudquery/plugin-pb-go/issues/120)) ([0bdc72e](https://github.com/cloudquery/plugin-pb-go/commit/0bdc72eb1d073f6bc21513eba24985208502fb7b))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.2 ([#117](https://github.com/cloudquery/plugin-pb-go/issues/117)) ([3fb1e80](https://github.com/cloudquery/plugin-pb-go/commit/3fb1e80dceecdb9c5c3075ec1293c0eb4353892d))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.3 ([#119](https://github.com/cloudquery/plugin-pb-go/issues/119)) ([e160aae](https://github.com/cloudquery/plugin-pb-go/commit/e160aae601d5c18ec688e4153e2240d495a6facd))
+
 ## [1.11.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.11.0...v1.11.1) (2023-10-02)
 
 
