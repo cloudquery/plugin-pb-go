@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.12.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.1...v1.12.2) (2023-10-12)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to d401686 ([#123](https://github.com/cloudquery/plugin-pb-go/issues/123)) ([262bf22](https://github.com/cloudquery/plugin-pb-go/commit/262bf2272e3cff49a052d4aab09b4037e7d8df8d))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.6 ([#125](https://github.com/cloudquery/plugin-pb-go/issues/125)) ([41ff62e](https://github.com/cloudquery/plugin-pb-go/commit/41ff62e57c6ef3b34476b0debb5a972346eb816f))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.7 ([#126](https://github.com/cloudquery/plugin-pb-go/issues/126)) ([f6303d8](https://github.com/cloudquery/plugin-pb-go/commit/f6303d8593a3fbc572d662c8ed391289cfdbc4b9))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.8 ([#127](https://github.com/cloudquery/plugin-pb-go/issues/127)) ([deec6aa](https://github.com/cloudquery/plugin-pb-go/commit/deec6aab9ffeae8c7a77cdda05051ef936c1f9b1))
+
 ## [1.12.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.0...v1.12.1) (2023-10-05)
 
 
