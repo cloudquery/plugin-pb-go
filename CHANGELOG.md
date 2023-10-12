@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.2...v1.12.3) (2023-10-12)
+
+
+### Bug Fixes
+
+* Generate Go Code from `plugin-pb` ([#128](https://github.com/cloudquery/plugin-pb-go/issues/128)) ([df16384](https://github.com/cloudquery/plugin-pb-go/commit/df16384481c54a21430cd1d295fb04c7243dd9ea))
+
 ## [1.12.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.1...v1.12.2) (2023-10-12)
 
 
