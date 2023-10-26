@@ -114,7 +114,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken string, localPath stri
 	}
 	defer downloadURL.Body.Close()
 	if downloadURL.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found. If you're trying to use a paid plugin you might need to run `cloudquery login` first", typ, team, name, version)
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found. If you're trying to use a paid plugin you'll need to run `cloudquery login` first", typ, team, name, version)
 	}
 	if downloadURL.StatusCode == http.StatusTooManyRequests {
 		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: too many requests. Try logging in via `cloudquery login` to increase rate limits", typ, team, name, version)
