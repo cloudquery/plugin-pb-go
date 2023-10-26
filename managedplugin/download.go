@@ -80,7 +80,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
 }
 
-func DownloadPluginFromHub(ctx context.Context, authToken string, localPath string, team string, name string, version string, typ PluginType) error {
+func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name, version string, typ PluginType) error {
 	downloadDir := filepath.Dir(localPath)
 	if _, err := os.Stat(localPath); err == nil {
 		return nil
