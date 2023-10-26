@@ -39,3 +39,9 @@ func WithOtelEndpointInsecure() Option {
 		c.otelEndpointInsecure = true
 	}
 }
+
+func WithAuthToken(authToken string) Option {
+	return func(c *Client) {
+		c.authToken = authToken
+	}
+}

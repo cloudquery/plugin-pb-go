@@ -80,7 +80,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
 }
 
-func DownloadPluginFromHub(ctx context.Context, localPath string, team string, name string, version string, typ PluginType) error {
+func DownloadPluginFromHub(ctx context.Context, authToken string, localPath string, team string, name string, version string, typ PluginType) error {
 	downloadDir := filepath.Dir(localPath)
 	if _, err := os.Stat(localPath); err == nil {
 		return nil
@@ -97,7 +97,12 @@ func DownloadPluginFromHub(ctx context.Context, localPath string, team string, n
 			return http.ErrUseLastResponse
 		},
 	}
-	c, err := cloudquery_api.NewClient(APIBaseURL)
+	c, err := cloudquery_api.NewClient(APIBaseURL, cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		if authToken != "" {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+		}
+		return nil
+	}))
 	c.Client = client
 	if err != nil {
 		return fmt.Errorf("failed to create Hub API client: %w", err)
@@ -109,7 +114,7 @@ func DownloadPluginFromHub(ctx context.Context, localPath string, team string, n
 	}
 	defer downloadURL.Body.Close()
 	if downloadURL.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found", typ, team, name, version)
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found. If you're trying to use a paid plugin you might need to run `cloudquery login` first", typ, team, name, version)
 	}
 	if downloadURL.StatusCode == http.StatusTooManyRequests {
 		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: too many requests. Try logging in via `cloudquery login` to increase rate limits", typ, team, name, version)
