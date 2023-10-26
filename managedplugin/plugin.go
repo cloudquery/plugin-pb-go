@@ -90,6 +90,7 @@ type Client struct {
 	otelEndpointInsecure bool
 	metrics              *Metrics
 	registry             Registry
+	authToken            string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -181,7 +182,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromHub(ctx, c.LocalPath, org, name, c.config.Version, typ)
+		return DownloadPluginFromHub(ctx, c.authToken, c.LocalPath, org, name, c.config.Version, typ)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
