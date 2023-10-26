@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.13.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.3...v1.13.0) (2023-10-26)
+
+
+### Features
+
+* Allow passing an auth token when downloading Hub plugins ([#138](https://github.com/cloudquery/plugin-pb-go/issues/138)) ([b9f491d](https://github.com/cloudquery/plugin-pb-go/commit/b9f491d049329437c20ae140eb02b1cb3a3add95))
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to dbcb149 ([#130](https://github.com/cloudquery/plugin-pb-go/issues/130)) ([e91be81](https://github.com/cloudquery/plugin-pb-go/commit/e91be81c62b799d67810550e70dfa5c1cf253c4e))
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to f46436f ([#137](https://github.com/cloudquery/plugin-pb-go/issues/137)) ([f92d39c](https://github.com/cloudquery/plugin-pb-go/commit/f92d39c67536f41473abef7d6d9ebc30015c393e))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.2.9 ([#133](https://github.com/cloudquery/plugin-pb-go/issues/133)) ([866eb55](https://github.com/cloudquery/plugin-pb-go/commit/866eb557e8cdbe593d44a30449d2c8ea9defb401))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.3.0 ([#134](https://github.com/cloudquery/plugin-pb-go/issues/134)) ([5ba2f68](https://github.com/cloudquery/plugin-pb-go/commit/5ba2f6844b6f446d12ea1978a5f9e941f59eb3cf))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.4.0 ([#135](https://github.com/cloudquery/plugin-pb-go/issues/135)) ([9d8001d](https://github.com/cloudquery/plugin-pb-go/commit/9d8001ded534d559132e7dd71798d4bbf705df37))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.4.1 ([#136](https://github.com/cloudquery/plugin-pb-go/issues/136)) ([6e1bef2](https://github.com/cloudquery/plugin-pb-go/commit/6e1bef250fa3b39ce01558ba54aa0f1b7dfb6400))
+
 ## [1.12.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.12.2...v1.12.3) (2023-10-12)
 
 
