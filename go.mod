@@ -16,12 +16,12 @@ require (
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
-	google.golang.org/grpc v1.58.2
+	google.golang.org/grpc v1.58.3
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-replace github.com/apache/arrow/go/v14 => github.com/cloudquery/arrow/go/v14 v14.0.0-20231023001216-f46436fa3561
+replace github.com/apache/arrow/go/v14 => github.com/cloudquery/arrow/go/v14 v14.0.0-20231029080147-50d3871d0804
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
