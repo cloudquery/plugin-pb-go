@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.2...v1.13.3) (2023-11-01)
+
+
+### Bug Fixes
+
+* Add `unix://` to connection string for plugins from CloudQuery Hub ([#151](https://github.com/cloudquery/plugin-pb-go/issues/151)) ([ece4dd2](https://github.com/cloudquery/plugin-pb-go/commit/ece4dd273951999e6ff1a07bfe3cbf46d2e85968))
+
 ## [1.13.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.1...v1.13.2) (2023-11-01)
 
 
