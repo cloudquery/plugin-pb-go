@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.13.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.1...v1.13.2) (2023-11-01)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v14 digest to c49e242 ([#143](https://github.com/cloudquery/plugin-pb-go/issues/143)) ([29e7335](https://github.com/cloudquery/plugin-pb-go/commit/29e7335f98399c998fea8f98076bf480c2c8bd07))
+* **deps:** Update github.com/cloudquery/arrow/go/v14 digest to 50d3871 ([#141](https://github.com/cloudquery/plugin-pb-go/issues/141)) ([042a75d](https://github.com/cloudquery/plugin-pb-go/commit/042a75dff7d7f989b6317ae7da2a8b99aa4f12d4))
+* **deps:** Update golang.org/x/xerrors digest to 104605a ([#144](https://github.com/cloudquery/plugin-pb-go/issues/144)) ([eda0e56](https://github.com/cloudquery/plugin-pb-go/commit/eda0e5642392d0496d413c966d62a96fc6fdda32))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to d783a09 ([#145](https://github.com/cloudquery/plugin-pb-go/issues/145)) ([e8c8b9c](https://github.com/cloudquery/plugin-pb-go/commit/e8c8b9c16047ee00e14de5dc691ce99a3340ee96))
+* **deps:** Update module github.com/andybalholm/brotli to v1.0.6 ([#146](https://github.com/cloudquery/plugin-pb-go/issues/146)) ([c04cde4](https://github.com/cloudquery/plugin-pb-go/commit/c04cde4348a806331109f644ecb5d6984926c05d))
+* **deps:** Update module github.com/bytedance/sonic to v1.10.2 ([#147](https://github.com/cloudquery/plugin-pb-go/issues/147)) ([288cbf4](https://github.com/cloudquery/plugin-pb-go/commit/288cbf48545a99f7a7623449df4d6e1a2c045430))
+* **deps:** Update module github.com/docker/distribution to v2.8.3+incompatible ([#148](https://github.com/cloudquery/plugin-pb-go/issues/148)) ([1aa35d0](https://github.com/cloudquery/plugin-pb-go/commit/1aa35d0311e6c703ce639ff7b5d290b8e328eaeb))
+* **deps:** Update module github.com/gabriel-vasile/mimetype to v1.4.3 ([#149](https://github.com/cloudquery/plugin-pb-go/issues/149)) ([1e3dc49](https://github.com/cloudquery/plugin-pb-go/commit/1e3dc4931086fd2be666839c2638b77ed0e7294d))
+* **deps:** Update module github.com/kataras/iris/v12 to v12.2.7 ([#150](https://github.com/cloudquery/plugin-pb-go/issues/150)) ([2a61c83](https://github.com/cloudquery/plugin-pb-go/commit/2a61c836c677ed2a0e9a8f0b50437cd11a10e243))
+
 ## [1.13.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.0...v1.13.1) (2023-10-27)
 
 
