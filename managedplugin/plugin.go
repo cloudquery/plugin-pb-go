@@ -210,9 +210,9 @@ func (c *Client) ConnectionString() string {
 	switch c.registry {
 	case RegistryGrpc:
 		return tgt
-	case RegistryLocal:
-		return "unix://" + tgt
-	case RegistryGithub:
+	case RegistryLocal,
+		RegistryGithub,
+		RegistryCloudQuery:
 		return "unix://" + tgt
 	case RegistryDocker:
 		return tgt
