@@ -47,12 +47,12 @@ const (
 	containerServerHealthyRetries           = 30
 	containerServerHealthyInitialRetryDelay = 100 * time.Millisecond
 
-	containerStopTimeout = 10 * time.Second
+	containerStopTimeoutSeconds = 10
 )
 
-// PluginType specifies if a plugin is a source or a destination
-// it actually doesn't really have any effect as plugins can serve both as source and as destinations
-// but it is here for backward compatibility
+// PluginType specifies if a plugin is a source or a destination.
+// It actually doesn't really have any effect as plugins can serve both as source and as destinations,
+// but it is here for backward compatibility.
 type PluginType int
 
 const (
@@ -583,8 +583,8 @@ func (c *Client) Terminate() error {
 		if err != nil {
 			return fmt.Errorf("failed to create Docker client: %w", err)
 		}
-		timeout := containerStopTimeout
-		if err := cli.ContainerStop(context.Background(), c.containerID, &timeout); err != nil {
+		timeout := containerStopTimeoutSeconds
+		if err := cli.ContainerStop(context.Background(), c.containerID, container.StopOptions{Timeout: &timeout}); err != nil {
 			return fmt.Errorf("failed to stop container: %w", err)
 		}
 		if err := cli.ContainerRemove(context.Background(), c.containerID, types.ContainerRemoveOptions{}); err != nil {
