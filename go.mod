@@ -6,7 +6,7 @@ require (
 	github.com/apache/arrow/go/v14 v14.0.0-20231031200323-c49e24273160
 	github.com/avast/retry-go/v4 v4.5.0
 	github.com/cloudquery/cloudquery-api-go v1.4.2
-	github.com/docker/docker v20.10.26+incompatible
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-cmp v0.5.9
