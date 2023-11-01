@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.3...v1.13.4) (2023-11-01)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/docker/docker to v24 [SECURITY] ([#153](https://github.com/cloudquery/plugin-pb-go/issues/153)) ([d420203](https://github.com/cloudquery/plugin-pb-go/commit/d420203dfbe502cf80aeb54d3f93f89966212d58))
+
 ## [1.13.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.2...v1.13.3) (2023-11-01)
 
 
