@@ -3,6 +3,7 @@ package managedplugin
 import (
 	"archive/zip"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -91,19 +92,23 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	}
 
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+	expectedChecksum := ""
 	// We don't want to follow redirects because we want to get the download URL and show progress bar while downloading
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
-	c, err := cloudquery_api.NewClient(APIBaseURL, cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		if authToken != "" {
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+	hc := *http.DefaultClient
+	hc.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) == 1 && req.Response != nil {
+			expectedChecksum = req.Response.Header.Get("X-Checksum-Sha256") // get checksum from first request
 		}
-		return nil
-	}))
-	c.Client = client
+		return http.ErrUseLastResponse
+	}
+	c, err := cloudquery_api.NewClient(APIBaseURL,
+		cloudquery_api.WithHTTPClient(&hc),
+		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			if authToken != "" {
+				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+			}
+			return nil
+		}))
 	if err != nil {
 		return fmt.Errorf("failed to create Hub API client: %w", err)
 	}
@@ -130,9 +135,15 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 		return fmt.Errorf("failed to get plugin url: empty location header from response")
 	}
 	pluginZipPath := localPath + ".zip"
-	err = downloadFile(ctx, pluginZipPath, location[0])
+	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location[0])
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
+	}
+
+	if expectedChecksum == "" {
+		fmt.Printf("Warning - checksum not verified: %s\n", writtenChecksum)
+	} else if writtenChecksum != expectedChecksum {
+		return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedChecksum, writtenChecksum)
 	}
 
 	archive, err := zip.OpenReader(pluginZipPath)
@@ -177,7 +188,7 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	if err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
+	if _, err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
 
@@ -225,23 +236,21 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 	return nil
 }
 
-func downloadFile(ctx context.Context, localPath string, downloadURL string) error {
+func downloadFile(ctx context.Context, localPath string, downloadURL string) (string, error) {
 	// Create the file
 	out, err := os.Create(localPath)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+		return "", fmt.Errorf("failed to create file %s: %w", localPath, err)
 	}
 	defer out.Close()
 
-	err = downloadFileFromURL(ctx, out, downloadURL)
-	if err != nil {
-		return err
-	}
-	return nil
+	return downloadFileFromURL(ctx, out, downloadURL)
 }
 
-func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) error {
+func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) (string, error) {
+	checksum := ""
 	err := retry.Do(func() error {
+		checksum = ""
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
@@ -272,11 +281,13 @@ func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) 
 		fmt.Printf("Downloading %s\n", urlForLog)
 		bar := downloadProgressBar(resp.ContentLength, "Downloading")
 
+		s := sha256.New()
 		// Writer the body to file
-		_, err = io.Copy(io.MultiWriter(out, bar), resp.Body)
+		_, err = io.Copy(io.MultiWriter(out, bar, s), resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
 		}
+		checksum = fmt.Sprintf("%x", s.Sum(nil))
 		return nil
 	}, retry.RetryIf(func(err error) bool {
 		return err.Error() == "statusCode != 200"
@@ -287,12 +298,12 @@ func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) 
 	if err != nil {
 		for _, e := range err.(retry.Error) {
 			if e.Error() == "not found" {
-				return e
+				return "", e
 			}
 		}
-		return fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
+		return "", fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
 	}
-	return nil
+	return checksum, nil
 }
 
 func downloadProgressBar(maxBytes int64, description ...string) *progressbar.ProgressBar {
