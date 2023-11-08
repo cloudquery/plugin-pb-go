@@ -23,11 +23,14 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
-	envAPIURL          = "CLOUDQUERY_API_URL"
-	apiBaseURL         = "https://api.cloudquery.io"
 )
 
 func APIBaseURL() string {
+	const (
+		envAPIURL  = "CLOUDQUERY_API_URL"
+		apiBaseURL = "https://api.cloudquery.io"
+	)
+
 	if v := os.Getenv(envAPIURL); v != "" {
 		return v
 	}
