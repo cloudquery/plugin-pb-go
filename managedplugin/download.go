@@ -114,8 +114,8 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	}
 	defer downloadURL.Body.Close()
 	switch downloadURL.StatusCode {
-	case http.StatusOK, http.StatusFound:
-		// we allow these status codes
+	case http.StatusOK, http.StatusNoContent, http.StatusFound:
+		// we allow these status codes, but typically expect a redirect (302)
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
