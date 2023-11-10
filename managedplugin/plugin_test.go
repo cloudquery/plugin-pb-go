@@ -56,38 +56,38 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 	ctx := context.Background()
 	tmpDir := t.TempDir()
 	cfg := Config{
-		Name:     "aws",
+		Name:     "awspricing",
 		Registry: RegistryCloudQuery,
-		Path:     "cloudquery/aws",
-		Version:  "v22.18.0",
+		Path:     "cloudquery/awspricing",
+		Version:  "v3.0.12",
 	}
 	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
 		t.Fatal(err)
 	}
-	testClient := clients.ClientByName("aws")
+	testClient := clients.ClientByName("awspricing")
 	if testClient == nil {
-		t.Fatal("aws client not found")
+		t.Fatal("awspricing client not found")
 	}
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
 	}
-	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "aws", cfg.Version, "plugin")
+	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "awspricing", cfg.Version, "plugin")
 	localPath = WithBinarySuffix(localPath)
 	cfg = Config{
-		Name:     "aws",
+		Name:     "awspricing",
 		Registry: RegistryLocal,
 		Path:     localPath,
-		Version:  "v3.0.12",
+		Version:  cfg.Version,
 	}
 
 	clients, err = NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
 		t.Fatal(err)
 	}
-	testClient = clients.ClientByName("azuredevops")
+	testClient = clients.ClientByName("awspricing")
 	if testClient == nil {
-		t.Fatal("azuredevops client not found")
+		t.Fatal("awspricing client not found")
 	}
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
