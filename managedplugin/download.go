@@ -23,8 +23,19 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
-	APIBaseURL         = "https://api.cloudquery.io"
 )
+
+func APIBaseURL() string {
+	const (
+		envAPIURL  = "CLOUDQUERY_API_URL"
+		apiBaseURL = "https://api.cloudquery.io"
+	)
+
+	if v := os.Getenv(envAPIURL); v != "" {
+		return v
+	}
+	return apiBaseURL
+}
 
 // getURLLocation return the URL of the plugin
 // this does a few HEAD requests because we had a few breaking changes to where
@@ -97,7 +108,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 			return http.ErrUseLastResponse
 		},
 	}
-	c, err := cloudquery_api.NewClient(APIBaseURL, cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+	c, err := cloudquery_api.NewClient(APIBaseURL(), cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 		if authToken != "" {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
 		}
