@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.4...v1.13.5) (2023-11-10)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.4.3 ([#156](https://github.com/cloudquery/plugin-pb-go/issues/156)) ([88f303c](https://github.com/cloudquery/plugin-pb-go/commit/88f303c577ea06a620e031cda0f6e37338993e3e))
+* Improve error messages when plugin download fails ([#160](https://github.com/cloudquery/plugin-pb-go/issues/160)) ([4d664cc](https://github.com/cloudquery/plugin-pb-go/commit/4d664ccc2d406682feec75f597598b430da9b0ff))
+
 ## [1.13.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.3...v1.13.4) (2023-11-01)
 
 
