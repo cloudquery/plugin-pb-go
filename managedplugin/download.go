@@ -113,14 +113,15 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
 	defer downloadURL.Body.Close()
-	if downloadURL.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: plugin version not found. If you're trying to use a paid plugin you'll need to run `cloudquery login` first", typ, team, name, version)
-	}
-	if downloadURL.StatusCode == http.StatusTooManyRequests {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: too many requests. Try logging in via `cloudquery login` to increase rate limits", typ, team, name, version)
-	}
-	if downloadURL.StatusCode != http.StatusFound {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: unexpected status code %v", typ, team, name, version, downloadURL.StatusCode)
+	switch downloadURL.StatusCode {
+	case http.StatusUnauthorized:
+		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
+	case http.StatusNotFound:
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", typ, team, name, version)
+	case http.StatusTooManyRequests:
+		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
+	default:
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, team, name, version, downloadURL.StatusCode)
 	}
 	location, ok := downloadURL.Header["Location"]
 	if !ok {
