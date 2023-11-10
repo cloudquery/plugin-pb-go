@@ -65,17 +65,17 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testClient := clients.ClientByName("azuredevops")
+	testClient := clients.ClientByName("aws")
 	if testClient == nil {
-		t.Fatal("azuredevops client not found")
+		t.Fatal("aws client not found")
 	}
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
 	}
-	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "azuredevops", cfg.Version, "plugin")
+	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "aws", cfg.Version, "plugin")
 	localPath = WithBinarySuffix(localPath)
 	cfg = Config{
-		Name:     "azuredevops",
+		Name:     "aws",
 		Registry: RegistryLocal,
 		Path:     localPath,
 		Version:  "v3.0.12",
