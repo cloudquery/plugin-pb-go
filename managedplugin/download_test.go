@@ -44,7 +44,7 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 		wantErr  bool
 		typ      PluginType
 	}{
-		{testName: "should download test plugin from cloudquery registry", team: "cloudquery", plugin: "azuredevops", version: "v3.0.12", typ: PluginSource},
+		{testName: "should download test plugin from cloudquery registry", team: "cloudquery", plugin: "aws", version: "v22.18.0", typ: PluginSource},
 	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {
