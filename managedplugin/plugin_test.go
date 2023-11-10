@@ -56,10 +56,10 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 	ctx := context.Background()
 	tmpDir := t.TempDir()
 	cfg := Config{
-		Name:     "azuredevops",
+		Name:     "aws",
 		Registry: RegistryCloudQuery,
 		Path:     "cloudquery/azuredevops",
-		Version:  "v3.0.12",
+		Version:  "v22.18.0",
 	}
 	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
