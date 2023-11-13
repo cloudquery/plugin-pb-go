@@ -48,7 +48,7 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {
-			err := DownloadPluginFromHub(context.Background(), "", path.Join(tmp, tc.testName), tc.team, tc.plugin, tc.version, tc.typ)
+			err := DownloadPluginFromHub(context.Background(), "", "", path.Join(tmp, tc.testName), tc.team, tc.plugin, tc.version, tc.typ)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)
 				return
