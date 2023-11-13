@@ -121,7 +121,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	}
 	switch resp.StatusCode() {
 	case http.StatusOK:
-		// we allow these status code
+		// we allow this status code
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
