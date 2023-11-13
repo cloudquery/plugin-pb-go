@@ -129,7 +129,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	case http.StatusTooManyRequests:
 		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, team, name, version, resp.StatusCode)
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, team, name, version, resp.StatusCode())
 	}
 	if resp.JSON200 == nil {
 		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing json response", typ, team, name, version)
