@@ -103,17 +103,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	}
 
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-	expectedChecksum := ""
-	// We don't want to follow redirects because we want to get the download URL and show progress bar while downloading
-	hc := *http.DefaultClient
-	hc.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if len(via) == 1 && req.Response != nil {
-			expectedChecksum = req.Response.Header.Get("X-Checksum-Sha256") // get checksum from first request
-		}
-		return http.ErrUseLastResponse
-	}
-	c, err := cloudquery_api.NewClient(APIBaseURL,
-		cloudquery_api.WithHTTPClient(&hc),
+	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
 		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 			if authToken != "" {
 				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
@@ -124,14 +114,14 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 		return fmt.Errorf("failed to create Hub API client: %w", err)
 	}
 
-	downloadURL, err := c.DownloadPluginAsset(ctx, team, cloudquery_api.PluginKind(typ.String()), name, version, target)
+	aj := "application/json"
+	resp, err := c.DownloadPluginAssetWithResponse(ctx, team, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetParams{Accept: &aj})
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	defer downloadURL.Body.Close()
-	switch downloadURL.StatusCode {
-	case http.StatusOK, http.StatusNoContent, http.StatusFound:
-		// we allow these status codes, but typically expect a redirect (302)
+	switch resp.StatusCode() {
+	case http.StatusOK:
+		// we allow these status code
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
@@ -139,25 +129,25 @@ func DownloadPluginFromHub(ctx context.Context, authToken, localPath, team, name
 	case http.StatusTooManyRequests:
 		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, team, name, version, downloadURL.StatusCode)
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, team, name, version, resp.StatusCode)
 	}
-	location, ok := downloadURL.Header["Location"]
-	if !ok {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing location header from response", typ, team, name, version)
+	if resp.JSON200 == nil {
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing json response", typ, team, name, version)
 	}
+	location := resp.JSON200.Location
 	if len(location) == 0 {
-		return fmt.Errorf("failed to get plugin url: empty location header from response")
+		return fmt.Errorf("failed to get plugin url: empty location from response")
 	}
 	pluginZipPath := localPath + ".zip"
-	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location[0])
+	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
 
-	if expectedChecksum == "" {
+	if resp.JSON200.Checksum == "" {
 		fmt.Printf("Warning - checksum not verified: %s\n", writtenChecksum)
-	} else if writtenChecksum != expectedChecksum {
-		return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedChecksum, writtenChecksum)
+	} else if writtenChecksum != resp.JSON200.Checksum {
+		return fmt.Errorf("checksum mismatch: expected %s, got %s", resp.JSON200.Checksum, writtenChecksum)
 	}
 
 	archive, err := zip.OpenReader(pluginZipPath)
