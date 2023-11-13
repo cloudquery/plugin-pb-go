@@ -178,17 +178,17 @@ func downloadPluginAssetFromHub(ctx context.Context, authToken, teamName, plugin
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 	aj := "application/json"
 
-	switch teamName {
-	case "":
-		resp, err := c.DownloadPluginAssetWithResponse(ctx, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetParams{Accept: &aj})
-		if err != nil {
-			return nil, -1, fmt.Errorf("failed to get plugin url: %w", err)
-		}
-		return resp.JSON200, resp.StatusCode(), nil
-	default:
+	switch {
+	case teamName != "":
 		resp, err := c.DownloadPluginAssetByTeamWithResponse(ctx, teamName, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj})
 		if err != nil {
 			return nil, -1, fmt.Errorf("failed to get plugin url with team: %w", err)
+		}
+		return resp.JSON200, resp.StatusCode(), nil
+	default:
+		resp, err := c.DownloadPluginAssetWithResponse(ctx, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetParams{Accept: &aj})
+		if err != nil {
+			return nil, -1, fmt.Errorf("failed to get plugin url: %w", err)
 		}
 		return resp.JSON200, resp.StatusCode(), nil
 	}
