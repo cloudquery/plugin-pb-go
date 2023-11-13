@@ -164,9 +164,6 @@ func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, 
 }
 
 func downloadPluginAssetFromHub(ctx context.Context, authToken, teamName, pluginTeam, name, version string, typ PluginType) (*cloudquery_api.PluginAsset, int, error) {
-	var pluginAsset *cloudquery_api.PluginAsset
-	var statusCode int
-
 	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
 		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 			if authToken != "" {
@@ -175,28 +172,26 @@ func downloadPluginAssetFromHub(ctx context.Context, authToken, teamName, plugin
 			return nil
 		}))
 	if err != nil {
-		return pluginAsset, statusCode, fmt.Errorf("failed to create Hub API client: %w", err)
+		return nil, -1, fmt.Errorf("failed to create Hub API client: %w", err)
 	}
 
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-
 	aj := "application/json"
 
-	if teamName != "" {
-		resp, err := c.DownloadPluginAssetByTeamWithResponse(ctx, teamName, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj})
-		if err != nil {
-			return pluginAsset, statusCode, fmt.Errorf("failed to get plugin url: %w", err)
-		}
-		pluginAsset, statusCode = resp.JSON200, resp.StatusCode()
-	} else {
+	switch teamName {
+	case "":
 		resp, err := c.DownloadPluginAssetWithResponse(ctx, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetParams{Accept: &aj})
 		if err != nil {
-			return pluginAsset, statusCode, fmt.Errorf("failed to get plugin url: %w", err)
+			return nil, -1, fmt.Errorf("failed to get plugin url: %w", err)
 		}
-		pluginAsset, statusCode = resp.JSON200, resp.StatusCode()
+		return resp.JSON200, resp.StatusCode(), nil
+	default:
+		resp, err := c.DownloadPluginAssetByTeamWithResponse(ctx, teamName, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj})
+		if err != nil {
+			return nil, -1, fmt.Errorf("failed to get plugin url with team: %w", err)
+		}
+		return resp.JSON200, resp.StatusCode(), nil
 	}
-
-	return pluginAsset, statusCode, nil
 }
 
 func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string, typ PluginType) error {
