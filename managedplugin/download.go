@@ -92,9 +92,19 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
 }
 
-func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, pluginTeam, name, version string, typ PluginType) error {
-	downloadDir := filepath.Dir(localPath)
-	if _, err := os.Stat(localPath); err == nil {
+type HubDownloadOptions struct {
+	AuthToken     string
+	TeamName      string
+	LocalPath     string
+	PluginTeam    string
+	PluginKind    string
+	PluginName    string
+	PluginVersion string
+}
+
+func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
+	downloadDir := filepath.Dir(ops.LocalPath)
+	if _, err := os.Stat(ops.LocalPath); err == nil {
 		return nil
 	}
 
@@ -102,7 +112,7 @@ func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, 
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
-	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, authToken, teamName, pluginTeam, name, version, typ)
+	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, ops)
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
@@ -112,20 +122,20 @@ func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, 
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", typ, pluginTeam, name, version)
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	case http.StatusTooManyRequests:
 		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", typ, pluginTeam, name, version, statusCode)
+		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, statusCode)
 	}
 	if pluginAsset == nil {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing json response", typ, pluginTeam, name, version)
+		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing json response", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	}
 	location := pluginAsset.Location
 	if len(location) == 0 {
 		return fmt.Errorf("failed to get plugin url: empty location from response")
 	}
-	pluginZipPath := localPath + ".zip"
+	pluginZipPath := ops.LocalPath + ".zip"
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
@@ -143,14 +153,14 @@ func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, 
 	}
 	defer archive.Close()
 
-	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", name, version, runtime.GOOS, runtime.GOARCH))
+	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH))
 	if err != nil {
 		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 
-	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
 	}
 	_, err = io.Copy(out, fileInArchive)
 	if err != nil {
@@ -163,11 +173,11 @@ func DownloadPluginFromHub(ctx context.Context, authToken, teamName, localPath, 
 	return nil
 }
 
-func downloadPluginAssetFromHub(ctx context.Context, authToken, teamName, pluginTeam, name, version string, typ PluginType) (*cloudquery_api.PluginAsset, int, error) {
+func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
 	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
 		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			if authToken != "" {
-				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+			if ops.AuthToken != "" {
+				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ops.AuthToken))
 			}
 			return nil
 		}))
@@ -179,14 +189,31 @@ func downloadPluginAssetFromHub(ctx context.Context, authToken, teamName, plugin
 	aj := "application/json"
 
 	switch {
-	case teamName != "":
-		resp, err := c.DownloadPluginAssetByTeamWithResponse(ctx, teamName, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj})
+	case ops.TeamName != "":
+		resp, err := c.DownloadPluginAssetByTeamWithResponse(
+			ctx,
+			ops.TeamName,
+			ops.PluginTeam,
+			cloudquery_api.PluginKind(ops.PluginKind),
+			ops.PluginName,
+			ops.PluginVersion,
+			target,
+			&cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj},
+		)
 		if err != nil {
 			return nil, -1, fmt.Errorf("failed to get plugin url with team: %w", err)
 		}
 		return resp.JSON200, resp.StatusCode(), nil
 	default:
-		resp, err := c.DownloadPluginAssetWithResponse(ctx, pluginTeam, cloudquery_api.PluginKind(typ.String()), name, version, target, &cloudquery_api.DownloadPluginAssetParams{Accept: &aj})
+		resp, err := c.DownloadPluginAssetWithResponse(
+			ctx,
+			ops.PluginTeam,
+			cloudquery_api.PluginKind(ops.PluginKind),
+			ops.PluginName,
+			ops.PluginVersion,
+			target,
+			&cloudquery_api.DownloadPluginAssetParams{Accept: &aj},
+		)
 		if err != nil {
 			return nil, -1, fmt.Errorf("failed to get plugin url: %w", err)
 		}

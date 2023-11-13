@@ -183,7 +183,15 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromHub(ctx, c.authToken, c.teamName, c.LocalPath, org, name, c.config.Version, typ)
+		return DownloadPluginFromHub(ctx, HubDownloadOptions{
+			AuthToken:     c.authToken,
+			TeamName:      c.teamName,
+			LocalPath:     c.LocalPath,
+			PluginTeam:    org,
+			PluginKind:    typ.String(),
+			PluginName:    name,
+			PluginVersion: c.config.Version,
+		})
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
