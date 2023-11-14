@@ -45,3 +45,9 @@ func WithAuthToken(authToken string) Option {
 		c.authToken = authToken
 	}
 }
+
+func WithTeamName(teamName string) Option {
+	return func(c *Client) {
+		c.teamName = teamName
+	}
+}
