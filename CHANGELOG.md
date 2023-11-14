@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.14.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.5...v1.14.0) (2023-11-14)
+
+
+### Features
+
+* Allow plugins to be downloaded using a user `team_name` context ([#162](https://github.com/cloudquery/plugin-pb-go/issues/162)) ([5e33845](https://github.com/cloudquery/plugin-pb-go/commit/5e33845c7ce9cf59d1b7186afdb762c022f17603))
+* Use and expose api url env variable ([#159](https://github.com/cloudquery/plugin-pb-go/issues/159)) ([ec64db6](https://github.com/cloudquery/plugin-pb-go/commit/ec64db6bec1b26baab74ab2a185aebb18ca4f417))
+* Validate hub download checksums ([#158](https://github.com/cloudquery/plugin-pb-go/issues/158)) ([a674550](https://github.com/cloudquery/plugin-pb-go/commit/a6745505b7e1dca71b63c64e6360a85cc72b5164))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.4.5 ([#163](https://github.com/cloudquery/plugin-pb-go/issues/163)) ([3c944dd](https://github.com/cloudquery/plugin-pb-go/commit/3c944dd86cd2659ff6bad37fff0bc7d4b7a5c698))
+
 ## [1.13.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.4...v1.13.5) (2023-11-10)
 
 
