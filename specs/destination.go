@@ -22,7 +22,7 @@ type Destination struct {
 	PKMode         PKMode      `json:"pk_mode,omitempty"`
 
 	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
-	registryInferred bool `json:"-"`
+	registryInferred bool
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {

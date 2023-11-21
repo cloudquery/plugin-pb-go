@@ -54,7 +54,7 @@ type Source struct {
 	DeterministicCQID bool `json:"deterministic_cq_id,omitempty"`
 
 	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
-	registryInferred bool `json:"-"`
+	registryInferred bool
 }
 
 func (s *Source) SetDefaults() {
