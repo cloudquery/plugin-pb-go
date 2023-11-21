@@ -25,11 +25,11 @@ type Source struct {
 	// For the local registry the path will be the path to the binary: ./path/to/binary
 	// For the gRPC registry the path will be the address of the gRPC server: host:port
 	Path string `json:"path,omitempty"`
-	// Registry can be github,local,grpc.
-	Registry            Registry `json:"registry,omitempty"`
-	Concurrency         uint64   `json:"concurrency,omitempty"`
-	TableConcurrency    uint64   `json:"table_concurrency,omitempty"`    // deprecated: use Concurrency instead
-	ResourceConcurrency uint64   `json:"resource_concurrency,omitempty"` // deprecated: use Concurrency instead
+	// Registry can be github,local,grpc,cloudquery
+	Registry            *Registry `json:"registry,omitempty"`
+	Concurrency         uint64    `json:"concurrency,omitempty"`
+	TableConcurrency    uint64    `json:"table_concurrency,omitempty"`    // deprecated: use Concurrency instead
+	ResourceConcurrency uint64    `json:"resource_concurrency,omitempty"` // deprecated: use Concurrency instead
 	// Tables to sync from the source plugin
 	Tables []string `json:"tables,omitempty"`
 	// SkipTables defines tables to skip when syncing data. Useful if a glob pattern is used in Tables
@@ -55,8 +55,8 @@ type Source struct {
 }
 
 func (s *Source) SetDefaults() {
-	if s.Registry.String() == "" {
-		s.Registry = RegistryGithub
+	if s.Registry == nil {
+		s.Registry = RegistryPtr(RegistryCloudQuery)
 	}
 	if s.Backend.String() == "" {
 		s.Backend = BackendNone
@@ -117,7 +117,7 @@ func (s *Source) Validate() error {
 		return fmt.Errorf("tables configuration is required. Hint: set the tables you want to sync by adding `tables: [...]` or use `cloudquery tables` to list available tables")
 	}
 
-	if s.Registry == RegistryGithub {
+	if s.Registry.NeedVersion() {
 		if s.Version == "" {
 			return fmt.Errorf("version is required")
 		}
@@ -135,7 +135,7 @@ func (s *Source) Validate() error {
 }
 
 func (s Source) VersionString() string {
-	if s.Registry != RegistryGithub {
+	if *s.Registry != RegistryGithub {
 		return fmt.Sprintf("%s (%s@%s)", s.Name, s.Registry, s.Path)
 	}
 	pathParts := strings.Split(s.Path, "/")

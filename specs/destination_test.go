@@ -129,7 +129,7 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryGrpc,
+			Registry:       RegistryPtr(RegistryGrpc),
 			Path:           "localhost:9999",
 			BatchSize:      10000,
 			BatchSizeBytes: 10000000,
@@ -146,7 +146,7 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryLocal,
+			Registry:       RegistryPtr(RegistryLocal),
 			Path:           "/home/user/some_executable",
 			BatchSize:      10000,
 			BatchSizeBytes: 10000000,
@@ -163,7 +163,26 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryGithub,
+			Registry:       RegistryPtr(RegistryCloudQuery),
+			Path:           "cloudquery/test",
+			Version:        "v1.1.0",
+			BatchSize:      10000,
+			BatchSizeBytes: 10000000,
+		},
+	},
+	{
+		"success github",
+		`kind: destination
+spec:
+  name: test
+  registry: github
+  path: cloudquery/test
+  version: v1.1.0
+`,
+		"",
+		&Destination{
+			Name:           "test",
+			Registry:       RegistryPtr(RegistryGithub),
 			Path:           "cloudquery/test",
 			Version:        "v1.1.0",
 			BatchSize:      10000,
@@ -257,7 +276,7 @@ func TestDestination_VersionString(t *testing.T) {
 				Name:     tt.fields.Name,
 				Version:  tt.fields.Version,
 				Path:     tt.fields.Path,
-				Registry: tt.fields.Registry,
+				Registry: RegistryPtr(tt.fields.Registry),
 			}
 			if got := d.VersionString(); got != tt.want {
 				t.Errorf("Destination.String() = %v, want %v", got, tt.want)

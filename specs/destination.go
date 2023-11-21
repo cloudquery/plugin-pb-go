@@ -13,7 +13,7 @@ type Destination struct {
 	Name           string      `json:"name,omitempty"`
 	Version        string      `json:"version,omitempty"`
 	Path           string      `json:"path,omitempty"`
-	Registry       Registry    `json:"registry,omitempty"`
+	Registry       *Registry   `json:"registry,omitempty"`
 	WriteMode      WriteMode   `json:"write_mode,omitempty"`
 	MigrateMode    MigrateMode `json:"migrate_mode,omitempty"`
 	BatchSize      int         `json:"batch_size,omitempty"`
@@ -23,8 +23,8 @@ type Destination struct {
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {
-	if d.Registry.String() == "" {
-		d.Registry = RegistryGithub
+	if d.Registry == nil {
+		d.Registry = RegistryPtr(RegistryCloudQuery)
 	}
 	if d.BatchSize == 0 {
 		d.BatchSize = defaultBatchSize
@@ -59,7 +59,7 @@ func (d *Destination) Validate() error {
 		return fmt.Errorf(msg)
 	}
 
-	if d.Registry == RegistryGithub {
+	if d.Registry.NeedVersion() {
 		if d.Version == "" {
 			return fmt.Errorf("version is required")
 		}
@@ -74,7 +74,7 @@ func (d *Destination) Validate() error {
 }
 
 func (d Destination) VersionString() string {
-	if d.Registry != RegistryGithub {
+	if *d.Registry != RegistryGithub {
 		return fmt.Sprintf("%s (%s@%s)", d.Name, d.Registry, d.Path)
 	}
 	pathParts := strings.Split(d.Path, "/")

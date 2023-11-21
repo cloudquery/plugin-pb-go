@@ -37,6 +37,10 @@ func (r *Registry) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
+func (r Registry) NeedVersion() bool {
+	return r == RegistryGithub || r == RegistryCloudQuery
+}
+
 func RegistryFromString(s string) (Registry, error) {
 	switch s {
 	case "github":
@@ -52,4 +56,8 @@ func RegistryFromString(s string) (Registry, error) {
 	default:
 		return RegistryGithub, fmt.Errorf("unknown registry %s", s)
 	}
+}
+
+func RegistryPtr(r Registry) *Registry {
+	return &r
 }

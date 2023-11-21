@@ -147,7 +147,7 @@ spec:
 		"",
 		&Source{
 			Name:         "test",
-			Registry:     RegistryGithub,
+			Registry:     RegistryPtr(RegistryCloudQuery),
 			Path:         "cloudquery/test",
 			Concurrency:  defaultConcurrency,
 			Version:      "v1.1.0",
@@ -169,7 +169,7 @@ spec:
 		"",
 		&Source{
 			Name:         "test",
-			Registry:     RegistryGithub,
+			Registry:     RegistryPtr(RegistryCloudQuery),
 			Path:         "cloudquery/test",
 			Concurrency:  defaultConcurrency,
 			Version:      "v1.1.0",
@@ -265,7 +265,7 @@ func TestSpec_VersionString(t *testing.T) {
 				Name:     tt.fields.Name,
 				Version:  tt.fields.Version,
 				Path:     tt.fields.Path,
-				Registry: tt.fields.Registry,
+				Registry: RegistryPtr(tt.fields.Registry),
 			}
 			if got := s.VersionString(); got != tt.want {
 				t.Errorf("Source.String() = %v, want %v", got, tt.want)
