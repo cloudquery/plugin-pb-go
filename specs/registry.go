@@ -57,7 +57,3 @@ func RegistryFromString(s string) (Registry, error) {
 		return RegistryGithub, fmt.Errorf("unknown registry %s", s)
 	}
 }
-
-func RegistryPtr(r Registry) *Registry {
-	return &r
-}

@@ -3,7 +3,7 @@ package specs
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 )
 
 var sourceUnmarshalSpecTestCases = []struct {
@@ -58,9 +58,7 @@ func TestSourceUnmarshalSpec(t *testing.T) {
 			}
 
 			source := spec.Spec.(*Source)
-			if cmp.Diff(source, tc.source) != "" {
-				t.Fatalf("expected:%v got:%v", tc.source, source)
-			}
+			require.Equal(t, tc.source, source)
 		})
 	}
 }
@@ -146,14 +144,15 @@ spec:
 `,
 		"",
 		&Source{
-			Name:         "test",
-			Registry:     RegistryPtr(RegistryCloudQuery),
-			Path:         "cloudquery/test",
-			Concurrency:  defaultConcurrency,
-			Version:      "v1.1.0",
-			Destinations: []string{"test"},
-			Scheduler:    SchedulerRoundRobin,
-			Tables:       []string{"test"},
+			Name:             "test",
+			Registry:         RegistryCloudQuery,
+			Path:             "cloudquery/test",
+			Concurrency:      defaultConcurrency,
+			Version:          "v1.1.0",
+			Destinations:     []string{"test"},
+			Scheduler:        SchedulerRoundRobin,
+			Tables:           []string{"test"},
+			registryInferred: true,
 		},
 	},
 	{
@@ -168,8 +167,32 @@ spec:
 `,
 		"",
 		&Source{
+			Name:             "test",
+			Registry:         RegistryCloudQuery,
+			Path:             "cloudquery/test",
+			Concurrency:      defaultConcurrency,
+			Version:          "v1.1.0",
+			Destinations:     []string{"test"},
+			Scheduler:        SchedulerDFS,
+			Tables:           []string{"test"},
+			registryInferred: true,
+		},
+	},
+	{
+		"success github",
+		`kind: source
+spec:
+  name: test
+  path: cloudquery/test
+  registry: github
+  version: v1.1.0
+  destinations: ["test"]
+  tables: ["test"]
+`,
+		"",
+		&Source{
 			Name:         "test",
-			Registry:     RegistryPtr(RegistryCloudQuery),
+			Registry:     RegistryGithub,
 			Path:         "cloudquery/test",
 			Concurrency:  defaultConcurrency,
 			Version:      "v1.1.0",
@@ -199,9 +222,7 @@ func TestSourceUnmarshalSpecValidate(t *testing.T) {
 				return
 			}
 
-			if cmp.Diff(source, tc.source) != "" {
-				t.Fatalf("expected:%v got:%v", tc.source, source)
-			}
+			require.Equal(t, tc.source, source)
 		})
 	}
 }
@@ -265,7 +286,7 @@ func TestSpec_VersionString(t *testing.T) {
 				Name:     tt.fields.Name,
 				Version:  tt.fields.Version,
 				Path:     tt.fields.Path,
-				Registry: RegistryPtr(tt.fields.Registry),
+				Registry: tt.fields.Registry,
 			}
 			if got := s.VersionString(); got != tt.want {
 				t.Errorf("Source.String() = %v, want %v", got, tt.want)

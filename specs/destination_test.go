@@ -3,7 +3,7 @@ package specs
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 )
 
 type testDestinationSpec struct {
@@ -77,9 +77,7 @@ func TestDestinationUnmarshalSpec(t *testing.T) {
 			}
 
 			source := spec.Spec.(*Source)
-			if cmp.Diff(source, tc.source) != "" {
-				t.Fatalf("expected:%v got:%v", tc.source, source)
-			}
+			require.Equal(t, tc.source, source)
 		})
 	}
 }
@@ -129,7 +127,7 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryPtr(RegistryGrpc),
+			Registry:       RegistryGrpc,
 			Path:           "localhost:9999",
 			BatchSize:      10000,
 			BatchSizeBytes: 10000000,
@@ -146,7 +144,7 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryPtr(RegistryLocal),
+			Registry:       RegistryLocal,
 			Path:           "/home/user/some_executable",
 			BatchSize:      10000,
 			BatchSizeBytes: 10000000,
@@ -162,12 +160,13 @@ spec:
 `,
 		"",
 		&Destination{
-			Name:           "test",
-			Registry:       RegistryPtr(RegistryCloudQuery),
-			Path:           "cloudquery/test",
-			Version:        "v1.1.0",
-			BatchSize:      10000,
-			BatchSizeBytes: 10000000,
+			Name:             "test",
+			Registry:         RegistryCloudQuery,
+			Path:             "cloudquery/test",
+			Version:          "v1.1.0",
+			BatchSize:        10000,
+			BatchSizeBytes:   10000000,
+			registryInferred: true,
 		},
 	},
 	{
@@ -182,7 +181,7 @@ spec:
 		"",
 		&Destination{
 			Name:           "test",
-			Registry:       RegistryPtr(RegistryGithub),
+			Registry:       RegistryGithub,
 			Path:           "cloudquery/test",
 			Version:        "v1.1.0",
 			BatchSize:      10000,
@@ -210,9 +209,7 @@ func TestDestinationUnmarshalSpecValidate(t *testing.T) {
 				return
 			}
 
-			if cmp.Diff(destination, tc.destination) != "" {
-				t.Fatalf("expected:\n%v\ngot:\n%v\n", tc.destination, destination)
-			}
+			require.Equal(t, tc.destination, destination)
 		})
 	}
 }
@@ -276,7 +273,7 @@ func TestDestination_VersionString(t *testing.T) {
 				Name:     tt.fields.Name,
 				Version:  tt.fields.Version,
 				Path:     tt.fields.Path,
-				Registry: RegistryPtr(tt.fields.Registry),
+				Registry: tt.fields.Registry,
 			}
 			if got := d.VersionString(); got != tt.want {
 				t.Errorf("Destination.String() = %v, want %v", got, tt.want)

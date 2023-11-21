@@ -21,7 +21,7 @@ func TestRegistryJsonMarshalUnmarshal(t *testing.T) {
 	}
 }
 
-func TestRegistryYamlMarshalUnmarsahl(t *testing.T) {
+func TestRegistryYamlMarshalUnmarshal(t *testing.T) {
 	b, err := yaml.Marshal(RegistryGrpc)
 	if err != nil {
 		t.Fatal("failed to marshal registry:", err)

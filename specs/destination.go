@@ -13,7 +13,7 @@ type Destination struct {
 	Name           string      `json:"name,omitempty"`
 	Version        string      `json:"version,omitempty"`
 	Path           string      `json:"path,omitempty"`
-	Registry       *Registry   `json:"registry,omitempty"`
+	Registry       Registry    `json:"registry,omitempty"`
 	WriteMode      WriteMode   `json:"write_mode,omitempty"`
 	MigrateMode    MigrateMode `json:"migrate_mode,omitempty"`
 	BatchSize      int         `json:"batch_size,omitempty"`
@@ -21,14 +21,13 @@ type Destination struct {
 	Spec           any         `json:"spec,omitempty"`
 	PKMode         PKMode      `json:"pk_mode,omitempty"`
 
-	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
+	// registryInferred is a flag that indicates whether the registry was inferred from an empty value
 	registryInferred bool
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {
-	if d.Registry == nil {
-		d.Registry = RegistryPtr(RegistryCloudQuery)
-		d.registryInferred = true
+	if d.registryInferred && d.Registry == 0 {
+		d.Registry = RegistryCloudQuery
 	}
 	if d.BatchSize == 0 {
 		d.BatchSize = defaultBatchSize
@@ -78,7 +77,7 @@ func (d *Destination) Validate() error {
 }
 
 func (d Destination) VersionString() string {
-	if *d.Registry != RegistryGithub {
+	if d.Registry != RegistryGithub {
 		return fmt.Sprintf("%s (%s@%s)", d.Name, d.Registry, d.Path)
 	}
 	pathParts := strings.Split(d.Path, "/")

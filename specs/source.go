@@ -26,10 +26,10 @@ type Source struct {
 	// For the gRPC registry the path will be the address of the gRPC server: host:port
 	Path string `json:"path,omitempty"`
 	// Registry can be github,local,grpc,cloudquery
-	Registry            *Registry `json:"registry,omitempty"`
-	Concurrency         uint64    `json:"concurrency,omitempty"`
-	TableConcurrency    uint64    `json:"table_concurrency,omitempty"`    // deprecated: use Concurrency instead
-	ResourceConcurrency uint64    `json:"resource_concurrency,omitempty"` // deprecated: use Concurrency instead
+	Registry            Registry `json:"registry,omitempty"`
+	Concurrency         uint64   `json:"concurrency,omitempty"`
+	TableConcurrency    uint64   `json:"table_concurrency,omitempty"`    // deprecated: use Concurrency instead
+	ResourceConcurrency uint64   `json:"resource_concurrency,omitempty"` // deprecated: use Concurrency instead
 	// Tables to sync from the source plugin
 	Tables []string `json:"tables,omitempty"`
 	// SkipTables defines tables to skip when syncing data. Useful if a glob pattern is used in Tables
@@ -53,14 +53,13 @@ type Source struct {
 	// or whether it should calculate a UUID that is a hash of the primary keys (if they exist) or the entire resource.
 	DeterministicCQID bool `json:"deterministic_cq_id,omitempty"`
 
-	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
+	// registryInferred is a flag that indicates whether the registry was inferred from an empty value
 	registryInferred bool
 }
 
 func (s *Source) SetDefaults() {
-	if s.Registry == nil {
-		s.Registry = RegistryPtr(RegistryCloudQuery)
-		s.registryInferred = true
+	if s.registryInferred && s.Registry == 0 {
+		s.Registry = RegistryCloudQuery
 	}
 	if s.Backend.String() == "" {
 		s.Backend = BackendNone
@@ -139,7 +138,7 @@ func (s *Source) Validate() error {
 }
 
 func (s Source) VersionString() string {
-	if *s.Registry != RegistryGithub {
+	if s.Registry != RegistryGithub {
 		return fmt.Sprintf("%s (%s@%s)", s.Name, s.Registry, s.Path)
 	}
 	pathParts := strings.Split(s.Path, "/")
