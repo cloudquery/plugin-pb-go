@@ -20,11 +20,15 @@ type Destination struct {
 	BatchSizeBytes int         `json:"batch_size_bytes,omitempty"`
 	Spec           any         `json:"spec,omitempty"`
 	PKMode         PKMode      `json:"pk_mode,omitempty"`
+
+	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
+	registryInferred bool `json:"-"`
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {
 	if d.Registry == nil {
 		d.Registry = RegistryPtr(RegistryCloudQuery)
+		d.registryInferred = true
 	}
 	if d.BatchSize == 0 {
 		d.BatchSize = defaultBatchSize
@@ -85,4 +89,8 @@ func (d Destination) VersionString() string {
 		return fmt.Sprintf("%s (%s)", d.Name, d.Version)
 	}
 	return fmt.Sprintf("%s (%s@%s)", d.Name, pathParts[1], d.Version)
+}
+
+func (d Destination) RegistryInferred() bool {
+	return d.registryInferred
 }

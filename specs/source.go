@@ -52,11 +52,15 @@ type Source struct {
 	// DeterministicCQID is a flag that indicates whether the source plugin should generate a random UUID as the value of _cq_id
 	// or whether it should calculate a UUID that is a hash of the primary keys (if they exist) or the entire resource.
 	DeterministicCQID bool `json:"deterministic_cq_id,omitempty"`
+
+	// registryInferred is a flag that indicates whether the registry was inferred from a nil value
+	registryInferred bool `json:"-"`
 }
 
 func (s *Source) SetDefaults() {
 	if s.Registry == nil {
 		s.Registry = RegistryPtr(RegistryCloudQuery)
+		s.registryInferred = true
 	}
 	if s.Backend.String() == "" {
 		s.Backend = BackendNone
@@ -146,4 +150,8 @@ func (s Source) VersionString() string {
 		return fmt.Sprintf("%s (%s)", s.Name, s.Version)
 	}
 	return fmt.Sprintf("%s (%s@%s)", s.Name, pathParts[1], s.Version)
+}
+
+func (s Source) RegistryInferred() bool {
+	return s.registryInferred
 }
