@@ -23,9 +23,6 @@ type Destination struct {
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {
-	if d.Registry.String() == "" {
-		d.Registry = RegistryGithub
-	}
 	if d.BatchSize == 0 {
 		d.BatchSize = defaultBatchSize
 	}
@@ -59,7 +56,7 @@ func (d *Destination) Validate() error {
 		return fmt.Errorf(msg)
 	}
 
-	if d.Registry == RegistryGithub {
+	if d.Registry.NeedVersion() {
 		if d.Version == "" {
 			return fmt.Errorf("version is required")
 		}

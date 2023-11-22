@@ -96,13 +96,13 @@ type Client struct {
 
 // typ will be deprecated soon but now required for a transition period
 func NewClients(ctx context.Context, typ PluginType, specs []Config, opts ...Option) (Clients, error) {
-	clients := make(Clients, len(specs))
-	for i, spec := range specs {
+	clients := make(Clients, 0, len(specs))
+	for _, spec := range specs {
 		client, err := NewClient(ctx, typ, spec, opts...)
 		if err != nil {
-			return nil, err
+			return clients, err // previous entries in clients determine which plugins were successfully created
 		}
-		clients[i] = client
+		clients = append(clients, client)
 	}
 	return clients, nil
 }

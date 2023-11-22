@@ -37,6 +37,10 @@ func (r *Registry) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
+func (r Registry) NeedVersion() bool {
+	return r == RegistryGithub || r == RegistryCloudQuery
+}
+
 func RegistryFromString(s string) (Registry, error) {
 	switch s {
 	case "github":
