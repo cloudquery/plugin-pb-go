@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.14.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.0...v1.14.1) (2023-11-22)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.4.6 ([#164](https://github.com/cloudquery/plugin-pb-go/issues/164)) ([9d20b63](https://github.com/cloudquery/plugin-pb-go/commit/9d20b63b514668b92118bce98ac37a31339e37db))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.5.0 ([#166](https://github.com/cloudquery/plugin-pb-go/issues/166)) ([0a09610](https://github.com/cloudquery/plugin-pb-go/commit/0a096103143e7b391a39f70f73889f2a65433d08))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.5.1 ([#167](https://github.com/cloudquery/plugin-pb-go/issues/167)) ([13802a1](https://github.com/cloudquery/plugin-pb-go/commit/13802a1230950fa8c55c3cf9cf664501217575db))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.6.0 ([#168](https://github.com/cloudquery/plugin-pb-go/issues/168)) ([f382c2c](https://github.com/cloudquery/plugin-pb-go/commit/f382c2cf12549989d2486ac4603083dc0ecfca05))
+* GitHub downloader should do a GET and retry, trying to discover the correct URL ([#171](https://github.com/cloudquery/plugin-pb-go/issues/171)) ([abb3bd7](https://github.com/cloudquery/plugin-pb-go/commit/abb3bd778891618e5c9481ddf3317e14f35e8af2))
+
 ## [1.14.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.13.5...v1.14.0) (2023-11-14)
 
 
