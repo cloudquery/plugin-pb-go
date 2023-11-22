@@ -67,26 +67,50 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 		}
 	}
 
+	var (
+		err404 = errors.New("404")
+		err401 = errors.New("401")
+		err429 = errors.New("429")
+	)
+
 	for _, downloadURL := range urls {
-		req, err := http.NewRequestWithContext(ctx, http.MethodHead, downloadURL, nil)
-		if err != nil {
-			return "", fmt.Errorf("failed create request %s: %w", downloadURL, err)
-		}
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return "", fmt.Errorf("failed to get url %s: %w", downloadURL, err)
-		}
-		// Check server response
-		if resp.StatusCode == http.StatusNotFound {
+		err := retry.Do(func() error {
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
+			if err != nil {
+				return fmt.Errorf("failed create request %s: %w", downloadURL, err)
+			}
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
+			}
 			resp.Body.Close()
+			// Check server response
+			switch {
+			case resp.StatusCode == http.StatusNotFound:
+				return err404
+			case resp.StatusCode == http.StatusUnauthorized:
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
+				return err401
+			case resp.StatusCode == http.StatusTooManyRequests:
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
+				return err429
+			case resp.StatusCode >= http.StatusBadRequest: // anything that's not 200 or 30*
+				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
+				return fmt.Errorf("statusCode %d", resp.StatusCode)
+			}
+			return nil
+		}, retry.RetryIf(func(err error) bool {
+			return err == err401 || err == err429
+		}),
+			retry.Context(ctx),
+			retry.Attempts(RetryAttempts),
+			retry.Delay(RetryWaitTime),
+			retry.LastErrorOnly(true),
+		)
+		if err == err404 {
 			continue
-		} else if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-			return "", errors.New("statusCode != 200")
 		}
-		resp.Body.Close()
-		return downloadURL, nil
+		return downloadURL, err
 	}
 
 	return "", fmt.Errorf("failed to find plugin %s/%s version %s", org, name, version)
@@ -114,7 +138,7 @@ func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 
 	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, ops)
 	if err != nil {
-		return fmt.Errorf("failed to get plugin url: %w", err)
+		return fmt.Errorf("failed to get plugin metadata from hub: %w", err)
 	}
 	switch statusCode {
 	case http.StatusOK:
@@ -129,11 +153,11 @@ func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, statusCode)
 	}
 	if pluginAsset == nil {
-		return fmt.Errorf("failed to get plugin url for %v %v/%v@%v: missing json response", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+		return fmt.Errorf("failed to get plugin metadata from hub for %v %v/%v@%v: missing json response", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	}
 	location := pluginAsset.Location
 	if len(location) == 0 {
-		return fmt.Errorf("failed to get plugin url: empty location from response")
+		return fmt.Errorf("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location)
@@ -201,7 +225,7 @@ func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*c
 			&cloudquery_api.DownloadPluginAssetByTeamParams{Accept: &aj},
 		)
 		if err != nil {
-			return nil, -1, fmt.Errorf("failed to get plugin url with team: %w", err)
+			return nil, -1, fmt.Errorf("failed to request with team: %w", err)
 		}
 		return resp.JSON200, resp.StatusCode(), nil
 	default:
@@ -215,7 +239,7 @@ func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*c
 			&cloudquery_api.DownloadPluginAssetParams{Accept: &aj},
 		)
 		if err != nil {
-			return nil, -1, fmt.Errorf("failed to get plugin url: %w", err)
+			return nil, -1, fmt.Errorf("failed to request: %w", err)
 		}
 		return resp.JSON200, resp.StatusCode(), nil
 	}
@@ -341,6 +365,7 @@ func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) 
 	}, retry.RetryIf(func(err error) bool {
 		return err.Error() == "statusCode != 200"
 	}),
+		retry.Context(ctx),
 		retry.Attempts(RetryAttempts),
 		retry.Delay(RetryWaitTime),
 	)
