@@ -85,20 +85,21 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			}
 			resp.Body.Close()
 			// Check server response
-			switch {
-			case resp.StatusCode == http.StatusNotFound:
+			switch resp.StatusCode {
+			case http.StatusOK:
+				return nil
+			case http.StatusNotFound:
 				return err404
-			case resp.StatusCode == http.StatusUnauthorized:
+			case http.StatusUnauthorized:
 				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 				return err401
-			case resp.StatusCode == http.StatusTooManyRequests:
+			case http.StatusTooManyRequests:
 				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
 				return err429
-			case resp.StatusCode >= http.StatusBadRequest: // anything that's not 200 or 30*
+			default:
 				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
 				return fmt.Errorf("statusCode %d", resp.StatusCode)
 			}
-			return nil
 		}, retry.RetryIf(func(err error) bool {
 			return err == err401 || err == err429
 		}),

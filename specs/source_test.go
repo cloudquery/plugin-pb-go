@@ -3,7 +3,7 @@ package specs
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 )
 
 var sourceUnmarshalSpecTestCases = []struct {
@@ -58,9 +58,7 @@ func TestSourceUnmarshalSpec(t *testing.T) {
 			}
 
 			source := spec.Spec.(*Source)
-			if cmp.Diff(source, tc.source) != "" {
-				t.Fatalf("expected:%v got:%v", tc.source, source)
-			}
+			require.Equal(t, tc.source, source)
 		})
 	}
 }
@@ -199,9 +197,7 @@ func TestSourceUnmarshalSpecValidate(t *testing.T) {
 				return
 			}
 
-			if cmp.Diff(source, tc.source) != "" {
-				t.Fatalf("expected:%v got:%v", tc.source, source)
-			}
+			require.Equal(t, tc.source, source)
 		})
 	}
 }
