@@ -70,6 +70,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	var (
 		err404 = errors.New("404")
 		err401 = errors.New("401")
+		err418 = errors.New("418")
 	)
 
 	for _, downloadURL := range urls {
@@ -86,8 +87,11 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			// Check server response
 			if resp.StatusCode == http.StatusNotFound {
 				return err404
-			} else if resp.StatusCode == http.StatusUnauthorized {
+			} else if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusTooManyRequests {
 				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
+				if resp.StatusCode == http.StatusTooManyRequests {
+					return err418
+				}
 				return err401
 			} else if resp.StatusCode >= http.StatusBadRequest { // anything that's not 200 or 30*
 				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
@@ -95,7 +99,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			}
 			return nil
 		}, retry.RetryIf(func(err error) bool {
-			return err == err401
+			return err == err401 || err == err418
 		}),
 			retry.Context(ctx),
 			retry.Attempts(RetryAttempts),
