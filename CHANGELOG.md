@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.1...v1.14.2) (2023-11-22)
+
+
+### Bug Fixes
+
+* Quality of life improvements ([#172](https://github.com/cloudquery/plugin-pb-go/issues/172)) ([d7b0025](https://github.com/cloudquery/plugin-pb-go/commit/d7b0025efd029b3395841ab3f5ccffc6a3bf2ba8))
+
 ## [1.14.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.0...v1.14.1) (2023-11-22)
 
 
