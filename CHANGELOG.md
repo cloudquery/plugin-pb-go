@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.14.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.2...v1.14.3) (2023-12-07)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/gomarkdown/markdown digest to a660076 ([#175](https://github.com/cloudquery/plugin-pb-go/issues/175)) ([3ee549b](https://github.com/cloudquery/plugin-pb-go/commit/3ee549b1d9e1d890608cceed3d703dd8e58ef6e5))
+* **deps:** Update golang.org/x/exp digest to 6522937 ([#176](https://github.com/cloudquery/plugin-pb-go/issues/176)) ([1f0e032](https://github.com/cloudquery/plugin-pb-go/commit/1f0e032ef67493dc37efddab9e3c44b29be6bd75))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to 3a041ad ([#178](https://github.com/cloudquery/plugin-pb-go/issues/178)) ([1e7f21a](https://github.com/cloudquery/plugin-pb-go/commit/1e7f21a5e1ddf556af0c2b204816b620edf8e5ed))
+* **deps:** Update module github.com/avast/retry-go/v4 to v4.5.1 ([#179](https://github.com/cloudquery/plugin-pb-go/issues/179)) ([3fdb491](https://github.com/cloudquery/plugin-pb-go/commit/3fdb4912753619d3b8f896d7479db33a03504b14))
+* **deps:** Update module github.com/chenzhuoyu/iasm to v0.9.1 ([#180](https://github.com/cloudquery/plugin-pb-go/issues/180)) ([e5ee4b5](https://github.com/cloudquery/plugin-pb-go/commit/e5ee4b522e30daa6dd330f0d1863cb31dfdad84c))
+* **deps:** Update module github.com/gorilla/css to v1.0.1 ([#181](https://github.com/cloudquery/plugin-pb-go/issues/181)) ([a53c93f](https://github.com/cloudquery/plugin-pb-go/commit/a53c93f3586e641791e52b76c7574aabe9415f05))
+* **deps:** Update module github.com/kataras/golog to v0.1.11 ([#182](https://github.com/cloudquery/plugin-pb-go/issues/182)) ([63ebf10](https://github.com/cloudquery/plugin-pb-go/commit/63ebf103647cdde8933b697818ca16ab0ba4d796))
+* **deps:** Update module github.com/kataras/iris/v12 to v12.2.8 ([#183](https://github.com/cloudquery/plugin-pb-go/issues/183)) ([cd22fa7](https://github.com/cloudquery/plugin-pb-go/commit/cd22fa7ec57df5d7d1f5b3991d4910df8df93696))
+* Handle plugin execute failure case ([#185](https://github.com/cloudquery/plugin-pb-go/issues/185)) ([4708734](https://github.com/cloudquery/plugin-pb-go/commit/470873407ee945a3b7ce1f1b2f6d15bd04463649))
+
 ## [1.14.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.1...v1.14.2) (2023-11-22)
 
 
