@@ -374,7 +374,20 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	c.wg.Add(1)
 	go c.readLogLines(reader)
 
-	return c.connectToUnixSocket(ctx, cmd)
+	err = c.connectToUnixSocket(ctx)
+	if err == nil {
+		return err
+	}
+
+	if killErr := cmd.Process.Kill(); killErr != nil {
+		c.logger.Error().Err(killErr).Msg("failed to kill plugin process")
+	}
+
+	waitErr := cmd.Wait()
+	if waitErr != nil && errors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("failed to run plugin %s: %w", path, waitErr)
+	}
+	return fmt.Errorf("failed connecting to plugin %s: %w", path, err)
 }
 
 func (c *Client) getPluginArgs() []string {
@@ -455,15 +468,18 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 	)
 }
 
-func (c *Client) connectToUnixSocket(ctx context.Context, cmd *exec.Cmd) error {
+func (c *Client) connectToUnixSocket(ctx context.Context) error {
 	dialer := func(ctx context.Context, addr string) (net.Conn, error) {
 		d := &net.Dialer{
 			Timeout: 5 * time.Second,
 		}
 		return d.DialContext(ctx, "unix", addr)
 	}
+	ktx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	var err error
-	c.Conn, err = grpc.DialContext(ctx, c.grpcSocketName,
+	c.Conn, err = grpc.DialContext(ktx, c.grpcSocketName,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 		grpc.WithContextDialer(dialer),
@@ -471,13 +487,7 @@ func (c *Client) connectToUnixSocket(ctx context.Context, cmd *exec.Cmd) error {
 			grpc.MaxCallRecvMsgSize(maxMsgSize),
 			grpc.MaxCallSendMsgSize(maxMsgSize),
 		))
-	if err != nil {
-		if err := cmd.Process.Kill(); err != nil {
-			c.logger.Error().Err(err).Msg("failed to kill plugin process")
-		}
-		return err
-	}
-	return nil
+	return err
 }
 
 func (c *Client) Name() string {
