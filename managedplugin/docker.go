@@ -2,9 +2,11 @@ package managedplugin
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -27,6 +29,11 @@ type dockerProgressInfo struct {
 		Total   int64 `json:"total"`
 	} `json:"progressDetail"`
 	ID string `json:"id"`
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
@@ -81,14 +88,18 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	return len(images) > 0, nil
 }
 
-func pullDockerImage(ctx context.Context, imageName string) error {
+func pullDockerImage(ctx context.Context, imageName string, authToken string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %v", err)
 	}
 
 	// Pull the image
-	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	opts := types.ImagePullOptions{}
+	if authToken != "" && strings.HasPrefix(imageName, "registry.cloudquery.io") {
+		opts.RegistryAuth = "Basic " + basicAuth("managedplugin", authToken)
+	}
+	out, err := cli.ImagePull(ctx, imageName, opts)
 	if err != nil {
 		return fmt.Errorf("failed to pull Docker image: %v", err)
 	}
