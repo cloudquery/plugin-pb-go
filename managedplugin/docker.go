@@ -2,7 +2,6 @@ package managedplugin
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/schollz/progressbar/v3"
 )
@@ -29,11 +29,6 @@ type dockerProgressInfo struct {
 		Total   int64 `json:"total"`
 	} `json:"progressDetail"`
 	ID string `json:"id"`
-}
-
-func basicAuth(username, password string) string {
-	auth := username + ":" + password
-	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
@@ -97,7 +92,15 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string) er
 	// Pull the image
 	opts := types.ImagePullOptions{}
 	if authToken != "" && strings.HasPrefix(imageName, "registry.cloudquery.io") {
-		opts.RegistryAuth = "Basic " + basicAuth("managedplugin", authToken)
+		authConfig := registry.AuthConfig{
+			Username: "managedplugin",
+			Password: authToken,
+		}
+		encodedAuth, err := registry.EncodeAuthConfig(authConfig)
+		if err != nil {
+			return fmt.Errorf("failed to encode Docker auth config: %v", err)
+		}
+		opts.RegistryAuth = encodedAuth
 	}
 	out, err := cli.ImagePull(ctx, imageName, opts)
 	if err != nil {
