@@ -3,8 +3,8 @@ package source
 import (
 	"bytes"
 
-	"github.com/apache/arrow/go/v14/arrow"
-	"github.com/apache/arrow/go/v14/arrow/ipc"
+	"github.com/apache/arrow/go/v15/arrow"
+	"github.com/apache/arrow/go/v15/arrow/ipc"
 )
 
 func SchemasToBytes(schemas []*arrow.Schema) ([][]byte, error) {
