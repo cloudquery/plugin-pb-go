@@ -6,6 +6,7 @@ require (
 	github.com/apache/arrow/go/v15 v15.0.0-20231223155039-ec41209ea02b
 	github.com/avast/retry-go/v4 v4.5.1
 	github.com/cloudquery/cloudquery-api-go v1.6.3
+	github.com/distribution/reference v0.5.0
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/ghodss/yaml v1.0.0
@@ -37,7 +38,6 @@ require (
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.15.0 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect

@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/registry"
@@ -84,14 +85,19 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 }
 
 func pullDockerImage(ctx context.Context, imageName string, authToken string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		return fmt.Errorf("failed to create Docker client: %v", err)
-	}
-
 	// Pull the image
+	additionalHeaders := make(map[string]string)
 	opts := types.ImagePullOptions{}
 	if authToken != "" && strings.HasPrefix(imageName, "registry.cloudquery.io") {
+		namedRef, err := reference.ParseNormalizedNamed(imageName)
+		if err != nil {
+			return fmt.Errorf("failed to parse Docker image tag: %v", err)
+		}
+		nameWithTag, ok := namedRef.(reference.NamedTagged)
+		if !ok {
+			return fmt.Errorf("failed to parse Docker image tag: %v", err)
+		}
+		additionalHeaders["X-Meta-Plugin-Version"] = nameWithTag.Tag()
 		authConfig := registry.AuthConfig{
 			Username: "managedplugin",
 			Password: authToken,
@@ -102,6 +108,12 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string) er
 		}
 		opts.RegistryAuth = encodedAuth
 	}
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithHTTPHeaders(additionalHeaders))
+	if err != nil {
+		return fmt.Errorf("failed to create Docker client: %v", err)
+	}
+
 	out, err := cli.ImagePull(ctx, imageName, opts)
 	if err != nil {
 		return fmt.Errorf("failed to pull Docker image: %v", err)
