@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.15.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.6...v1.15.0) (2023-12-28)
+
+
+### Features
+
+* Offline licensing support ([#198](https://github.com/cloudquery/plugin-pb-go/issues/198)) ([5c36ab1](https://github.com/cloudquery/plugin-pb-go/commit/5c36ab17487604a410689df5d88ca82a687053e8))
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v15 digest to ec41209 ([#197](https://github.com/cloudquery/plugin-pb-go/issues/197)) ([a47ecc9](https://github.com/cloudquery/plugin-pb-go/commit/a47ecc9675e40df2157c61032f7e3e22e524270e))
+* Generate Go Code from `plugin-pb` ([#195](https://github.com/cloudquery/plugin-pb-go/issues/195)) ([175c025](https://github.com/cloudquery/plugin-pb-go/commit/175c02594e609f62b5b6a71ed631ecb045e0808b))
+
 ## [1.14.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.5...v1.14.6) (2023-12-19)
 
 
