@@ -92,6 +92,7 @@ type Client struct {
 	registry             Registry
 	authToken            string
 	teamName             string
+	licenseFile          string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -399,6 +400,9 @@ func (c *Client) getPluginArgs() []string {
 	}
 	if c.noSentry {
 		args = append(args, "--no-sentry")
+	}
+	if c.licenseFile != "" {
+		args = append(args, "--license", c.licenseFile)
 	}
 	if c.otelEndpoint != "" {
 		args = append(args, "--otel-endpoint", c.otelEndpoint)

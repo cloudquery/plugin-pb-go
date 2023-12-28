@@ -51,3 +51,9 @@ func WithTeamName(teamName string) Option {
 		c.teamName = teamName
 	}
 }
+
+func WithLicenseFile(licenseFile string) Option {
+	return func(c *Client) {
+		c.licenseFile = licenseFile
+	}
+}
