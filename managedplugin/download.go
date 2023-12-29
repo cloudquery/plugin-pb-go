@@ -129,7 +129,7 @@ type HubDownloadOptions struct {
 
 func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 	if ops.AuthToken == "" {
-		return fmt.Errorf("an authentication token is required to download plugins from the CloudQuery registry. Try logging in via `cloudquery login`")
+		return ErrRequiresLogin
 	}
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if _, err := os.Stat(ops.LocalPath); err == nil {

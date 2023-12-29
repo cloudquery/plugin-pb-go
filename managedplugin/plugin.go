@@ -64,6 +64,10 @@ func (p PluginType) String() string {
 	return [...]string{"source", "destination"}[p]
 }
 
+var (
+	ErrRequiresLogin = errors.New("an authentication token is required to download plugins from the CloudQuery registry")
+)
+
 type Clients []*Client
 
 type Config struct {
