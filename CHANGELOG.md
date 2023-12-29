@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.15.0...v1.16.0) (2023-12-29)
+
+
+### Features
+
+* Add Support for pulling images from CloudQuery Docker registry ([#190](https://github.com/cloudquery/plugin-pb-go/issues/190)) ([b16f5fb](https://github.com/cloudquery/plugin-pb-go/commit/b16f5fb610586805e89be17ed9c6fd453287a748))
+
 ## [1.15.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.14.6...v1.15.0) (2023-12-28)
 
 
