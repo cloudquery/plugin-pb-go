@@ -53,6 +53,10 @@ func TestManagedPluginGitHub(t *testing.T) {
 }
 
 func TestManagedPluginCloudQuery(t *testing.T) {
+	apiToken := os.Getenv("CLOUDQUERY_API_TOKEN")
+	if apiToken == "" {
+		t.Fatal("CLOUDQUERY_API_TOKEN is not set")
+	}
 	ctx := context.Background()
 	tmpDir := t.TempDir()
 	cfg := Config{
@@ -61,7 +65,7 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 		Path:     "cloudquery/awspricing",
 		Version:  "v3.0.12",
 	}
-	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
+	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry(), WithAuthToken(apiToken))
 	if err != nil {
 		t.Fatal(err)
 	}
