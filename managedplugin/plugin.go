@@ -173,7 +173,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
 			return err
 		} else if !imageAvailable {
-			return pullDockerImage(ctx, c.config.Path)
+			return pullDockerImage(ctx, c.config.Path, c.authToken)
 		}
 		return nil
 	case RegistryCloudQuery:
