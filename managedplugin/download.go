@@ -128,6 +128,9 @@ type HubDownloadOptions struct {
 }
 
 func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
+	if ops.AuthToken == "" {
+		return fmt.Errorf("an authentication token is required to download plugins from the CloudQuery registry. Try logging in via `cloudquery login`")
+	}
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if _, err := os.Stat(ops.LocalPath); err == nil {
 		return nil
@@ -201,9 +204,7 @@ func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
 	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
 		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			if ops.AuthToken != "" {
-				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ops.AuthToken))
-			}
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ops.AuthToken))
 			return nil
 		}))
 	if err != nil {
