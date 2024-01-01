@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.0...v1.16.1) (2024-01-01)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v15 digest to 7c3480e ([#201](https://github.com/cloudquery/plugin-pb-go/issues/201)) ([f65ee3f](https://github.com/cloudquery/plugin-pb-go/commit/f65ee3f21c9bdcc8de3f5207ca41de2c74ae129f))
+* **deps:** Update github.com/gomarkdown/markdown digest to 1d6d208 ([#202](https://github.com/cloudquery/plugin-pb-go/issues/202)) ([6b94635](https://github.com/cloudquery/plugin-pb-go/commit/6b94635dcca9eea00331592e27effbf8a04f6770))
+* **deps:** Update golang.org/x/exp digest to 02704c9 ([#204](https://github.com/cloudquery/plugin-pb-go/issues/204)) ([3ed8cdb](https://github.com/cloudquery/plugin-pb-go/commit/3ed8cdbcf7dfc06889160e3b86c759cc80117aa1))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to 995d672 ([#205](https://github.com/cloudquery/plugin-pb-go/issues/205)) ([30f8920](https://github.com/cloudquery/plugin-pb-go/commit/30f8920f8ecfa15c199937bc692e0ff782783ee7))
+* **deps:** Update module github.com/klauspost/compress to v1.17.4 ([#207](https://github.com/cloudquery/plugin-pb-go/issues/207)) ([5e6931b](https://github.com/cloudquery/plugin-pb-go/commit/5e6931b21a22c22e01785e828917a48edd5f3cd6))
+* **deps:** Update module github.com/klauspost/cpuid/v2 to v2.2.6 ([#208](https://github.com/cloudquery/plugin-pb-go/issues/208)) ([6e35a34](https://github.com/cloudquery/plugin-pb-go/commit/6e35a34bde571a1413cb18d1e6f2db53f1e7a721))
+* **deps:** Update module github.com/labstack/echo/v4 to v4.11.4 ([#209](https://github.com/cloudquery/plugin-pb-go/issues/209)) ([6a0579a](https://github.com/cloudquery/plugin-pb-go/commit/6a0579aaf5065f6654fde34b95f327ccaa75508f))
+
 ## [1.16.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.15.0...v1.16.0) (2023-12-29)
 
 
