@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.1...v1.16.2) (2024-01-02)
+
+
+### Bug Fixes
+
+* Pass user team to Docker auth endpoint ([#210](https://github.com/cloudquery/plugin-pb-go/issues/210)) ([452df35](https://github.com/cloudquery/plugin-pb-go/commit/452df351ae97086cf24a2820cf0388222b4ea1a0))
+
 ## [1.16.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.0...v1.16.1) (2024-01-01)
 
 
