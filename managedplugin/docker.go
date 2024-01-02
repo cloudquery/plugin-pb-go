@@ -84,7 +84,7 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	return len(images) > 0, nil
 }
 
-func pullDockerImage(ctx context.Context, imageName string, authToken string) error {
+func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := types.ImagePullOptions{}
@@ -98,6 +98,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string) er
 			return fmt.Errorf("failed to parse Docker image tag: %v", err)
 		}
 		additionalHeaders["X-Meta-Plugin-Version"] = nameWithTag.Tag()
+		additionalHeaders["X-Meta-Team-Name"] = teamName
 		authConfig := registry.AuthConfig{
 			Username: "managedplugin",
 			Password: authToken,
