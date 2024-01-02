@@ -98,7 +98,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 			return fmt.Errorf("failed to parse Docker image tag: %v", err)
 		}
 		additionalHeaders["X-Meta-Plugin-Version"] = nameWithTag.Tag()
-		additionalHeaders["X-Meta-Team-Name"] = teamName
+		additionalHeaders["X-Meta-User-Team-Name"] = teamName
 		authConfig := registry.AuthConfig{
 			Username: "managedplugin",
 			Password: authToken,
