@@ -88,7 +88,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := types.ImagePullOptions{}
-	if authToken != "" && strings.HasPrefix(imageName, "registry.cloudquery.io") {
+	if authToken != "" && strings.HasPrefix(imageName, "docker.cloudquery.io") {
 		namedRef, err := reference.ParseNormalizedNamed(imageName)
 		if err != nil {
 			return fmt.Errorf("failed to parse Docker image tag: %v", err)
