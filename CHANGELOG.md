@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.2...v1.16.3) (2024-01-03)
+
+
+### Bug Fixes
+
+* Rename docker registry host ([#212](https://github.com/cloudquery/plugin-pb-go/issues/212)) ([41a1c60](https://github.com/cloudquery/plugin-pb-go/commit/41a1c60caccbcf85c7b574e882744b3671f86635))
+
 ## [1.16.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.1...v1.16.2) (2024-01-02)
 
 
