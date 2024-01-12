@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.3...v1.16.4) (2024-01-08)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v15 digest to de3130e ([#216](https://github.com/cloudquery/plugin-pb-go/issues/216)) ([199467e](https://github.com/cloudquery/plugin-pb-go/commit/199467eaddac7d1de0ac0019f17d0b1555db4de8))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.6.4 ([#214](https://github.com/cloudquery/plugin-pb-go/issues/214)) ([558d4af](https://github.com/cloudquery/plugin-pb-go/commit/558d4af0cf2d1a8afced4405c93159d12c5937d1))
+
 ## [1.16.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.2...v1.16.3) (2024-01-03)
 
 
