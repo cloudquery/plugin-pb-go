@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.16.8](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.7...v1.16.8) (2024-02-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 1b97071 ([#227](https://github.com/cloudquery/plugin-pb-go/issues/227)) ([8555093](https://github.com/cloudquery/plugin-pb-go/commit/8555093ff259ac3d2700dbe766ca4e482fa39ed4))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to 1f4bbc5 ([#228](https://github.com/cloudquery/plugin-pb-go/issues/228)) ([7879be4](https://github.com/cloudquery/plugin-pb-go/commit/7879be46f8dd0601b949cf96e956b00ae322ef48))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.2 ([#225](https://github.com/cloudquery/plugin-pb-go/issues/225)) ([f6241c0](https://github.com/cloudquery/plugin-pb-go/commit/f6241c092fd810167682c21f8ed3af36ecec9f98))
+* **deps:** Update module github.com/docker/docker to v24.0.8+incompatible ([#229](https://github.com/cloudquery/plugin-pb-go/issues/229)) ([07bf3a9](https://github.com/cloudquery/plugin-pb-go/commit/07bf3a9e08bf0f1c741f377d6bc12341d6fea0b8))
+* **deps:** Update module github.com/kataras/iris/v12 to v12.2.10 ([#230](https://github.com/cloudquery/plugin-pb-go/issues/230)) ([5396892](https://github.com/cloudquery/plugin-pb-go/commit/5396892a5fefe2cec4c994ef96be9be2ff3f1718))
+* **deps:** Update module github.com/klauspost/compress to v1.17.5 ([#231](https://github.com/cloudquery/plugin-pb-go/issues/231)) ([51a1e22](https://github.com/cloudquery/plugin-pb-go/commit/51a1e22ee1806e01e659be6f34d5747fb9120ff9))
+* **deps:** Update module github.com/pierrec/lz4/v4 to v4.1.21 ([#232](https://github.com/cloudquery/plugin-pb-go/issues/232)) ([53a35b6](https://github.com/cloudquery/plugin-pb-go/commit/53a35b692f200b62aa20799658afa475bbf93692))
+* **deps:** Update module github.com/tdewolff/minify/v2 to v2.20.16 ([#233](https://github.com/cloudquery/plugin-pb-go/issues/233)) ([d8d3d36](https://github.com/cloudquery/plugin-pb-go/commit/d8d3d360363ed86d70b051b84787d393502a8d9e))
+* **deps:** Update module github.com/tdewolff/parse/v2 to v2.7.11 ([#234](https://github.com/cloudquery/plugin-pb-go/issues/234)) ([190ea48](https://github.com/cloudquery/plugin-pb-go/commit/190ea48ccd843999b24c158b794b3154c657cfeb))
+
 ## [1.16.7](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.6...v1.16.7) (2024-01-31)
 
 
