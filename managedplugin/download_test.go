@@ -2,6 +2,7 @@ package managedplugin
 
 import (
 	"context"
+	"os"
 	"path"
 	"testing"
 )
@@ -35,6 +36,10 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 }
 
 func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
+	apiToken := os.Getenv("CLOUDQUERY_API_TOKEN")
+	if apiToken == "" {
+		t.Fatal("CLOUDQUERY_API_TOKEN is not set")
+	}
 	tmp := t.TempDir()
 	cases := []struct {
 		testName string
@@ -50,7 +55,7 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			err := DownloadPluginFromHub(context.Background(), HubDownloadOptions{
 				LocalPath:     path.Join(tmp, tc.testName),
-				AuthToken:     "",
+				AuthToken:     apiToken,
 				TeamName:      "",
 				PluginTeam:    tc.team,
 				PluginKind:    tc.typ.String(),
