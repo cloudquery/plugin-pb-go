@@ -7,7 +7,7 @@ require (
 	github.com/avast/retry-go/v4 v4.5.1
 	github.com/cloudquery/cloudquery-api-go v1.7.2
 	github.com/distribution/reference v0.5.0
-	github.com/docker/docker v24.0.7+incompatible
+	github.com/docker/docker v24.0.8+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-cmp v0.5.9
