@@ -4,6 +4,9 @@ import (
 	"context"
 	"path"
 	"testing"
+
+	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
+	"github.com/rs/zerolog"
 )
 
 func TestDownloadPluginFromGithubIntegration(t *testing.T) {
@@ -23,9 +26,10 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 		{name: "invalid community source", org: "cloudquery", plugin: "invalid-plugin", version: "v0.0.x", wantErr: true, typ: PluginSource},
 		{name: "invalid monorepo source", org: "not-cloudquery", plugin: "invalid-plugin", version: "v0.0.x", wantErr: true, typ: PluginSource},
 	}
+	logger := zerolog.Logger{}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := DownloadPluginFromGithub(context.Background(), path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ)
+			err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DownloadPluginFromGithub() error = %v, wantErr %v", err, tc.wantErr)
 				return
@@ -46,9 +50,13 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 	}{
 		{testName: "should download test plugin from cloudquery registry", team: "cloudquery", plugin: "aws", version: "v22.18.0", typ: PluginSource},
 	}
+	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL())
+	if err != nil {
+		t.Fatalf("failed to create Hub API client: %v", err)
+	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {
-			err := DownloadPluginFromHub(context.Background(), HubDownloadOptions{
+			err := DownloadPluginFromHub(context.Background(), c, HubDownloadOptions{
 				LocalPath:     path.Join(tmp, tc.testName),
 				AuthToken:     "",
 				TeamName:      "",

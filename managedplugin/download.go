@@ -17,6 +17,7 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
+	"github.com/rs/zerolog"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -127,7 +128,7 @@ type HubDownloadOptions struct {
 	PluginVersion string
 }
 
-func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
+func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) error {
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if _, err := os.Stat(ops.LocalPath); err == nil {
 		return nil
@@ -137,7 +138,7 @@ func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
-	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, ops)
+	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, c, ops)
 	if err != nil {
 		return fmt.Errorf("failed to get plugin metadata from hub: %w", err)
 	}
@@ -198,18 +199,7 @@ func DownloadPluginFromHub(ctx context.Context, ops HubDownloadOptions) error {
 	return nil
 }
 
-func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
-	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
-		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			if ops.AuthToken != "" {
-				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ops.AuthToken))
-			}
-			return nil
-		}))
-	if err != nil {
-		return nil, -1, fmt.Errorf("failed to create Hub API client: %w", err)
-	}
-
+func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
 	target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 	aj := "application/json"
 
@@ -246,7 +236,7 @@ func downloadPluginAssetFromHub(ctx context.Context, ops HubDownloadOptions) (*c
 	}
 }
 
-func DownloadPluginFromGithub(ctx context.Context, localPath string, org string, name string, version string, typ PluginType) error {
+func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType) error {
 	downloadDir := filepath.Dir(localPath)
 	pluginZipPath := localPath + ".zip"
 
@@ -262,6 +252,7 @@ func DownloadPluginFromGithub(ctx context.Context, localPath string, org string,
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
+	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
 	if _, err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}

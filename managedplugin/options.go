@@ -57,3 +57,9 @@ func WithLicenseFile(licenseFile string) Option {
 		c.licenseFile = licenseFile
 	}
 }
+
+func WithCloudQueryDockerHost(dockerHost string) Option {
+	return func(c *Client) {
+		c.cqDockerHost = dockerHost
+	}
+}

@@ -48,6 +48,8 @@ const (
 	containerServerHealthyInitialRetryDelay = 100 * time.Millisecond
 
 	containerStopTimeoutSeconds = 10
+
+	DefaultCloudQueryDockerHost = "docker.cloudquery.io"
 )
 
 // PluginType specifies if a plugin is a source or a destination.
@@ -86,6 +88,7 @@ type Client struct {
 	config               Config
 	noSentry             bool
 	noExec               bool
+	cqDockerHost         string
 	otelEndpoint         string
 	otelEndpointInsecure bool
 	metrics              *Metrics
@@ -133,11 +136,12 @@ func (c Clients) Terminate() error {
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := &Client{
-		directory: defaultDownloadDir,
-		wg:        &sync.WaitGroup{},
-		config:    config,
-		metrics:   &Metrics{},
-		registry:  config.Registry,
+		directory:    defaultDownloadDir,
+		wg:           &sync.WaitGroup{},
+		config:       config,
+		metrics:      &Metrics{},
+		registry:     config.Registry,
+		cqDockerHost: DefaultCloudQueryDockerHost,
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -168,7 +172,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromGithub(ctx, c.LocalPath, org, name, c.config.Version, typ)
+		return DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ)
 	case RegistryDocker:
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
 			return err
@@ -184,7 +188,8 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromHub(ctx, HubDownloadOptions{
+
+		ops := HubDownloadOptions{
 			AuthToken:     c.authToken,
 			TeamName:      c.teamName,
 			LocalPath:     c.LocalPath,
@@ -192,7 +197,27 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 			PluginKind:    typ.String(),
 			PluginName:    name,
 			PluginVersion: c.config.Version,
-		})
+		}
+		hubClient, err := getHubClient(c.logger, ops)
+		if err != nil {
+			return err
+		}
+		isDocker, err := isDockerPlugin(ctx, hubClient, ops)
+		if err != nil {
+			return err
+		}
+		if isDocker {
+			path := fmt.Sprintf(c.cqDockerHost+"/%s/%s-%s:%s", ops.PluginTeam, ops.PluginKind, ops.PluginName, ops.PluginVersion)
+			c.config.Registry = RegistryDocker // will be used by exec step
+			c.config.Path = path
+			if imageAvailable, err := isDockerImageAvailable(ctx, path); err != nil {
+				return err
+			} else if !imageAvailable {
+				return pullDockerImage(ctx, path, c.authToken, c.teamName)
+			}
+			return nil
+		}
+		return DownloadPluginFromHub(ctx, hubClient, ops)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
