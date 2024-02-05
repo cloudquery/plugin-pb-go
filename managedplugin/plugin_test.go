@@ -19,7 +19,8 @@ func TestManagedPluginGitHub(t *testing.T) {
 		Path:     "cloudquery/hackernews",
 		Version:  "v1.1.4",
 	}
-	clients, err := NewClients(ctx, PluginSource, []Config{cfg}, WithDirectory(tmpDir), WithNoSentry())
+	clients, err := NewClients(ctx, PluginSource, []Config{cfg},
+		WithDirectory(tmpDir), WithNoSentry())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,6 +89,60 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 	testClient = clients.ClientByName("awspricing")
 	if testClient == nil {
 		t.Fatal("awspricing client not found")
+	}
+	if err := clients.Terminate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestManagedPluginCloudQueryDocker(t *testing.T) {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = cli.Ping(ctx)
+	if err != nil {
+		t.Skip("docker not running")
+	}
+	// note: this test requires an API key and team name to be set in the environment
+	if os.Getenv("CLOUDQUERY_TEAM_NAME") == "" {
+		t.Skip("CLOUDQUERY_TEAM_NAME not set")
+	}
+	if os.Getenv("CLOUDQUERY_API_KEY") == "" {
+		t.Skip("CLOUDQUERY_API_KEY not set")
+	}
+	if runtime.GOOS == "windows" {
+		// the docker image is not built for Windows, so would require enabling of experimental
+		// linux compatibility. We skip this test in CI for now.
+		t.Skip("this test is not supported on windows")
+	}
+
+	tmpDir := t.TempDir()
+	cfg := Config{
+		Name:     "test",
+		Registry: RegistryCloudQuery,
+		Version:  "v1.2.3",
+		Path:     "cloudquery/typeform",
+	}
+	clients, err := NewClients(ctx, PluginSource, []Config{cfg},
+		WithDirectory(tmpDir), WithNoSentry(),
+		WithAuthToken(os.Getenv("CLOUDQUERY_API_KEY")),
+		WithTeamName(os.Getenv("CLOUDQUERY_TEAM_NAME")),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testClient := clients.ClientByName("test")
+	if testClient == nil {
+		t.Fatal("test client not found")
+	}
+	v, err := testClient.Versions(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(v) < 1 {
+		t.Fatal("expected at least 1 version, got 0")
 	}
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
