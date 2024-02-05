@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.17.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.8...v1.17.0) (2024-02-05)
+
+
+### Features
+
+* Allow use of CloudQuery registry with docker plugins ([#235](https://github.com/cloudquery/plugin-pb-go/issues/235)) ([58ec077](https://github.com/cloudquery/plugin-pb-go/commit/58ec0771f976cb64470b3d1dbab058ffebec45d8))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.3 ([#237](https://github.com/cloudquery/plugin-pb-go/issues/237)) ([e7a6085](https://github.com/cloudquery/plugin-pb-go/commit/e7a6085a508719075954bd370f7182d8d82be894))
+
 ## [1.16.8](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.7...v1.16.8) (2024-02-01)
 
 
