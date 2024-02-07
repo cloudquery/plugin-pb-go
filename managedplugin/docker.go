@@ -15,6 +15,11 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
+var (
+	ErrLoginRequired = fmt.Errorf("login required")
+	ErrTeamRequired  = fmt.Errorf("team required")
+)
+
 type dockerProgressReader struct {
 	decoder        *json.Decoder
 	bar            *progressbar.ProgressBar
@@ -88,7 +93,13 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := types.ImagePullOptions{}
-	if authToken != "" && strings.HasPrefix(imageName, "docker.cloudquery.io") {
+	if strings.HasPrefix(imageName, "docker.cloudquery.io") {
+		if authToken == "" {
+			return ErrLoginRequired
+		}
+		if teamName == "" {
+			return ErrTeamRequired
+		}
 		namedRef, err := reference.ParseNormalizedNamed(imageName)
 		if err != nil {
 			return fmt.Errorf("failed to parse Docker image tag: %v", err)

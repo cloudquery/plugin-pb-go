@@ -1,5 +1,63 @@
 # Changelog
 
+## [1.17.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.8...v1.17.0) (2024-02-05)
+
+
+### Features
+
+* Allow use of CloudQuery registry with docker plugins ([#235](https://github.com/cloudquery/plugin-pb-go/issues/235)) ([58ec077](https://github.com/cloudquery/plugin-pb-go/commit/58ec0771f976cb64470b3d1dbab058ffebec45d8))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.3 ([#237](https://github.com/cloudquery/plugin-pb-go/issues/237)) ([e7a6085](https://github.com/cloudquery/plugin-pb-go/commit/e7a6085a508719075954bd370f7182d8d82be894))
+
+## [1.16.8](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.7...v1.16.8) (2024-02-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 1b97071 ([#227](https://github.com/cloudquery/plugin-pb-go/issues/227)) ([8555093](https://github.com/cloudquery/plugin-pb-go/commit/8555093ff259ac3d2700dbe766ca4e482fa39ed4))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to 1f4bbc5 ([#228](https://github.com/cloudquery/plugin-pb-go/issues/228)) ([7879be4](https://github.com/cloudquery/plugin-pb-go/commit/7879be46f8dd0601b949cf96e956b00ae322ef48))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.2 ([#225](https://github.com/cloudquery/plugin-pb-go/issues/225)) ([f6241c0](https://github.com/cloudquery/plugin-pb-go/commit/f6241c092fd810167682c21f8ed3af36ecec9f98))
+* **deps:** Update module github.com/docker/docker to v24.0.8+incompatible ([#229](https://github.com/cloudquery/plugin-pb-go/issues/229)) ([07bf3a9](https://github.com/cloudquery/plugin-pb-go/commit/07bf3a9e08bf0f1c741f377d6bc12341d6fea0b8))
+* **deps:** Update module github.com/kataras/iris/v12 to v12.2.10 ([#230](https://github.com/cloudquery/plugin-pb-go/issues/230)) ([5396892](https://github.com/cloudquery/plugin-pb-go/commit/5396892a5fefe2cec4c994ef96be9be2ff3f1718))
+* **deps:** Update module github.com/klauspost/compress to v1.17.5 ([#231](https://github.com/cloudquery/plugin-pb-go/issues/231)) ([51a1e22](https://github.com/cloudquery/plugin-pb-go/commit/51a1e22ee1806e01e659be6f34d5747fb9120ff9))
+* **deps:** Update module github.com/pierrec/lz4/v4 to v4.1.21 ([#232](https://github.com/cloudquery/plugin-pb-go/issues/232)) ([53a35b6](https://github.com/cloudquery/plugin-pb-go/commit/53a35b692f200b62aa20799658afa475bbf93692))
+* **deps:** Update module github.com/tdewolff/minify/v2 to v2.20.16 ([#233](https://github.com/cloudquery/plugin-pb-go/issues/233)) ([d8d3d36](https://github.com/cloudquery/plugin-pb-go/commit/d8d3d360363ed86d70b051b84787d393502a8d9e))
+* **deps:** Update module github.com/tdewolff/parse/v2 to v2.7.11 ([#234](https://github.com/cloudquery/plugin-pb-go/issues/234)) ([190ea48](https://github.com/cloudquery/plugin-pb-go/commit/190ea48ccd843999b24c158b794b3154c657cfeb))
+
+## [1.16.7](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.6...v1.16.7) (2024-01-31)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.1 ([#223](https://github.com/cloudquery/plugin-pb-go/issues/223)) ([6400bd2](https://github.com/cloudquery/plugin-pb-go/commit/6400bd2f016fc7f8844d6d7e6a6eb52dd24936ef))
+
+## [1.16.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.5...v1.16.6) (2024-01-23)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.0 ([#221](https://github.com/cloudquery/plugin-pb-go/issues/221)) ([444ca5d](https://github.com/cloudquery/plugin-pb-go/commit/444ca5d2ed08dde4209596edf7ba6a02db8182c2))
+
+## [1.16.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.4...v1.16.5) (2024-01-19)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v15 digest to 7e703aa ([#217](https://github.com/cloudquery/plugin-pb-go/issues/217)) ([acca74e](https://github.com/cloudquery/plugin-pb-go/commit/acca74e29a40e8ca0826eb341c410b97683c6d04))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.6.5 ([#219](https://github.com/cloudquery/plugin-pb-go/issues/219)) ([9dde568](https://github.com/cloudquery/plugin-pb-go/commit/9dde568d72f6388a97646413eca70ec1febb5a2d))
+* **docker:** Check for team and login before proceeding with docker registry download ([#220](https://github.com/cloudquery/plugin-pb-go/issues/220)) ([b87baec](https://github.com/cloudquery/plugin-pb-go/commit/b87baec65871f488f21ae6a51ee312b2b5172f1f))
+
+## [1.16.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.3...v1.16.4) (2024-01-08)
+
+
+### Bug Fixes
+
+* **deps:** Update github.com/apache/arrow/go/v15 digest to de3130e ([#216](https://github.com/cloudquery/plugin-pb-go/issues/216)) ([199467e](https://github.com/cloudquery/plugin-pb-go/commit/199467eaddac7d1de0ac0019f17d0b1555db4de8))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.6.4 ([#214](https://github.com/cloudquery/plugin-pb-go/issues/214)) ([558d4af](https://github.com/cloudquery/plugin-pb-go/commit/558d4af0cf2d1a8afced4405c93159d12c5937d1))
+
 ## [1.16.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.16.2...v1.16.3) (2024-01-03)
 
 

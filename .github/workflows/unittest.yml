@@ -26,3 +26,6 @@ jobs:
       - run: go build ./...
       - name: Run tests
         run: make test
+        env:
+          CLOUDQUERY_TEAM_NAME: ${{ secrets.CLOUDQUERY_TEAM_NAME }}
+          CLOUDQUERY_API_KEY: ${{ secrets.CLOUDQUERY_API_KEY }}
