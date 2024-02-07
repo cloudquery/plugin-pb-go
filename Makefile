@@ -9,7 +9,7 @@ lint:
 # clone plugin-pb repo
 .PHONY: clone
 clone:
-	git clone https://github.com/cloudquery/plugin-pb
+	git clone https://github.com/cloudquery/plugin-pb -b feat/plugin/json-schema
 
 .PHONY: gen-proto
 gen-proto:
