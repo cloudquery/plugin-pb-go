@@ -456,7 +456,7 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 		}
 		var structuredLogLine map[string]any
 		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
-			c.logger.Err(err).Str("line", string(line)).Msg("failed to unmarshal log line from plugin")
+			c.logger.Info().Str("level", "unknown").Msg(string(line))
 		} else {
 			c.jsonToLog(c.logger, structuredLogLine)
 		}
