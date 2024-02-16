@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -256,7 +257,10 @@ func (c *Client) ConnectionString() string {
 }
 
 func (c *Client) Metrics() Metrics {
-	return *c.metrics
+	return Metrics{
+		Errors:   atomic.LoadUint64(&c.metrics.Errors),
+		Warnings: atomic.LoadUint64(&c.metrics.Warnings),
+	}
 }
 
 func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error {
