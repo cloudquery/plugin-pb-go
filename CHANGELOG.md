@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.17.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.17.1...v1.17.2) (2024-02-16)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.4 ([#241](https://github.com/cloudquery/plugin-pb-go/issues/241)) ([4004fec](https://github.com/cloudquery/plugin-pb-go/commit/4004fecb7aafaa7ba17a214a07446bd5fb419819))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.7.5 ([#244](https://github.com/cloudquery/plugin-pb-go/issues/244)) ([3273656](https://github.com/cloudquery/plugin-pb-go/commit/32736562003aa9109c5a6c17ff99bde28f5edbf1))
+* Ensure thread-safety of Metrics function ([#245](https://github.com/cloudquery/plugin-pb-go/issues/245)) ([66b6a68](https://github.com/cloudquery/plugin-pb-go/commit/66b6a685c9b355da6ca85336febceb1c57c7a299))
+* Tolerate non-JSON log lines from plugin ([#243](https://github.com/cloudquery/plugin-pb-go/issues/243)) ([cc06909](https://github.com/cloudquery/plugin-pb-go/commit/cc06909aa63e55cb1a3e819707553eac3aa55ce0))
+
 ## [1.17.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.17.0...v1.17.1) (2024-02-07)
 
 
