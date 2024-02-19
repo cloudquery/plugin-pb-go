@@ -70,10 +70,11 @@ func (p PluginType) String() string {
 type Clients []*Client
 
 type Config struct {
-	Name     string
-	Registry Registry
-	Path     string
-	Version  string
+	Name        string
+	Registry    Registry
+	Path        string
+	Version     string
+	Environment []string // environment variables to pass to the plugin in key=value format
 }
 
 type Client struct {
@@ -393,6 +394,9 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 	cmd.Stderr = os.Stderr
+	if c.config.Environment != nil {
+		cmd.Env = c.config.Environment
+	}
 	cmd.SysProcAttr = getSysProcAttr()
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start plugin %s: %w", path, err)
@@ -422,6 +426,11 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 
 func (c *Client) getPluginArgs() []string {
 	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
+	if c.config.Environment != nil {
+		for _, env := range c.config.Environment {
+			args = append(args, "--env", env)
+		}
+	}
 	if c.grpcSocketName != "" {
 		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
 	} else {
