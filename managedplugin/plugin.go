@@ -70,10 +70,11 @@ func (p PluginType) String() string {
 type Clients []*Client
 
 type Config struct {
-	Name     string
-	Registry Registry
-	Path     string
-	Version  string
+	Name        string
+	Registry    Registry
+	Path        string
+	Version     string
+	Environment []string // environment variables to pass to the plugin in key=value format
 }
 
 type Client struct {
@@ -276,6 +277,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		Image: configPath,
 		Cmd:   pluginArgs,
 		Tty:   true,
+		Env:   c.config.Environment,
 	}
 	hostConfig := &container.HostConfig{
 		PortBindings: map[nat.Port][]nat.PortBinding{
@@ -393,6 +395,9 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 	cmd.Stderr = os.Stderr
+	if c.config.Environment != nil {
+		cmd.Env = c.config.Environment
+	}
 	cmd.SysProcAttr = getSysProcAttr()
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start plugin %s: %w", path, err)
