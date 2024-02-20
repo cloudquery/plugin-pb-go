@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.17.2...v1.18.0) (2024-02-20)
+
+
+### Features
+
+* Allow managedplugins to control their environment ([#246](https://github.com/cloudquery/plugin-pb-go/issues/246)) ([31fbbf0](https://github.com/cloudquery/plugin-pb-go/commit/31fbbf02fcdd8401e963a814119af07029c336ef))
+
 ## [1.17.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.17.1...v1.17.2) (2024-02-16)
 
 
