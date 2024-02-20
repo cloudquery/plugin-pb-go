@@ -277,6 +277,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		Image: configPath,
 		Cmd:   pluginArgs,
 		Tty:   true,
+		Env:   c.config.Environment,
 	}
 	hostConfig := &container.HostConfig{
 		PortBindings: map[nat.Port][]nat.PortBinding{
@@ -426,11 +427,6 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 
 func (c *Client) getPluginArgs() []string {
 	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
-	if c.config.Environment != nil {
-		for _, env := range c.config.Environment {
-			args = append(args, "--env", env)
-		}
-	}
 	if c.grpcSocketName != "" {
 		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
 	} else {
