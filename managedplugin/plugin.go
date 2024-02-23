@@ -271,6 +271,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %w", err)
 	}
+	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
 	config := &container.Config{
 		ExposedPorts: nat.PortSet{
