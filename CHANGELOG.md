@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.18.0...v1.19.0) (2024-02-23)
+
+
+### Features
+
+* Support Private Docker Registries ([#248](https://github.com/cloudquery/plugin-pb-go/issues/248)) ([09ca0ec](https://github.com/cloudquery/plugin-pb-go/commit/09ca0ecf8a0e6992dd0d2eb42e14f2ed55b10c79))
+
 ## [1.18.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.17.2...v1.18.0) (2024-02-20)
 
 
