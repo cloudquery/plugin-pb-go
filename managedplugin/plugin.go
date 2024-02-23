@@ -21,7 +21,6 @@ import (
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	dockerClient "github.com/docker/docker/client"
@@ -300,7 +299,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		return fmt.Errorf("failed to create container: %w", err)
 	}
 	c.containerID = resp.ID
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return fmt.Errorf("failed to start container: %w", err)
 	}
 	// wait for container to start
@@ -327,7 +326,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
 	}
-	reader, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{
+	reader, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     true,
@@ -647,7 +646,7 @@ func (c *Client) Terminate() error {
 		if err := cli.ContainerStop(context.Background(), c.containerID, container.StopOptions{Timeout: &timeout}); err != nil {
 			return fmt.Errorf("failed to stop container: %w", err)
 		}
-		if err := cli.ContainerRemove(context.Background(), c.containerID, types.ContainerRemoveOptions{}); err != nil {
+		if err := cli.ContainerRemove(context.Background(), c.containerID, container.RemoveOptions{}); err != nil {
 			return fmt.Errorf("failed to remove container: %w", err)
 		}
 	}
