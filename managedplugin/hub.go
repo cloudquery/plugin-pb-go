@@ -11,7 +11,7 @@ import (
 
 func getHubClient(logger zerolog.Logger, ops HubDownloadOptions) (*cloudquery_api.ClientWithResponses, error) {
 	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL(),
-		cloudquery_api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		cloudquery_api.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
 			if ops.AuthToken != "" {
 				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ops.AuthToken))
 			}

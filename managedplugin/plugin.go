@@ -75,6 +75,7 @@ type Config struct {
 	Path        string
 	Version     string
 	Environment []string // environment variables to pass to the plugin in key=value format
+	DockerAuth  string
 }
 
 type Client struct {
@@ -98,6 +99,7 @@ type Client struct {
 	authToken            string
 	teamName             string
 	licenseFile          string
+	dockerAuth           string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -144,6 +146,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		metrics:      &Metrics{},
 		registry:     config.Registry,
 		cqDockerHost: DefaultCloudQueryDockerHost,
+		dockerAuth:   config.DockerAuth,
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -179,7 +182,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
 			return err
 		} else if !imageAvailable {
-			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName)
+			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth)
 		}
 		return nil
 	case RegistryCloudQuery:
@@ -215,7 +218,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 			if imageAvailable, err := isDockerImageAvailable(ctx, path); err != nil {
 				return err
 			} else if !imageAvailable {
-				return pullDockerImage(ctx, path, c.authToken, c.teamName)
+				return pullDockerImage(ctx, path, c.authToken, c.teamName, "")
 			}
 			return nil
 		}
@@ -269,6 +272,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %w", err)
 	}
+	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
 	config := &container.Config{
 		ExposedPorts: nat.PortSet{

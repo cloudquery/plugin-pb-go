@@ -89,7 +89,7 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	return len(images) > 0, nil
 }
 
-func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string) error {
+func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := types.ImagePullOptions{}
@@ -119,6 +119,8 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 			return fmt.Errorf("failed to encode Docker auth config: %v", err)
 		}
 		opts.RegistryAuth = encodedAuth
+	} else if dockerHubAuth != "" {
+		opts.RegistryAuth = dockerHubAuth
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithHTTPHeaders(additionalHeaders))
