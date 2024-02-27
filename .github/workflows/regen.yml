@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         id: go
         with:
@@ -38,7 +38,7 @@ jobs:
           make clone
           make gen-proto
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v6
         with:
           # required so the PR triggers workflow runs
           token: ${{ secrets.GH_CQ_BOT }}
