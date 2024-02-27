@@ -17,7 +17,7 @@ jobs:
           # We use a manually configured cache key to avoid conflicts with the test action cache
           # See https://github.com/actions/setup-go/issues/358
           cache: false
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
