@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.19.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.0...v1.19.1) (2024-03-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 814bf88 ([#261](https://github.com/cloudquery/plugin-pb-go/issues/261)) ([0a4457c](https://github.com/cloudquery/plugin-pb-go/commit/0a4457cb4b3d594dc027108cbd2bd6b694031af2))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to df926f6 ([#262](https://github.com/cloudquery/plugin-pb-go/issues/262)) ([9753158](https://github.com/cloudquery/plugin-pb-go/commit/9753158a869f591cf1693881231a8aee742aaed9))
+* **deps:** Update module github.com/docker/docker to v24.0.9+incompatible ([#264](https://github.com/cloudquery/plugin-pb-go/issues/264)) ([907d29c](https://github.com/cloudquery/plugin-pb-go/commit/907d29cda81114c209bd8a586969cd6a0ea7e733))
+* **deps:** Update module github.com/klauspost/compress to v1.17.7 ([#265](https://github.com/cloudquery/plugin-pb-go/issues/265)) ([b985ac4](https://github.com/cloudquery/plugin-pb-go/commit/b985ac4028ac02424ea10e3a6a2065d94acb7cd2))
+* **deps:** Update module github.com/klauspost/cpuid/v2 to v2.2.7 ([#266](https://github.com/cloudquery/plugin-pb-go/issues/266)) ([de3ef8f](https://github.com/cloudquery/plugin-pb-go/commit/de3ef8f7653c8fc9dfe6f0ba405ad1586ec3c131))
+* **deps:** Update module github.com/tdewolff/minify/v2 to v2.20.18 ([#267](https://github.com/cloudquery/plugin-pb-go/issues/267)) ([9c3a433](https://github.com/cloudquery/plugin-pb-go/commit/9c3a433f4bfc99c2b6e00d8a22ce0aba4b430818))
+* **deps:** Update module github.com/ugorji/go/codec to v1.2.12 ([#268](https://github.com/cloudquery/plugin-pb-go/issues/268)) ([d9b3018](https://github.com/cloudquery/plugin-pb-go/commit/d9b3018ac83acdcec8fb8e4e5893240987cdcf68))
+* **deps:** Update module gotest.tools/v3 to v3.5.1 ([#269](https://github.com/cloudquery/plugin-pb-go/issues/269)) ([d61d653](https://github.com/cloudquery/plugin-pb-go/commit/d61d6537ee42c0b1398b6d3cd8788f2b9f0d6f91))
+
 ## [1.19.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.18.0...v1.19.0) (2024-02-23)
 
 
