@@ -10,15 +10,15 @@ require (
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/google/go-cmp v0.5.9
-	github.com/google/uuid v1.5.0
+	github.com/google/go-cmp v0.6.0
+	github.com/google/uuid v1.6.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/rs/zerolog v1.29.1
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/stretchr/testify v1.8.4
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
-	google.golang.org/grpc v1.58.3
+	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
 	gopkg.in/yaml.v3 v3.0.1
 )
