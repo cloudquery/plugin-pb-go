@@ -268,7 +268,7 @@ func (c *Client) Metrics() Metrics {
 }
 
 func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error {
-	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+	cli, err := newDockerClient()
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %w", err)
 	}
@@ -640,7 +640,7 @@ func (c *Client) Terminate() error {
 		}()
 	}
 	if c.containerID != "" {
-		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+		cli, err := newDockerClient()
 		if err != nil {
 			return fmt.Errorf("failed to create Docker client: %w", err)
 		}

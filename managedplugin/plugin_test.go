@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
-
-	"github.com/docker/docker/client"
 )
 
 func TestManagedPluginGitHub(t *testing.T) {
@@ -97,7 +95,7 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 
 func TestManagedPluginCloudQueryDocker(t *testing.T) {
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := newDockerClient()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +149,7 @@ func TestManagedPluginCloudQueryDocker(t *testing.T) {
 
 func TestManagedPluginDocker(t *testing.T) {
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := newDockerClient()
 	if err != nil {
 		t.Fatal(err)
 	}
