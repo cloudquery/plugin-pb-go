@@ -71,8 +71,17 @@ func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
 	return 0, nil
 }
 
+func newDockerClient(options ...client.Opt) (*client.Client, error) {
+	defaultOptions := []client.Opt{
+		client.FromEnv,
+		client.WithAPIVersionNegotiation(),
+	}
+	options = append(defaultOptions, options...)
+	return client.NewClientWithOpts(options...)
+}
+
 func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := newDockerClient()
 	if err != nil {
 		return false, fmt.Errorf("failed to create Docker client: %w", err)
 	}
@@ -123,7 +132,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 		opts.RegistryAuth = dockerHubAuth
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithHTTPHeaders(additionalHeaders))
+	cli, err := newDockerClient(client.WithHTTPHeaders(additionalHeaders))
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %v", err)
 	}
