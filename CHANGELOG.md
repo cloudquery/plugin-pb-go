@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.19.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.1...v1.19.2) (2024-03-05)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/grpc to v1.62.0 ([#270](https://github.com/cloudquery/plugin-pb-go/issues/270)) ([8d582d8](https://github.com/cloudquery/plugin-pb-go/commit/8d582d81fe47d831372b1576c7192cf7cd40f9fa))
+* Enable docker API negotiation ([#272](https://github.com/cloudquery/plugin-pb-go/issues/272)) ([c11cc4b](https://github.com/cloudquery/plugin-pb-go/commit/c11cc4b35d58ee3e4db272e594e323647c9d3493))
+
 ## [1.19.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.0...v1.19.1) (2024-03-01)
 
 
