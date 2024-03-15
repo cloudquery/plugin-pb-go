@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/apache/arrow/go/v15 v15.0.0-20240114144300-7e703aae55c1
 	github.com/avast/retry-go/v4 v4.5.1
-	github.com/cloudquery/cloudquery-api-go v1.7.5
+	github.com/cloudquery/cloudquery-api-go v1.8.0
 	github.com/distribution/reference v0.5.0
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-connections v0.4.0
