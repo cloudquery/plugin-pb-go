@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/apache/arrow/go/v15 v15.0.0-20240114144300-7e703aae55c1
 	github.com/avast/retry-go/v4 v4.5.1
-	github.com/cloudquery/cloudquery-api-go v1.8.1
+	github.com/cloudquery/cloudquery-api-go v1.9.0
 	github.com/distribution/reference v0.5.0
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-connections v0.4.0
@@ -55,6 +55,8 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/gorilla/css v1.0.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/iris-contrib/schema v0.0.6 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
