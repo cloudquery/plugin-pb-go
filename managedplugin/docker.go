@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/distribution/reference"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/schollz/progressbar/v3"
@@ -87,7 +87,7 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	}
 
 	// List the images matching the given name
-	images, err := cli.ImageList(ctx, types.ImageListOptions{
+	images, err := cli.ImageList(ctx, image.ListOptions{
 		Filters: filters.NewArgs(filters.Arg("reference", imageName)),
 	})
 	if err != nil {
@@ -101,7 +101,7 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
-	opts := types.ImagePullOptions{}
+	opts := image.PullOptions{}
 	if strings.HasPrefix(imageName, "docker.cloudquery.io") {
 		if authToken == "" {
 			return ErrLoginRequired
