@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.7](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.6...v1.19.7) (2024-04-01)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/docker/docker to v26 ([#292](https://github.com/cloudquery/plugin-pb-go/issues/292)) ([5274a32](https://github.com/cloudquery/plugin-pb-go/commit/5274a32e20af69d57c14ff964d301bfaacf21bc6))
+
 ## [1.19.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.5...v1.19.6) (2024-04-01)
 
 
