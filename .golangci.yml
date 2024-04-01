@@ -1,7 +1,8 @@
 run:
   tests: true
   timeout: 10m
-  skip-dirs:
+issues:
+  exclude-dirs:
     - internal/pb
 
 linters-settings:
@@ -58,11 +59,10 @@ linters-settings:
 
   gofmt:
     rewrite-rules:
-    - pattern:     'interface{}'
-      replacement: 'any'
-    - pattern:     'a[b:len(a)]'
-      replacement: 'a[b:]'
-
+      - pattern: "interface{}"
+        replacement: "any"
+      - pattern: "a[b:len(a)]"
+        replacement: "a[b:]"
 
 linters:
   enable:
