@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.19.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.4...v1.19.5) (2024-03-25)
+
+
+### Bug Fixes
+
+* Generate Go Code from `plugin-pb` ([#279](https://github.com/cloudquery/plugin-pb-go/issues/279)) ([0fcd1d9](https://github.com/cloudquery/plugin-pb-go/commit/0fcd1d9252e6ebf89f499e7f8b1113f9770f5853))
+
+## [1.19.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.3...v1.19.4) (2024-03-18)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.8.1 ([#277](https://github.com/cloudquery/plugin-pb-go/issues/277)) ([a31b8a4](https://github.com/cloudquery/plugin-pb-go/commit/a31b8a48109084cd2d8d9b48d4363c0ad54c62e7))
+
+## [1.19.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.2...v1.19.3) (2024-03-15)
+
+
+### Bug Fixes
+
+* **deps:** Update Google Golang modules ([#275](https://github.com/cloudquery/plugin-pb-go/issues/275)) ([5042880](https://github.com/cloudquery/plugin-pb-go/commit/5042880a6daa78ad0d5d3d03b22b9f78718e90a2))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.8.0 ([#276](https://github.com/cloudquery/plugin-pb-go/issues/276)) ([3af7180](https://github.com/cloudquery/plugin-pb-go/commit/3af718064b45a529f7b386c270353eaef11fdca8))
+* Generate Go Code from `plugin-pb` ([#273](https://github.com/cloudquery/plugin-pb-go/issues/273)) ([32f8973](https://github.com/cloudquery/plugin-pb-go/commit/32f89739cc51aedcd9901684c54741442cfaad8c))
+
+## [1.19.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.1...v1.19.2) (2024-03-05)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/grpc to v1.62.0 ([#270](https://github.com/cloudquery/plugin-pb-go/issues/270)) ([8d582d8](https://github.com/cloudquery/plugin-pb-go/commit/8d582d81fe47d831372b1576c7192cf7cd40f9fa))
+* Enable docker API negotiation ([#272](https://github.com/cloudquery/plugin-pb-go/issues/272)) ([c11cc4b](https://github.com/cloudquery/plugin-pb-go/commit/c11cc4b35d58ee3e4db272e594e323647c9d3493))
+
+## [1.19.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.0...v1.19.1) (2024-03-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 814bf88 ([#261](https://github.com/cloudquery/plugin-pb-go/issues/261)) ([0a4457c](https://github.com/cloudquery/plugin-pb-go/commit/0a4457cb4b3d594dc027108cbd2bd6b694031af2))
+* **deps:** Update google.golang.org/genproto/googleapis/rpc digest to df926f6 ([#262](https://github.com/cloudquery/plugin-pb-go/issues/262)) ([9753158](https://github.com/cloudquery/plugin-pb-go/commit/9753158a869f591cf1693881231a8aee742aaed9))
+* **deps:** Update module github.com/docker/docker to v24.0.9+incompatible ([#264](https://github.com/cloudquery/plugin-pb-go/issues/264)) ([907d29c](https://github.com/cloudquery/plugin-pb-go/commit/907d29cda81114c209bd8a586969cd6a0ea7e733))
+* **deps:** Update module github.com/klauspost/compress to v1.17.7 ([#265](https://github.com/cloudquery/plugin-pb-go/issues/265)) ([b985ac4](https://github.com/cloudquery/plugin-pb-go/commit/b985ac4028ac02424ea10e3a6a2065d94acb7cd2))
+* **deps:** Update module github.com/klauspost/cpuid/v2 to v2.2.7 ([#266](https://github.com/cloudquery/plugin-pb-go/issues/266)) ([de3ef8f](https://github.com/cloudquery/plugin-pb-go/commit/de3ef8f7653c8fc9dfe6f0ba405ad1586ec3c131))
+* **deps:** Update module github.com/tdewolff/minify/v2 to v2.20.18 ([#267](https://github.com/cloudquery/plugin-pb-go/issues/267)) ([9c3a433](https://github.com/cloudquery/plugin-pb-go/commit/9c3a433f4bfc99c2b6e00d8a22ce0aba4b430818))
+* **deps:** Update module github.com/ugorji/go/codec to v1.2.12 ([#268](https://github.com/cloudquery/plugin-pb-go/issues/268)) ([d9b3018](https://github.com/cloudquery/plugin-pb-go/commit/d9b3018ac83acdcec8fb8e4e5893240987cdcf68))
+* **deps:** Update module gotest.tools/v3 to v3.5.1 ([#269](https://github.com/cloudquery/plugin-pb-go/issues/269)) ([d61d653](https://github.com/cloudquery/plugin-pb-go/commit/d61d6537ee42c0b1398b6d3cd8788f2b9f0d6f91))
+
 ## [1.19.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.18.0...v1.19.0) (2024-02-23)
 
 
