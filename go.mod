@@ -13,7 +13,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/rs/zerolog v1.29.1
+	github.com/rs/zerolog v1.32.0
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/stretchr/testify v1.8.4
 	github.com/thoas/go-funk v0.9.3
