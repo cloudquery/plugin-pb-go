@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.11](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.10...v1.19.11) (2024-05-06)
+
+
+### Bug Fixes
+
+* **deps:** Upgrade `github.com/apache/arrow/go` to `v16` ([#300](https://github.com/cloudquery/plugin-pb-go/issues/300)) ([b957952](https://github.com/cloudquery/plugin-pb-go/commit/b957952e0953ea34da192f3e7b555c38af815b5d))
+
 ## [1.19.10](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.9...v1.19.10) (2024-05-06)
 
 
