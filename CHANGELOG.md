@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.19.10](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.9...v1.19.10) (2024-05-06)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/avast/retry-go/v4 to v4.6.0 ([#301](https://github.com/cloudquery/plugin-pb-go/issues/301)) ([2e37cf1](https://github.com/cloudquery/plugin-pb-go/commit/2e37cf124061acf5155119974adc7031b7efaf7d))
+* **deps:** Update module github.com/docker/docker to v26.1.1+incompatible ([#305](https://github.com/cloudquery/plugin-pb-go/issues/305)) ([240954b](https://github.com/cloudquery/plugin-pb-go/commit/240954b2b3cd7abd7fb3b2cca641dc35e18e69ed))
+* **deps:** Update module golang.org/x/exp to v0.0.0-20240416160154-fe59bbe5cc7f ([#304](https://github.com/cloudquery/plugin-pb-go/issues/304)) ([b9fef7d](https://github.com/cloudquery/plugin-pb-go/commit/b9fef7d4b157d8fd0984d9d706c269e6b0a3312e))
+* **deps:** Update module google.golang.org/protobuf to v1.34.0 ([#307](https://github.com/cloudquery/plugin-pb-go/issues/307)) ([820d74e](https://github.com/cloudquery/plugin-pb-go/commit/820d74ee3798c0277cf3820ef699988becc0244d))
+* Generate Go Code from `plugin-pb` ([#303](https://github.com/cloudquery/plugin-pb-go/issues/303)) ([3837e19](https://github.com/cloudquery/plugin-pb-go/commit/3837e19ecfcde39bec2a3afde3677941a2c251b6))
+
 ## [1.19.9](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.8...v1.19.9) (2024-04-08)
 
 
