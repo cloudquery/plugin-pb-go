@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.19.12](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.11...v1.19.12) (2024-05-07)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.9.2 ([#311](https://github.com/cloudquery/plugin-pb-go/issues/311)) ([6b649a2](https://github.com/cloudquery/plugin-pb-go/commit/6b649a2180061b22bf7dc4cd84e842f2eb2781e8))
+* Generate Go Code from `plugin-pb` ([#309](https://github.com/cloudquery/plugin-pb-go/issues/309)) ([a760b2e](https://github.com/cloudquery/plugin-pb-go/commit/a760b2eeefb805b9214f60b23ad038c07b713911))
+
 ## [1.19.11](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.10...v1.19.11) (2024-05-06)
 
 
