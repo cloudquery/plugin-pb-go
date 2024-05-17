@@ -19,15 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Plugin_GetName_FullMethodName       = "/cloudquery.plugin.v3.Plugin/GetName"
-	Plugin_GetVersion_FullMethodName    = "/cloudquery.plugin.v3.Plugin/GetVersion"
-	Plugin_GetSpecSchema_FullMethodName = "/cloudquery.plugin.v3.Plugin/GetSpecSchema"
-	Plugin_Init_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Init"
-	Plugin_GetTables_FullMethodName     = "/cloudquery.plugin.v3.Plugin/GetTables"
-	Plugin_Sync_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Sync"
-	Plugin_Read_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Read"
-	Plugin_Write_FullMethodName         = "/cloudquery.plugin.v3.Plugin/Write"
-	Plugin_Close_FullMethodName         = "/cloudquery.plugin.v3.Plugin/Close"
+	Plugin_GetName_FullMethodName        = "/cloudquery.plugin.v3.Plugin/GetName"
+	Plugin_GetVersion_FullMethodName     = "/cloudquery.plugin.v3.Plugin/GetVersion"
+	Plugin_GetSpecSchema_FullMethodName  = "/cloudquery.plugin.v3.Plugin/GetSpecSchema"
+	Plugin_Init_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Init"
+	Plugin_GetTables_FullMethodName      = "/cloudquery.plugin.v3.Plugin/GetTables"
+	Plugin_Sync_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Sync"
+	Plugin_Read_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Read"
+	Plugin_Write_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Write"
+	Plugin_Close_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Close"
+	Plugin_TestConnection_FullMethodName = "/cloudquery.plugin.v3.Plugin/TestConnection"
 )
 
 // PluginClient is the client API for Plugin service.
@@ -55,6 +56,8 @@ type PluginClient interface {
 	Write(ctx context.Context, opts ...grpc.CallOption) (Plugin_WriteClient, error)
 	// Send signal to flush and close open connections
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
+	// Validate and test the connections used by the plugin
+	TestConnection(ctx context.Context, in *TestConnection_Request, opts ...grpc.CallOption) (*TestConnection_Response, error)
 }
 
 type pluginClient struct {
@@ -217,6 +220,15 @@ func (c *pluginClient) Close(ctx context.Context, in *Close_Request, opts ...grp
 	return out, nil
 }
 
+func (c *pluginClient) TestConnection(ctx context.Context, in *TestConnection_Request, opts ...grpc.CallOption) (*TestConnection_Response, error) {
+	out := new(TestConnection_Response)
+	err := c.cc.Invoke(ctx, Plugin_TestConnection_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
@@ -242,6 +254,8 @@ type PluginServer interface {
 	Write(Plugin_WriteServer) error
 	// Send signal to flush and close open connections
 	Close(context.Context, *Close_Request) (*Close_Response, error)
+	// Validate and test the connections used by the plugin
+	TestConnection(context.Context, *TestConnection_Request) (*TestConnection_Response, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -275,6 +289,9 @@ func (UnimplementedPluginServer) Write(Plugin_WriteServer) error {
 }
 func (UnimplementedPluginServer) Close(context.Context, *Close_Request) (*Close_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Close not implemented")
+}
+func (UnimplementedPluginServer) TestConnection(context.Context, *TestConnection_Request) (*TestConnection_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestConnection not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 
@@ -465,6 +482,24 @@ func _Plugin_Close_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_TestConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestConnection_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).TestConnection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Plugin_TestConnection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).TestConnection(ctx, req.(*TestConnection_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -495,6 +530,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Close",
 			Handler:    _Plugin_Close_Handler,
+		},
+		{
+			MethodName: "TestConnection",
+			Handler:    _Plugin_TestConnection_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
