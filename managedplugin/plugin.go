@@ -477,6 +477,8 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 
 func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 	var err error
+	// TODO: Remove once there's a documented migration path per https://github.com/grpc/grpc-go/issues/7244
+	// nolint:staticcheck
 	c.Conn, err = grpc.DialContext(ctx, path,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(
@@ -520,6 +522,8 @@ func (c *Client) connectToUnixSocket(ctx context.Context) error {
 	defer cancel()
 
 	var err error
+	// TODO: Remove once there's a documented migration path per https://github.com/grpc/grpc-go/issues/7244
+	// nolint:staticcheck
 	c.Conn, err = grpc.DialContext(ktx, c.grpcSocketName,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
