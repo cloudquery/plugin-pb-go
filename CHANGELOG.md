@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.16](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.15...v1.19.16) (2024-05-23)
+
+
+### Bug Fixes
+
+* Better Error message for error downloading plugin ([#323](https://github.com/cloudquery/plugin-pb-go/issues/323)) ([7f99e76](https://github.com/cloudquery/plugin-pb-go/commit/7f99e76bd8c1836b0d9333c02d94d61db8c02a3c))
+
 ## [1.19.15](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.14...v1.19.15) (2024-05-20)
 
 
