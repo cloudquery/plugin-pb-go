@@ -27,13 +27,13 @@ func getHubClient(logger zerolog.Logger, ops HubDownloadOptions) (*cloudquery_ap
 func isDockerPlugin(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (bool, error) {
 	p, err := c.GetPluginVersionWithResponse(ctx, ops.PluginTeam, cloudquery_api.PluginKind(ops.PluginKind), ops.PluginName, ops.PluginVersion)
 	if err != nil {
-		return false, fmt.Errorf("failed to get plugin information: %w", err)
+		return false, fmt.Errorf("failed to get %s plugin (name: %s/%s@%s) information: %w", cloudquery_api.PluginKind(ops.PluginKind), ops.PluginTeam, ops.PluginVersion, ops.PluginName, err)
 	}
 	if p.StatusCode() != http.StatusOK {
-		return false, fmt.Errorf("failed to get plugin information: %s", p.Status())
+		return false, fmt.Errorf("failed to get %s plugin (name: %s/%s@%s) information: %s", cloudquery_api.PluginKind(ops.PluginKind), ops.PluginTeam, ops.PluginVersion, ops.PluginName, p.Status())
 	}
 	if p.JSON200 == nil {
-		return false, fmt.Errorf("failed to get plugin information: response body is empty")
+		return false, fmt.Errorf("failed to get %s plugin (name: %s/%s@%s) information: response body is empty", cloudquery_api.PluginKind(ops.PluginKind), ops.PluginVersion, ops.PluginTeam, ops.PluginName)
 	}
 	return p.JSON200.PackageType == "docker", nil
 }
