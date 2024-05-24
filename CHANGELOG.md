@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.17](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.16...v1.19.17) (2024-05-24)
+
+
+### Bug Fixes
+
+* Print version in error after `@`, not before ([#325](https://github.com/cloudquery/plugin-pb-go/issues/325)) ([9c40790](https://github.com/cloudquery/plugin-pb-go/commit/9c407909ff400b01909c338b6805494944a8027f))
+
 ## [1.19.16](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.15...v1.19.16) (2024-05-23)
 
 
