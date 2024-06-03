@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.19.18](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.17...v1.19.18) (2024-06-03)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to fd00a4e ([#327](https://github.com/cloudquery/plugin-pb-go/issues/327)) ([0e4ecfd](https://github.com/cloudquery/plugin-pb-go/commit/0e4ecfd481eb4dc76f44ee97a6694d75adebd728))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.11.3 ([#335](https://github.com/cloudquery/plugin-pb-go/issues/335)) ([a9db0bf](https://github.com/cloudquery/plugin-pb-go/commit/a9db0bf7899c7a565d4b92dec7ddef02d1a366ab))
+* **deps:** Update module github.com/docker/docker to v26.1.3+incompatible ([#328](https://github.com/cloudquery/plugin-pb-go/issues/328)) ([2c6b66b](https://github.com/cloudquery/plugin-pb-go/commit/2c6b66b6eeca3f33b3bb8c905cace1d9c370fb52))
+* **deps:** Update module github.com/rs/zerolog to v1.33.0 ([#332](https://github.com/cloudquery/plugin-pb-go/issues/332)) ([e8ea18b](https://github.com/cloudquery/plugin-pb-go/commit/e8ea18b41497042a09e4a5646b32ffa90a911988))
+* **deps:** Update module github.com/schollz/progressbar/v3 to v3.14.3 ([#330](https://github.com/cloudquery/plugin-pb-go/issues/330)) ([cf33df6](https://github.com/cloudquery/plugin-pb-go/commit/cf33df6058bcab8052d43039abf91b94857c0daf))
+* Generate Go Code from `plugin-pb` ([#334](https://github.com/cloudquery/plugin-pb-go/issues/334)) ([f1591a2](https://github.com/cloudquery/plugin-pb-go/commit/f1591a252785bf7813accd594a6fd520c4df4adc))
+
 ## [1.19.17](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.16...v1.19.17) (2024-05-24)
 
 
