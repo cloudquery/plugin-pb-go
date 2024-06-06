@@ -98,7 +98,7 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	return len(images) > 0, nil
 }
 
-func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string) error {
+func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string, dops DownloaderOptions) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := image.PullOptions{}
@@ -142,6 +142,14 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 		return fmt.Errorf("failed to pull Docker image: %v", err)
 	}
 	defer out.Close()
+
+	if dops.NoProgress {
+		_, err = io.Copy(io.Discard, out)
+		if err != nil {
+			return fmt.Errorf("failed to copy image pull output: %v", err)
+		}
+		return nil
+	}
 
 	// Create a progress reader to display the download progress
 	pr := &dockerProgressReader{

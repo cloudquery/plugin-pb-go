@@ -28,6 +28,12 @@ func WithNoExec() Option {
 	}
 }
 
+func WithNoProgress() Option {
+	return func(c *Client) {
+		c.noProgress = true
+	}
+}
+
 func WithOtelEndpoint(endpoint string) Option {
 	return func(c *Client) {
 		c.otelEndpoint = endpoint
