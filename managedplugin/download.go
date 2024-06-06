@@ -127,8 +127,11 @@ type HubDownloadOptions struct {
 	PluginName    string
 	PluginVersion string
 }
+type DownloaderOptions struct {
+	NoProgress bool
+}
 
-func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) error {
+func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if _, err := os.Stat(ops.LocalPath); err == nil {
 		return nil
@@ -162,7 +165,7 @@ func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResp
 		return fmt.Errorf("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
-	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location)
+	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
@@ -236,7 +239,7 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 	}
 }
 
-func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType) error {
+func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(localPath)
 	pluginZipPath := localPath + ".zip"
 
@@ -253,7 +256,7 @@ func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localP
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
 	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
-	if _, err := downloadFile(ctx, pluginZipPath, downloadURL); err != nil {
+	if _, err := downloadFile(ctx, pluginZipPath, downloadURL, dops); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
 
@@ -301,7 +304,7 @@ func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localP
 	return nil
 }
 
-func downloadFile(ctx context.Context, localPath string, downloadURL string) (string, error) {
+func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
 	// Create the file
 	out, err := os.Create(localPath)
 	if err != nil {
@@ -309,12 +312,8 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string) (st
 	}
 	defer out.Close()
 
-	return downloadFileFromURL(ctx, out, downloadURL)
-}
-
-func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) (string, error) {
 	checksum := ""
-	err := retry.Do(func() error {
+	err = retry.Do(func() error {
 		checksum = ""
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
@@ -344,11 +343,17 @@ func downloadFileFromURL(ctx context.Context, out *os.File, downloadURL string) 
 			urlForLog = parsedURL.String()
 		}
 		fmt.Printf("Downloading %s\n", urlForLog)
-		bar := downloadProgressBar(resp.ContentLength, "Downloading")
 
 		s := sha256.New()
-		// Writer the body to file
-		_, err = io.Copy(io.MultiWriter(out, bar, s), resp.Body)
+		writers := []io.Writer{out, s}
+
+		if !dops.NoProgress {
+			bar := downloadProgressBar(resp.ContentLength, "Downloading")
+			writers = append(writers, bar)
+		}
+
+		// Write the body to file
+		_, err = io.Copy(io.MultiWriter(writers...), resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
 		}

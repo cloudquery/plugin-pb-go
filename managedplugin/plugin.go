@@ -90,6 +90,7 @@ type Client struct {
 	config               Config
 	noSentry             bool
 	noExec               bool
+	noProgress           bool
 	cqDockerHost         string
 	otelEndpoint         string
 	otelEndpointInsecure bool
@@ -163,6 +164,9 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 }
 
 func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
+	dops := DownloaderOptions{
+		NoProgress: c.noProgress,
+	}
 	switch c.config.Registry {
 	case RegistryGrpc:
 		return nil // GRPC plugins are not downloaded
@@ -176,12 +180,12 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ)
+		return DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
 	case RegistryDocker:
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
 			return err
 		} else if !imageAvailable {
-			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth)
+			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth, dops)
 		}
 		return nil
 	case RegistryCloudQuery:
@@ -217,11 +221,11 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 			if imageAvailable, err := isDockerImageAvailable(ctx, path); err != nil {
 				return err
 			} else if !imageAvailable {
-				return pullDockerImage(ctx, path, c.authToken, c.teamName, "")
+				return pullDockerImage(ctx, path, c.authToken, c.teamName, "", dops)
 			}
 			return nil
 		}
-		return DownloadPluginFromHub(ctx, hubClient, ops)
+		return DownloadPluginFromHub(ctx, hubClient, ops, dops)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}

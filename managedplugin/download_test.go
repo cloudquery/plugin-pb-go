@@ -29,7 +29,7 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 	logger := zerolog.Logger{}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ)
+			err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ, DownloaderOptions{})
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DownloadPluginFromGithub() error = %v, wantErr %v", err, tc.wantErr)
 				return
@@ -64,7 +64,9 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 				PluginKind:    tc.typ.String(),
 				PluginName:    tc.plugin,
 				PluginVersion: tc.version,
-			})
+			},
+				DownloaderOptions{},
+			)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)
 				return
