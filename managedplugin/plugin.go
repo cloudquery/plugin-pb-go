@@ -180,11 +180,15 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
+		downloadMode, err := DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
+		c.metrics.DownloadMode = downloadMode
+		return err
 	case RegistryDocker:
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
+			c.metrics.DownloadMode = DownloadModeCached
 			return err
 		} else if !imageAvailable {
+			c.metrics.DownloadMode = DownloadModeRemote
 			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth, dops)
 		}
 		return nil
@@ -225,7 +229,9 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 			}
 			return nil
 		}
-		return DownloadPluginFromHub(ctx, hubClient, ops, dops)
+		downloadMode, err := DownloadPluginFromHub(ctx, hubClient, ops, dops)
+		c.metrics.DownloadMode = downloadMode
+		return err
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}

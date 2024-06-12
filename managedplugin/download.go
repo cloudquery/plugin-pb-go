@@ -131,75 +131,75 @@ type DownloaderOptions struct {
 	NoProgress bool
 }
 
-func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
+func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (DownloadMode, error) {
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if _, err := os.Stat(ops.LocalPath); err == nil {
-		return nil
+		return DownloadModeCached, nil
 	}
 
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
-		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
+		return DownloadModeRemote, fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
 	pluginAsset, statusCode, err := downloadPluginAssetFromHub(ctx, c, ops)
 	if err != nil {
-		return fmt.Errorf("failed to get plugin metadata from hub: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to get plugin metadata from hub: %w", err)
 	}
 	switch statusCode {
 	case http.StatusOK:
 		// we allow this status code
 	case http.StatusUnauthorized:
-		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
+		return DownloadModeRemote, fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+		return DownloadModeRemote, fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	case http.StatusTooManyRequests:
-		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
+		return DownloadModeRemote, fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, statusCode)
+		return DownloadModeRemote, fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, statusCode)
 	}
 	if pluginAsset == nil {
-		return fmt.Errorf("failed to get plugin metadata from hub for %v %v/%v@%v: missing json response", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+		return DownloadModeRemote, fmt.Errorf("failed to get plugin metadata from hub for %v %v/%v@%v: missing json response", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	}
 	location := pluginAsset.Location
 	if len(location) == 0 {
-		return fmt.Errorf("failed to get plugin metadata from hub: empty location from response")
+		return DownloadModeRemote, fmt.Errorf("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
-		return fmt.Errorf("failed to download plugin: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to download plugin: %w", err)
 	}
 
 	if pluginAsset.Checksum == "" {
 		fmt.Printf("Warning - checksum not verified: %s\n", writtenChecksum)
 	} else if writtenChecksum != pluginAsset.Checksum {
-		return fmt.Errorf("checksum mismatch: expected %s, got %s", pluginAsset.Checksum, writtenChecksum)
+		return DownloadModeRemote, fmt.Errorf("checksum mismatch: expected %s, got %s", pluginAsset.Checksum, writtenChecksum)
 	}
 
 	archive, err := zip.OpenReader(pluginZipPath)
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 	defer archive.Close()
 
 	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH))
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 
 	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
+		return DownloadModeRemote, fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
 	}
 	_, err = io.Copy(out, fileInArchive)
 	if err != nil {
-		return fmt.Errorf("failed to copy body to file: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to copy body to file: %w", err)
 	}
 	err = out.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to close file: %w", err)
 	}
-	return nil
+	return DownloadModeRemote, nil
 }
 
 func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
@@ -239,30 +239,30 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 	}
 }
 
-func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
+func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (DownloadMode, error) {
 	downloadDir := filepath.Dir(localPath)
 	pluginZipPath := localPath + ".zip"
 
 	if _, err := os.Stat(localPath); err == nil {
-		return nil
+		return DownloadModeCached, nil
 	}
 
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
-		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
+		return DownloadModeRemote, fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
 
 	downloadURL, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
-		return fmt.Errorf("failed to get plugin url: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to get plugin url: %w", err)
 	}
 	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
 	if _, err := downloadFile(ctx, pluginZipPath, downloadURL, dops); err != nil {
-		return fmt.Errorf("failed to download plugin: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to download plugin: %w", err)
 	}
 
 	archive, err := zip.OpenReader(pluginZipPath)
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 	defer archive.Close()
 
@@ -281,27 +281,27 @@ func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localP
 	case strings.HasPrefix(downloadURL, fmt.Sprintf("https://github.com/%s/cq-destination", org)):
 		pathInArchive = fmt.Sprintf("cq-destination-%s", name)
 	default:
-		return fmt.Errorf("unknown GitHub %s", downloadURL)
+		return DownloadModeRemote, fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
 	pathInArchive = WithBinarySuffix(pathInArchive)
 	fileInArchive, err := archive.Open(pathInArchive)
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
+		return DownloadModeRemote, fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
 	}
 	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+		return DownloadModeRemote, fmt.Errorf("failed to create file %s: %w", localPath, err)
 	}
 	_, err = io.Copy(out, fileInArchive)
 	if err != nil {
-		return fmt.Errorf("failed to copy body to file: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to copy body to file: %w", err)
 	}
 	err = out.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
+		return DownloadModeRemote, fmt.Errorf("failed to close file: %w", err)
 	}
-	return nil
+	return DownloadModeRemote, nil
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
