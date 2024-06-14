@@ -1,32 +1,28 @@
 package managedplugin
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"sync/atomic"
 )
 
-type DownloadMode int
+type DownloadSource int
 
 const (
-	DownloadModeUnknown DownloadMode = iota
-	DownloadModeCached
-	DownloadModeRemote
+	DownloadSourceUnknown DownloadSource = iota
+	DownloadSourceCached
+	DownloadSourceRemote
 )
 
-func (r DownloadMode) String() string {
+func (r DownloadSource) String() string {
 	return [...]string{"unknown", "cached", "remote"}[r]
 }
 
-func (r DownloadMode) MarshalJSON() ([]byte, error) {
-	buffer := bytes.NewBufferString(`"`)
-	buffer.WriteString(r.String())
-	buffer.WriteString(`"`)
-	return buffer.Bytes(), nil
+func (r DownloadSource) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, r.String())), nil
 }
 
-func (r *DownloadMode) UnmarshalJSON(data []byte) (err error) {
+func (r *DownloadSource) UnmarshalJSON(data []byte) (err error) {
 	var mode string
 	if err := json.Unmarshal(data, &mode); err != nil {
 		return err
@@ -37,21 +33,21 @@ func (r *DownloadMode) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
-func DownloadModeFromString(s string) (DownloadMode, error) {
+func DownloadModeFromString(s string) (DownloadSource, error) {
 	switch s {
 	case "cached":
-		return DownloadModeCached, nil
+		return DownloadSourceCached, nil
 	case "remote":
-		return DownloadModeRemote, nil
+		return DownloadSourceRemote, nil
 	default:
-		return DownloadModeUnknown, fmt.Errorf("unknown registry %s", s)
+		return DownloadSourceUnknown, fmt.Errorf("unknown registry %s", s)
 	}
 }
 
 type Metrics struct {
-	Errors       uint64
-	Warnings     uint64
-	DownloadMode DownloadMode
+	Errors         uint64
+	Warnings       uint64
+	DownloadSource DownloadSource
 }
 
 func (m *Metrics) incrementErrors() {
