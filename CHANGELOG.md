@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.20.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.19...v1.20.0) (2024-06-14)
+
+
+### Features
+
+* Expose if plugin was downloaded or cached ([#341](https://github.com/cloudquery/plugin-pb-go/issues/341)) ([1064243](https://github.com/cloudquery/plugin-pb-go/commit/1064243af6b422ddc40615c3c1e481a7d480b498))
+
+
+### Bug Fixes
+
+* Generate Go Code from `plugin-pb` ([#339](https://github.com/cloudquery/plugin-pb-go/issues/339)) ([a8a3850](https://github.com/cloudquery/plugin-pb-go/commit/a8a3850efab436534918d24657f554d7384f0741))
+
 ## [1.19.19](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.18...v1.19.19) (2024-06-06)
 
 
