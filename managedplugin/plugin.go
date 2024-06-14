@@ -184,8 +184,8 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		downloadMode, err := DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
-		return downloadMode, err
+		assetSource, err := DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
+		return assetSource, err
 	case RegistryDocker:
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
 			return AssetSourceUnknown, err
