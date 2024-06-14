@@ -151,8 +151,12 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	for _, opt := range opts {
 		opt(c)
 	}
-	if err := c.downloadPlugin(ctx, typ); err != nil {
+	assetSource, err := c.downloadPlugin(ctx, typ)
+	if err != nil {
 		return nil, err
+	}
+	if assetSource != AssetSourceUnknown {
+		c.metrics.AssetSource = assetSource
 	}
 	if !c.noExec {
 		if err := c.execPlugin(ctx); err != nil {
@@ -163,35 +167,36 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 	return c, nil
 }
 
-func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
+func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSource, error) {
 	dops := DownloaderOptions{
 		NoProgress: c.noProgress,
 	}
 	switch c.config.Registry {
 	case RegistryGrpc:
-		return nil // GRPC plugins are not downloaded
+		return AssetSourceUnknown, nil // GRPC plugins are not downloaded
 	case RegistryLocal:
-		return validateLocalExecPath(c.config.Path)
+		return AssetSourceUnknown, validateLocalExecPath(c.config.Path)
 	case RegistryGithub:
 		pathSplit := strings.Split(c.config.Path, "/")
 		if len(pathSplit) != 2 {
-			return fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", c.config.Path)
+			return AssetSourceUnknown, fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", c.config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
 		c.LocalPath = WithBinarySuffix(c.LocalPath)
-		return DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
+		assetSource, err := DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
+		return assetSource, err
 	case RegistryDocker:
 		if imageAvailable, err := isDockerImageAvailable(ctx, c.config.Path); err != nil {
-			return err
+			return AssetSourceUnknown, err
 		} else if !imageAvailable {
-			return pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth, dops)
+			return AssetSourceRemote, pullDockerImage(ctx, c.config.Path, c.authToken, c.teamName, c.dockerAuth, dops)
 		}
-		return nil
+		return AssetSourceCached, nil
 	case RegistryCloudQuery:
 		pathSplit := strings.Split(c.config.Path, "/")
 		if len(pathSplit) != 2 {
-			return fmt.Errorf("invalid cloudquery plugin path: %s. format should be team/name", c.config.Path)
+			return AssetSourceUnknown, fmt.Errorf("invalid cloudquery plugin path: %s. format should be team/name", c.config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
 		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
@@ -208,26 +213,26 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) error {
 		}
 		hubClient, err := getHubClient(c.logger, ops)
 		if err != nil {
-			return err
+			return AssetSourceUnknown, err
 		}
 		isDocker, err := isDockerPlugin(ctx, hubClient, ops)
 		if err != nil {
-			return err
+			return AssetSourceUnknown, err
 		}
 		if isDocker {
 			path := fmt.Sprintf(c.cqDockerHost+"/%s/%s-%s:%s", ops.PluginTeam, ops.PluginKind, ops.PluginName, ops.PluginVersion)
 			c.config.Registry = RegistryDocker // will be used by exec step
 			c.config.Path = path
 			if imageAvailable, err := isDockerImageAvailable(ctx, path); err != nil {
-				return err
+				return AssetSourceUnknown, err
 			} else if !imageAvailable {
-				return pullDockerImage(ctx, path, c.authToken, c.teamName, "", dops)
+				return AssetSourceRemote, pullDockerImage(ctx, path, c.authToken, c.teamName, "", dops)
 			}
-			return nil
+			return AssetSourceCached, nil
 		}
 		return DownloadPluginFromHub(ctx, hubClient, ops, dops)
 	default:
-		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
+		return AssetSourceUnknown, fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
 }
 
@@ -265,8 +270,9 @@ func (c *Client) ConnectionString() string {
 
 func (c *Client) Metrics() Metrics {
 	return Metrics{
-		Errors:   atomic.LoadUint64(&c.metrics.Errors),
-		Warnings: atomic.LoadUint64(&c.metrics.Warnings),
+		Errors:      atomic.LoadUint64(&c.metrics.Errors),
+		Warnings:    atomic.LoadUint64(&c.metrics.Warnings),
+		AssetSource: c.metrics.AssetSource,
 	}
 }
 

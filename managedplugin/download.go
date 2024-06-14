@@ -131,12 +131,15 @@ type DownloaderOptions struct {
 	NoProgress bool
 }
 
-func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
-	downloadDir := filepath.Dir(ops.LocalPath)
+func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
 	if _, err := os.Stat(ops.LocalPath); err == nil {
-		return nil
+		return AssetSourceCached, nil
 	}
+	return AssetSourceRemote, doDownloadPluginFromHub(ctx, c, ops, dops)
+}
 
+func doDownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
+	downloadDir := filepath.Dir(ops.LocalPath)
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
@@ -239,13 +242,16 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 	}
 }
 
-func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
+func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (AssetSource, error) {
+	if _, err := os.Stat(localPath); err == nil {
+		return AssetSourceCached, nil
+	}
+	return AssetSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
+}
+
+func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(localPath)
 	pluginZipPath := localPath + ".zip"
-
-	if _, err := os.Stat(localPath); err == nil {
-		return nil
-	}
 
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)

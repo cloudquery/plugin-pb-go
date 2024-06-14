@@ -29,7 +29,10 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 	logger := zerolog.Logger{}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ, DownloaderOptions{})
+			assetSource, err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ, DownloaderOptions{})
+			if assetSource != AssetSourceRemote {
+				t.Errorf("DownloadPluginFromGithub() got = %v, want %v", assetSource, AssetSourceRemote)
+			}
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DownloadPluginFromGithub() error = %v, wantErr %v", err, tc.wantErr)
 				return
@@ -56,7 +59,7 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {
-			err := DownloadPluginFromHub(context.Background(), c, HubDownloadOptions{
+			assetSource, err := DownloadPluginFromHub(context.Background(), c, HubDownloadOptions{
 				LocalPath:     path.Join(tmp, tc.testName),
 				AuthToken:     "",
 				TeamName:      "",
@@ -67,6 +70,9 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 			},
 				DownloaderOptions{},
 			)
+			if assetSource != AssetSourceRemote {
+				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() got = %v, want %v", assetSource, AssetSourceRemote)
+			}
 			if (err != nil) != tc.wantErr {
 				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)
 				return
