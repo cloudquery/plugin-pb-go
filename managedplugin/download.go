@@ -131,11 +131,11 @@ type DownloaderOptions struct {
 	NoProgress bool
 }
 
-func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (DownloadSource, error) {
+func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
 	if _, err := os.Stat(ops.LocalPath); err == nil {
-		return DownloadSourceCached, nil
+		return AssetSourceCached, nil
 	}
-	return DownloadSourceRemote, doDownloadPluginFromHub(ctx, c, ops, dops)
+	return AssetSourceRemote, doDownloadPluginFromHub(ctx, c, ops, dops)
 }
 
 func doDownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
@@ -242,11 +242,11 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 	}
 }
 
-func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (DownloadSource, error) {
+func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (AssetSource, error) {
 	if _, err := os.Stat(localPath); err == nil {
-		return DownloadSourceCached, nil
+		return AssetSourceCached, nil
 	}
-	return DownloadSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
+	return AssetSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
 }
 
 func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {

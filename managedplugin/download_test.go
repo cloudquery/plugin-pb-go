@@ -30,8 +30,8 @@ func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			downloadMode, err := DownloadPluginFromGithub(context.Background(), logger, path.Join(tmp, tc.name), tc.org, tc.plugin, tc.version, tc.typ, DownloaderOptions{})
-			if downloadMode != DownloadSourceRemote {
-				t.Errorf("DownloadPluginFromGithub() got = %v, want %v", downloadMode, DownloadSourceRemote)
+			if downloadMode != AssetSourceRemote {
+				t.Errorf("DownloadPluginFromGithub() got = %v, want %v", downloadMode, AssetSourceRemote)
 			}
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DownloadPluginFromGithub() error = %v, wantErr %v", err, tc.wantErr)
@@ -70,8 +70,8 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 			},
 				DownloaderOptions{},
 			)
-			if downloadMode != DownloadSourceRemote {
-				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() got = %v, want %v", downloadMode, DownloadSourceRemote)
+			if downloadMode != AssetSourceRemote {
+				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() got = %v, want %v", downloadMode, AssetSourceRemote)
 			}
 			if (err != nil) != tc.wantErr {
 				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)

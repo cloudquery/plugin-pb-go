@@ -6,48 +6,48 @@ import (
 	"sync/atomic"
 )
 
-type DownloadSource int
+type AssetSource int
 
 const (
-	DownloadSourceUnknown DownloadSource = iota
-	DownloadSourceCached
-	DownloadSourceRemote
+	AssetSourceUnknown AssetSource = iota
+	AssetSourceCached
+	AssetSourceRemote
 )
 
-func (r DownloadSource) String() string {
+func (r AssetSource) String() string {
 	return [...]string{"unknown", "cached", "remote"}[r]
 }
 
-func (r DownloadSource) MarshalJSON() ([]byte, error) {
+func (r AssetSource) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, r.String())), nil
 }
 
-func (r *DownloadSource) UnmarshalJSON(data []byte) (err error) {
+func (r *AssetSource) UnmarshalJSON(data []byte) (err error) {
 	var mode string
 	if err := json.Unmarshal(data, &mode); err != nil {
 		return err
 	}
-	if *r, err = DownloadModeFromString(mode); err != nil {
+	if *r, err = AssetSourceFromString(mode); err != nil {
 		return err
 	}
 	return nil
 }
 
-func DownloadModeFromString(s string) (DownloadSource, error) {
+func AssetSourceFromString(s string) (AssetSource, error) {
 	switch s {
 	case "cached":
-		return DownloadSourceCached, nil
+		return AssetSourceCached, nil
 	case "remote":
-		return DownloadSourceRemote, nil
+		return AssetSourceRemote, nil
 	default:
-		return DownloadSourceUnknown, fmt.Errorf("unknown registry %s", s)
+		return AssetSourceUnknown, fmt.Errorf("unknown mode %s", s)
 	}
 }
 
 type Metrics struct {
-	Errors         uint64
-	Warnings       uint64
-	DownloadSource DownloadSource
+	Errors      uint64
+	Warnings    uint64
+	AssetSource AssetSource
 }
 
 func (m *Metrics) incrementErrors() {
