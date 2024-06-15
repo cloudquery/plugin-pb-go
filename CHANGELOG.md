@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.0...v1.20.1) (2024-06-15)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/protobuf to v1.34.2 ([#342](https://github.com/cloudquery/plugin-pb-go/issues/342)) ([3f689d7](https://github.com/cloudquery/plugin-pb-go/commit/3f689d7ef94b771c5042ab24afb36937a25cb457))
+
 ## [1.20.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.19.19...v1.20.0) (2024-06-14)
 
 
