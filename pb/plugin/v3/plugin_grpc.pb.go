@@ -27,6 +27,7 @@ const (
 	Plugin_Sync_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Sync"
 	Plugin_Read_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Read"
 	Plugin_Write_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Write"
+	Plugin_Transform_FullMethodName      = "/cloudquery.plugin.v3.Plugin/Transform"
 	Plugin_Close_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Close"
 	Plugin_TestConnection_FullMethodName = "/cloudquery.plugin.v3.Plugin/TestConnection"
 )
@@ -54,6 +55,8 @@ type PluginClient interface {
 	Read(ctx context.Context, in *Read_Request, opts ...grpc.CallOption) (Plugin_ReadClient, error)
 	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(ctx context.Context, opts ...grpc.CallOption) (Plugin_WriteClient, error)
+	// Transform resources.
+	Transform(ctx context.Context, opts ...grpc.CallOption) (Plugin_TransformClient, error)
 	// Send signal to flush and close open connections
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -219,6 +222,38 @@ func (x *pluginWriteClient) CloseAndRecv() (*Write_Response, error) {
 	return m, nil
 }
 
+func (c *pluginClient) Transform(ctx context.Context, opts ...grpc.CallOption) (Plugin_TransformClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[3], Plugin_Transform_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pluginTransformClient{ClientStream: stream}
+	return x, nil
+}
+
+type Plugin_TransformClient interface {
+	Send(*Transform_Request) error
+	Recv() (*Transform_Response, error)
+	grpc.ClientStream
+}
+
+type pluginTransformClient struct {
+	grpc.ClientStream
+}
+
+func (x *pluginTransformClient) Send(m *Transform_Request) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *pluginTransformClient) Recv() (*Transform_Response, error) {
+	m := new(Transform_Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *pluginClient) Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Close_Response)
@@ -262,6 +297,8 @@ type PluginServer interface {
 	Read(*Read_Request, Plugin_ReadServer) error
 	// Write resources. Write is the mirror of Sync, expecting a stream of messages as input.
 	Write(Plugin_WriteServer) error
+	// Transform resources.
+	Transform(Plugin_TransformServer) error
 	// Send signal to flush and close open connections
 	Close(context.Context, *Close_Request) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -296,6 +333,9 @@ func (UnimplementedPluginServer) Read(*Read_Request, Plugin_ReadServer) error {
 }
 func (UnimplementedPluginServer) Write(Plugin_WriteServer) error {
 	return status.Errorf(codes.Unimplemented, "method Write not implemented")
+}
+func (UnimplementedPluginServer) Transform(Plugin_TransformServer) error {
+	return status.Errorf(codes.Unimplemented, "method Transform not implemented")
 }
 func (UnimplementedPluginServer) Close(context.Context, *Close_Request) (*Close_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Close not implemented")
@@ -474,6 +514,32 @@ func (x *pluginWriteServer) Recv() (*Write_Request, error) {
 	return m, nil
 }
 
+func _Plugin_Transform_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PluginServer).Transform(&pluginTransformServer{ServerStream: stream})
+}
+
+type Plugin_TransformServer interface {
+	Send(*Transform_Response) error
+	Recv() (*Transform_Request, error)
+	grpc.ServerStream
+}
+
+type pluginTransformServer struct {
+	grpc.ServerStream
+}
+
+func (x *pluginTransformServer) Send(m *Transform_Response) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *pluginTransformServer) Recv() (*Transform_Request, error) {
+	m := new(Transform_Request)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Plugin_Close_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Close_Request)
 	if err := dec(in); err != nil {
@@ -560,6 +626,12 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Write",
 			Handler:       _Plugin_Write_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Transform",
+			Handler:       _Plugin_Transform_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
