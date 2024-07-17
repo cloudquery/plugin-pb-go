@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.5...v1.20.6) (2024-07-17)
+
+
+### Bug Fixes
+
+* Revert "fix(deps): Update module github.com/docker/docker to v27" ([#362](https://github.com/cloudquery/plugin-pb-go/issues/362)) ([63fc4c5](https://github.com/cloudquery/plugin-pb-go/commit/63fc4c5c4682446ce8561ee225e6cb02a552090d))
+
 ## [1.20.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.4...v1.20.5) (2024-07-17)
 
 
