@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.20.7](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.6...v1.20.7) (2024-07-19)
+
+
+### Bug Fixes
+
+* Delete `invocation_id` log field when streaming plugins logs ([#366](https://github.com/cloudquery/plugin-pb-go/issues/366)) ([148b167](https://github.com/cloudquery/plugin-pb-go/commit/148b167aa24cd75064fa0407404bcf060ab23071))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.12.3 ([#364](https://github.com/cloudquery/plugin-pb-go/issues/364)) ([28fae3f](https://github.com/cloudquery/plugin-pb-go/commit/28fae3fab7dd225622fdea542ae67ee5649e8b8c))
+
 ## [1.20.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.5...v1.20.6) (2024-07-17)
 
 
