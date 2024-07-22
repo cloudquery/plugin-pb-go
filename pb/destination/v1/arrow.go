@@ -3,8 +3,8 @@ package destination
 import (
 	"bytes"
 
-	"github.com/apache/arrow/go/v16/arrow"
-	"github.com/apache/arrow/go/v16/arrow/ipc"
+	"github.com/apache/arrow/go/v17/arrow"
+	"github.com/apache/arrow/go/v17/arrow/ipc"
 )
 
 func NewSchemasFromBytes(b [][]byte) ([]*arrow.Schema, error) {
