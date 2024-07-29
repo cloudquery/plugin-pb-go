@@ -60,10 +60,11 @@ type PluginType int
 const (
 	PluginSource PluginType = iota
 	PluginDestination
+	PluginTransformer
 )
 
 func (p PluginType) String() string {
-	return [...]string{"source", "destination"}[p]
+	return [...]string{"source", "destination", "transformer"}[p]
 }
 
 type Clients []*Client
