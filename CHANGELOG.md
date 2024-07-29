@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.8...v1.21.0) (2024-07-29)
+
+
+### Features
+
+* Add "transformer" plugin type. ([#369](https://github.com/cloudquery/plugin-pb-go/issues/369)) ([eee68e6](https://github.com/cloudquery/plugin-pb-go/commit/eee68e665646b0a0100cae1ab237495a34815ac7))
+
 ## [1.20.8](https://github.com/cloudquery/plugin-pb-go/compare/v1.20.7...v1.20.8) (2024-07-22)
 
 
