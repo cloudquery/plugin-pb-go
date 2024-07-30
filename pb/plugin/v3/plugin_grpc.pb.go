@@ -19,17 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Plugin_GetName_FullMethodName        = "/cloudquery.plugin.v3.Plugin/GetName"
-	Plugin_GetVersion_FullMethodName     = "/cloudquery.plugin.v3.Plugin/GetVersion"
-	Plugin_GetSpecSchema_FullMethodName  = "/cloudquery.plugin.v3.Plugin/GetSpecSchema"
-	Plugin_Init_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Init"
-	Plugin_GetTables_FullMethodName      = "/cloudquery.plugin.v3.Plugin/GetTables"
-	Plugin_Sync_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Sync"
-	Plugin_Read_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Read"
-	Plugin_Write_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Write"
-	Plugin_Transform_FullMethodName      = "/cloudquery.plugin.v3.Plugin/Transform"
-	Plugin_Close_FullMethodName          = "/cloudquery.plugin.v3.Plugin/Close"
-	Plugin_TestConnection_FullMethodName = "/cloudquery.plugin.v3.Plugin/TestConnection"
+	Plugin_GetName_FullMethodName         = "/cloudquery.plugin.v3.Plugin/GetName"
+	Plugin_GetVersion_FullMethodName      = "/cloudquery.plugin.v3.Plugin/GetVersion"
+	Plugin_GetSpecSchema_FullMethodName   = "/cloudquery.plugin.v3.Plugin/GetSpecSchema"
+	Plugin_Init_FullMethodName            = "/cloudquery.plugin.v3.Plugin/Init"
+	Plugin_GetTables_FullMethodName       = "/cloudquery.plugin.v3.Plugin/GetTables"
+	Plugin_Sync_FullMethodName            = "/cloudquery.plugin.v3.Plugin/Sync"
+	Plugin_Read_FullMethodName            = "/cloudquery.plugin.v3.Plugin/Read"
+	Plugin_Write_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Write"
+	Plugin_Transform_FullMethodName       = "/cloudquery.plugin.v3.Plugin/Transform"
+	Plugin_TransformSchema_FullMethodName = "/cloudquery.plugin.v3.Plugin/TransformSchema"
+	Plugin_Close_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Close"
+	Plugin_TestConnection_FullMethodName  = "/cloudquery.plugin.v3.Plugin/TestConnection"
 )
 
 // PluginClient is the client API for Plugin service.
@@ -57,6 +58,8 @@ type PluginClient interface {
 	Write(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[Write_Request, Write_Response], error)
 	// Transform resources.
 	Transform(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Transform_Request, Transform_Response], error)
+	// Transform schemas.
+	TransformSchema(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response], error)
 	// Send signal to flush and close open connections
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -185,6 +188,19 @@ func (c *pluginClient) Transform(ctx context.Context, opts ...grpc.CallOption) (
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Plugin_TransformClient = grpc.BidiStreamingClient[Transform_Request, Transform_Response]
 
+func (c *pluginClient) TransformSchema(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[4], Plugin_TransformSchema_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TransformSchema_Request, TransformSchema_Response]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Plugin_TransformSchemaClient = grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response]
+
 func (c *pluginClient) Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Close_Response)
@@ -230,6 +246,8 @@ type PluginServer interface {
 	Write(grpc.ClientStreamingServer[Write_Request, Write_Response]) error
 	// Transform resources.
 	Transform(grpc.BidiStreamingServer[Transform_Request, Transform_Response]) error
+	// Transform schemas.
+	TransformSchema(grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]) error
 	// Send signal to flush and close open connections
 	Close(context.Context, *Close_Request) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -270,6 +288,9 @@ func (UnimplementedPluginServer) Write(grpc.ClientStreamingServer[Write_Request,
 }
 func (UnimplementedPluginServer) Transform(grpc.BidiStreamingServer[Transform_Request, Transform_Response]) error {
 	return status.Errorf(codes.Unimplemented, "method Transform not implemented")
+}
+func (UnimplementedPluginServer) TransformSchema(grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]) error {
+	return status.Errorf(codes.Unimplemented, "method TransformSchema not implemented")
 }
 func (UnimplementedPluginServer) Close(context.Context, *Close_Request) (*Close_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Close not implemented")
@@ -424,6 +445,13 @@ func _Plugin_Transform_Handler(srv interface{}, stream grpc.ServerStream) error 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Plugin_TransformServer = grpc.BidiStreamingServer[Transform_Request, Transform_Response]
 
+func _Plugin_TransformSchema_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PluginServer).TransformSchema(&grpc.GenericServerStream[TransformSchema_Request, TransformSchema_Response]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Plugin_TransformSchemaServer = grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]
+
 func _Plugin_Close_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Close_Request)
 	if err := dec(in); err != nil {
@@ -515,6 +543,12 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Transform",
 			Handler:       _Plugin_Transform_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "TransformSchema",
+			Handler:       _Plugin_TransformSchema_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
