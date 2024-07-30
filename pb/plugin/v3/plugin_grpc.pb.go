@@ -59,7 +59,7 @@ type PluginClient interface {
 	// Transform resources.
 	Transform(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Transform_Request, Transform_Response], error)
 	// Transform schemas.
-	TransformSchema(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response], error)
+	TransformSchema(ctx context.Context, in *TransformSchema_Request, opts ...grpc.CallOption) (*TransformSchema_Response, error)
 	// Send signal to flush and close open connections
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -188,18 +188,15 @@ func (c *pluginClient) Transform(ctx context.Context, opts ...grpc.CallOption) (
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Plugin_TransformClient = grpc.BidiStreamingClient[Transform_Request, Transform_Response]
 
-func (c *pluginClient) TransformSchema(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response], error) {
+func (c *pluginClient) TransformSchema(ctx context.Context, in *TransformSchema_Request, opts ...grpc.CallOption) (*TransformSchema_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[4], Plugin_TransformSchema_FullMethodName, cOpts...)
+	out := new(TransformSchema_Response)
+	err := c.cc.Invoke(ctx, Plugin_TransformSchema_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[TransformSchema_Request, TransformSchema_Response]{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Plugin_TransformSchemaClient = grpc.BidiStreamingClient[TransformSchema_Request, TransformSchema_Response]
 
 func (c *pluginClient) Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -247,7 +244,7 @@ type PluginServer interface {
 	// Transform resources.
 	Transform(grpc.BidiStreamingServer[Transform_Request, Transform_Response]) error
 	// Transform schemas.
-	TransformSchema(grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]) error
+	TransformSchema(context.Context, *TransformSchema_Request) (*TransformSchema_Response, error)
 	// Send signal to flush and close open connections
 	Close(context.Context, *Close_Request) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
@@ -289,8 +286,8 @@ func (UnimplementedPluginServer) Write(grpc.ClientStreamingServer[Write_Request,
 func (UnimplementedPluginServer) Transform(grpc.BidiStreamingServer[Transform_Request, Transform_Response]) error {
 	return status.Errorf(codes.Unimplemented, "method Transform not implemented")
 }
-func (UnimplementedPluginServer) TransformSchema(grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]) error {
-	return status.Errorf(codes.Unimplemented, "method TransformSchema not implemented")
+func (UnimplementedPluginServer) TransformSchema(context.Context, *TransformSchema_Request) (*TransformSchema_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransformSchema not implemented")
 }
 func (UnimplementedPluginServer) Close(context.Context, *Close_Request) (*Close_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Close not implemented")
@@ -445,12 +442,23 @@ func _Plugin_Transform_Handler(srv interface{}, stream grpc.ServerStream) error 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Plugin_TransformServer = grpc.BidiStreamingServer[Transform_Request, Transform_Response]
 
-func _Plugin_TransformSchema_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(PluginServer).TransformSchema(&grpc.GenericServerStream[TransformSchema_Request, TransformSchema_Response]{ServerStream: stream})
+func _Plugin_TransformSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransformSchema_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).TransformSchema(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Plugin_TransformSchema_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).TransformSchema(ctx, req.(*TransformSchema_Request))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Plugin_TransformSchemaServer = grpc.BidiStreamingServer[TransformSchema_Request, TransformSchema_Response]
 
 func _Plugin_Close_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Close_Request)
@@ -516,6 +524,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Plugin_GetTables_Handler,
 		},
 		{
+			MethodName: "TransformSchema",
+			Handler:    _Plugin_TransformSchema_Handler,
+		},
+		{
 			MethodName: "Close",
 			Handler:    _Plugin_Close_Handler,
 		},
@@ -543,12 +555,6 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Transform",
 			Handler:       _Plugin_Transform_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "TransformSchema",
-			Handler:       _Plugin_TransformSchema_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
