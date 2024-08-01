@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.21.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.21.3...v1.21.4) (2024-08-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 8a7402a ([#380](https://github.com/cloudquery/plugin-pb-go/issues/380)) ([ac649ca](https://github.com/cloudquery/plugin-pb-go/commit/ac649ca44994b0c532faac45d50aea375a4a5f88))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.12.5 ([#378](https://github.com/cloudquery/plugin-pb-go/issues/378)) ([e41ac44](https://github.com/cloudquery/plugin-pb-go/commit/e41ac44b053734508e196c8f00d01d812ba34f6a))
+* **deps:** Update module github.com/docker/docker to v26.1.5+incompatible ([#381](https://github.com/cloudquery/plugin-pb-go/issues/381)) ([887d545](https://github.com/cloudquery/plugin-pb-go/commit/887d5456bf2c0395734b693ba6902d939ac4df63))
+* **deps:** Update module github.com/schollz/progressbar/v3 to v3.14.5 ([#382](https://github.com/cloudquery/plugin-pb-go/issues/382)) ([a1356f9](https://github.com/cloudquery/plugin-pb-go/commit/a1356f946b41d1c50c7b80c85f81cd8858ec9b10))
+
 ## [1.21.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.21.2...v1.21.3) (2024-07-30)
 
 
