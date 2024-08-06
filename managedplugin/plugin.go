@@ -22,6 +22,7 @@ import (
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	dockerClient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -302,7 +303,15 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 				},
 			},
 		},
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: unixSocketDir,
+				Target: unixSocketDir,
+			},
+		},
 	}
+
 	networkingConfig := &network.NetworkingConfig{}
 	platform := &containerSpecs.Platform{}
 	containerName := c.config.Name + "-" + uuid.New().String()
