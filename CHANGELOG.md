@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.22.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.21.5...v1.22.0) (2024-08-08)
+
+
+### Features
+
+* Enable StateClients within Docker to connect to destinations ([#386](https://github.com/cloudquery/plugin-pb-go/issues/386)) ([da98954](https://github.com/cloudquery/plugin-pb-go/commit/da989541fd0644aac08e83b4f1217b50f4353d1e))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.12.7 ([#387](https://github.com/cloudquery/plugin-pb-go/issues/387)) ([790f62e](https://github.com/cloudquery/plugin-pb-go/commit/790f62e220020722cbf780fff1faaff538759e71))
+
 ## [1.21.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.21.4...v1.21.5) (2024-08-02)
 
 
