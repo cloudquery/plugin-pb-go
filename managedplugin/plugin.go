@@ -486,9 +486,12 @@ func (c *Client) startLocalUnixSocket(ctx context.Context, path string) error {
 	go c.readLogLines(reader)
 
 	err = c.connectToUnixSocket(ctx)
+	// N.B. we exit early if connecting succeeds here!
 	if err == nil {
-		return err
+		return nil
 	}
+
+	// Error scenarios:
 
 	if killErr := cmd.Process.Kill(); killErr != nil {
 		c.logger.Error().Err(killErr).Msg("failed to kill plugin process")
