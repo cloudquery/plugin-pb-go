@@ -22,7 +22,6 @@ import (
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	dockerClient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -102,6 +101,8 @@ type Client struct {
 	teamName             string
 	licenseFile          string
 	dockerAuth           string
+	useTCP               bool
+	tcpAddr              string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -263,6 +264,9 @@ func (c *Client) ConnectionString() string {
 	case RegistryLocal,
 		RegistryGithub,
 		RegistryCloudQuery:
+		if c.useTCP {
+			return tgt
+		}
 		return "unix://" + tgt
 	case RegistryDocker:
 		return tgt
@@ -295,19 +299,13 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		Env:   c.config.Environment,
 	}
 	hostConfig := &container.HostConfig{
+		ExtraHosts: []string{"host.docker.internal:host-gateway"},
 		PortBindings: map[nat.Port][]nat.PortBinding{
 			"7777/tcp": {
 				{
 					HostIP:   "localhost",
 					HostPort: "", // let host assign a random unused port
 				},
-			},
-		},
-		Mounts: []mount.Mount{
-			{
-				Type:   mount.TypeBind,
-				Source: unixSocketDir,
-				Target: unixSocketDir,
 			},
 		},
 	}
@@ -408,7 +406,60 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 	return err
 }
 
+func getFreeTCPAddr() (string, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return "", err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return "", err
+	}
+	defer l.Close()
+
+	return l.Addr().String(), nil
+}
+
 func (c *Client) startLocal(ctx context.Context, path string) error {
+	if c.useTCP {
+		tcpAddr, err := getFreeTCPAddr()
+		if err != nil {
+			return fmt.Errorf("failed to get free port: %w", err)
+		}
+		c.tcpAddr = tcpAddr
+		return c.startLocalTCP(ctx, path)
+	}
+	return c.startLocalUnixSocket(ctx, path)
+}
+
+func (c *Client) startLocalTCP(ctx context.Context, path string) error {
+	// spawn the plugin first and then connect
+	args := c.getPluginArgs()
+	cmd := exec.CommandContext(ctx, path, args...)
+	reader, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
+	}
+	cmd.Stderr = os.Stderr
+	if c.config.Environment != nil {
+		cmd.Env = c.config.Environment
+	}
+	cmd.SysProcAttr = getSysProcAttr()
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start plugin %s: %w", path, err)
+	}
+
+	c.cmd = cmd
+
+	c.logReader = reader
+	c.wg.Add(1)
+	go c.readLogLines(reader)
+
+	return c.connectUsingTCP(ctx, c.tcpAddr)
+}
+
+func (c *Client) startLocalUnixSocket(ctx context.Context, path string) error {
 	c.grpcSocketName = GenerateRandomUnixSocketName()
 	// spawn the plugin first and then connect
 	args := c.getPluginArgs()
@@ -450,9 +501,12 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 
 func (c *Client) getPluginArgs() []string {
 	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
-	if c.grpcSocketName != "" {
+	switch {
+	case c.grpcSocketName != "":
 		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
-	} else {
+	case c.useTCP:
+		args = append(args, "--network", "tcp", "--address", c.tcpAddr)
+	default:
 		args = append(args, "--network", "tcp", "--address", "0.0.0.0:7777")
 	}
 	if c.noSentry {
