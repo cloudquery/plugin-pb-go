@@ -69,3 +69,15 @@ func WithCloudQueryDockerHost(dockerHost string) Option {
 		c.cqDockerHost = dockerHost
 	}
 }
+
+func WithUseTCP() Option {
+	return func(c *Client) {
+		c.useTCP = true
+	}
+}
+
+func WithDockerExtraHosts(extraHosts []string) Option {
+	return func(c *Client) {
+		c.dockerExtraHosts = extraHosts
+	}
+}

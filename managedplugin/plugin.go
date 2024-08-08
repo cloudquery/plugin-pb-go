@@ -101,6 +101,9 @@ type Client struct {
 	teamName             string
 	licenseFile          string
 	dockerAuth           string
+	useTCP               bool
+	tcpAddr              string
+	dockerExtraHosts     []string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -141,13 +144,14 @@ func (c Clients) Terminate() error {
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := &Client{
-		directory:    defaultDownloadDir,
-		wg:           &sync.WaitGroup{},
-		config:       config,
-		metrics:      &Metrics{},
-		registry:     config.Registry,
-		cqDockerHost: DefaultCloudQueryDockerHost,
-		dockerAuth:   config.DockerAuth,
+		directory:        defaultDownloadDir,
+		wg:               &sync.WaitGroup{},
+		config:           config,
+		metrics:          &Metrics{},
+		registry:         config.Registry,
+		cqDockerHost:     DefaultCloudQueryDockerHost,
+		dockerAuth:       config.DockerAuth,
+		dockerExtraHosts: []string{},
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -262,6 +266,9 @@ func (c *Client) ConnectionString() string {
 	case RegistryLocal,
 		RegistryGithub,
 		RegistryCloudQuery:
+		if c.useTCP {
+			return tgt
+		}
 		return "unix://" + tgt
 	case RegistryDocker:
 		return tgt
@@ -294,6 +301,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		Env:   c.config.Environment,
 	}
 	hostConfig := &container.HostConfig{
+		ExtraHosts: c.dockerExtraHosts,
 		PortBindings: map[nat.Port][]nat.PortBinding{
 			"7777/tcp": {
 				{
@@ -303,6 +311,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 			},
 		},
 	}
+
 	networkingConfig := &network.NetworkingConfig{}
 	platform := &containerSpecs.Platform{}
 	containerName := c.config.Name + "-" + uuid.New().String()
@@ -399,7 +408,60 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 	return err
 }
 
+func getFreeTCPAddr() (string, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return "", err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return "", err
+	}
+	defer l.Close()
+
+	return l.Addr().String(), nil
+}
+
 func (c *Client) startLocal(ctx context.Context, path string) error {
+	if c.useTCP {
+		tcpAddr, err := getFreeTCPAddr()
+		if err != nil {
+			return fmt.Errorf("failed to get free port: %w", err)
+		}
+		c.tcpAddr = tcpAddr
+		return c.startLocalTCP(ctx, path)
+	}
+	return c.startLocalUnixSocket(ctx, path)
+}
+
+func (c *Client) startLocalTCP(ctx context.Context, path string) error {
+	// spawn the plugin first and then connect
+	args := c.getPluginArgs()
+	cmd := exec.CommandContext(ctx, path, args...)
+	reader, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
+	}
+	cmd.Stderr = os.Stderr
+	if c.config.Environment != nil {
+		cmd.Env = c.config.Environment
+	}
+	cmd.SysProcAttr = getSysProcAttr()
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start plugin %s: %w", path, err)
+	}
+
+	c.cmd = cmd
+
+	c.logReader = reader
+	c.wg.Add(1)
+	go c.readLogLines(reader)
+
+	return c.connectUsingTCP(ctx, c.tcpAddr)
+}
+
+func (c *Client) startLocalUnixSocket(ctx context.Context, path string) error {
 	c.grpcSocketName = GenerateRandomUnixSocketName()
 	// spawn the plugin first and then connect
 	args := c.getPluginArgs()
@@ -424,9 +486,12 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 	go c.readLogLines(reader)
 
 	err = c.connectToUnixSocket(ctx)
+	// N.B. we exit early if connecting succeeds here!
 	if err == nil {
-		return err
+		return nil
 	}
+
+	// Error scenarios:
 
 	if killErr := cmd.Process.Kill(); killErr != nil {
 		c.logger.Error().Err(killErr).Msg("failed to kill plugin process")
@@ -441,9 +506,12 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 
 func (c *Client) getPluginArgs() []string {
 	args := []string{"serve", "--log-level", c.logger.GetLevel().String(), "--log-format", "json"}
-	if c.grpcSocketName != "" {
+	switch {
+	case c.grpcSocketName != "":
 		args = append(args, "--network", "unix", "--address", c.grpcSocketName)
-	} else {
+	case c.useTCP:
+		args = append(args, "--network", "tcp", "--address", c.tcpAddr)
+	default:
 		args = append(args, "--network", "tcp", "--address", "0.0.0.0:7777")
 	}
 	if c.noSentry {
