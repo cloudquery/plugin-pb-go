@@ -144,14 +144,13 @@ func (c Clients) Terminate() error {
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := &Client{
-		directory:        defaultDownloadDir,
-		wg:               &sync.WaitGroup{},
-		config:           config,
-		metrics:          &Metrics{},
-		registry:         config.Registry,
-		cqDockerHost:     DefaultCloudQueryDockerHost,
-		dockerAuth:       config.DockerAuth,
-		dockerExtraHosts: []string{},
+		directory:    defaultDownloadDir,
+		wg:           &sync.WaitGroup{},
+		config:       config,
+		metrics:      &Metrics{},
+		registry:     config.Registry,
+		cqDockerHost: DefaultCloudQueryDockerHost,
+		dockerAuth:   config.DockerAuth,
 	}
 	for _, opt := range opts {
 		opt(c)
