@@ -103,6 +103,7 @@ type Client struct {
 	dockerAuth           string
 	useTCP               bool
 	tcpAddr              string
+	dockerExtraHosts     []string
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -143,13 +144,14 @@ func (c Clients) Terminate() error {
 // If registrySpec is Docker then client downloads the docker image, runs it and creates a gRPC connection.
 func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Option) (*Client, error) {
 	c := &Client{
-		directory:    defaultDownloadDir,
-		wg:           &sync.WaitGroup{},
-		config:       config,
-		metrics:      &Metrics{},
-		registry:     config.Registry,
-		cqDockerHost: DefaultCloudQueryDockerHost,
-		dockerAuth:   config.DockerAuth,
+		directory:        defaultDownloadDir,
+		wg:               &sync.WaitGroup{},
+		config:           config,
+		metrics:          &Metrics{},
+		registry:         config.Registry,
+		cqDockerHost:     DefaultCloudQueryDockerHost,
+		dockerAuth:       config.DockerAuth,
+		dockerExtraHosts: []string{""},
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -299,7 +301,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		Env:   c.config.Environment,
 	}
 	hostConfig := &container.HostConfig{
-		ExtraHosts: []string{"host.docker.internal:host-gateway"},
+		ExtraHosts: c.dockerExtraHosts,
 		PortBindings: map[nat.Port][]nat.PortBinding{
 			"7777/tcp": {
 				{

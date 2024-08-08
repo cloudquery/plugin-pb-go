@@ -75,3 +75,9 @@ func WithUseTCP() Option {
 		c.useTCP = true
 	}
 }
+
+func WithDockerExtraHosts(extraHosts []string) Option {
+	return func(c *Client) {
+		c.dockerExtraHosts = extraHosts
+	}
+}
