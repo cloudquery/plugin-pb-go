@@ -151,7 +151,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		registry:         config.Registry,
 		cqDockerHost:     DefaultCloudQueryDockerHost,
 		dockerAuth:       config.DockerAuth,
-		dockerExtraHosts: []string{""},
+		dockerExtraHosts: []string{},
 	}
 	for _, opt := range opts {
 		opt(c)
