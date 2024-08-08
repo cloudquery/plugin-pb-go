@@ -484,23 +484,19 @@ func (c *Client) startLocalUnixSocket(ctx context.Context, path string) error {
 	c.wg.Add(1)
 	go c.readLogLines(reader)
 
-	err = c.connectToUnixSocket(ctx)
-	// N.B. we exit early if connecting succeeds here!
-	if err == nil {
-		return nil
+	if err := c.connectToUnixSocket(ctx); err != nil {
+		if killErr := cmd.Process.Kill(); killErr != nil {
+			c.logger.Error().Err(killErr).Msg("failed to kill plugin process")
+		}
+
+		waitErr := cmd.Wait()
+		if waitErr != nil && errors.Is(err, context.DeadlineExceeded) {
+			return fmt.Errorf("failed to run plugin %s: %w", path, waitErr)
+		}
+		return fmt.Errorf("failed connecting to plugin %s: %w", path, err)
 	}
 
-	// Error scenarios:
-
-	if killErr := cmd.Process.Kill(); killErr != nil {
-		c.logger.Error().Err(killErr).Msg("failed to kill plugin process")
-	}
-
-	waitErr := cmd.Wait()
-	if waitErr != nil && errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("failed to run plugin %s: %w", path, waitErr)
-	}
-	return fmt.Errorf("failed connecting to plugin %s: %w", path, err)
+	return nil
 }
 
 func (c *Client) getPluginArgs() []string {
