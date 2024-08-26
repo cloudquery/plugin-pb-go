@@ -438,7 +438,6 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 					c.tcpAddr = tcpAddr
 					err = c.startLocalTCP(ctx, path)
 				}
-
 			} else {
 				err = c.startLocalUnixSocket(ctx, path)
 			}
