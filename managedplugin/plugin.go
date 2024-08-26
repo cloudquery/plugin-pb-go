@@ -423,15 +423,36 @@ func getFreeTCPAddr() (string, error) {
 }
 
 func (c *Client) startLocal(ctx context.Context, path string) error {
-	if c.useTCP {
-		tcpAddr, err := getFreeTCPAddr()
-		if err != nil {
-			return fmt.Errorf("failed to get free port: %w", err)
-		}
-		c.tcpAddr = tcpAddr
-		return c.startLocalTCP(ctx, path)
-	}
-	return c.startLocalUnixSocket(ctx, path)
+	attempt := 0
+	return retry.Do(
+		func() error {
+			attempt++
+			c.logger.Debug().Str("path", path).Int("attempt", attempt).Msg("starting plugin")
+			var err error
+			if c.useTCP {
+				var tcpAddr string
+				tcpAddr, err = getFreeTCPAddr()
+				if err != nil {
+					err = fmt.Errorf("failed to get free port: %w", err)
+				} else {
+					c.tcpAddr = tcpAddr
+					err = c.startLocalTCP(ctx, path)
+				}
+			} else {
+				err = c.startLocalUnixSocket(ctx, path)
+			}
+			if err == nil {
+				c.logger.Debug().Str("path", path).Int("attempt", attempt).Msg("plugin started successfully")
+			}
+			return err
+		},
+		retry.Attempts(3),
+		retry.Delay(1*time.Second),
+		retry.LastErrorOnly(true),
+		retry.OnRetry(func(n uint, err error) {
+			c.logger.Debug().Err(err).Int("attempt", int(n)).Msg("failed to start plugin, retrying")
+		}),
+	)
 }
 
 func (c *Client) startLocalTCP(ctx context.Context, path string) error {
