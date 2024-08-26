@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.22.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.22.0...v1.22.1) (2024-08-26)
+
+
+### Bug Fixes
+
+* Attempt to launch plugin up to 3 times ([#395](https://github.com/cloudquery/plugin-pb-go/issues/395)) ([3007cab](https://github.com/cloudquery/plugin-pb-go/commit/3007cab19998a05f692e3fc0c6e5611fddb9ea46))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.12.8 ([#391](https://github.com/cloudquery/plugin-pb-go/issues/391)) ([f7ddd41](https://github.com/cloudquery/plugin-pb-go/commit/f7ddd4141ff9a54591e2bb22d735788d84f1bc12))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.12.9 ([#393](https://github.com/cloudquery/plugin-pb-go/issues/393)) ([ab3f2b4](https://github.com/cloudquery/plugin-pb-go/commit/ab3f2b48b5c61577fcf0d3dc5677913078a8ae3b))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.13.0 ([#394](https://github.com/cloudquery/plugin-pb-go/issues/394)) ([e8f6594](https://github.com/cloudquery/plugin-pb-go/commit/e8f6594a53a89354cfb4336e8f2700fbac8a46b7))
+
 ## [1.22.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.21.5...v1.22.0) (2024-08-08)
 
 
