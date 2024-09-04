@@ -3,6 +3,7 @@ package specs
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -53,7 +54,7 @@ func (d *Destination) Validate() error {
 		if funk.ContainsString(officialPlugins, d.Name) {
 			msg += fmt.Sprintf(". Hint: try setting path to cloudquery/%s in your config", d.Name)
 		}
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	if d.Registry.NeedVersion() {
