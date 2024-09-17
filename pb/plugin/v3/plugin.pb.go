@@ -1435,6 +1435,7 @@ type Sync_Request struct {
 	SkipDependentTables bool                 `protobuf:"varint,3,opt,name=skip_dependent_tables,json=skipDependentTables,proto3" json:"skip_dependent_tables,omitempty"`
 	DeterministicCqId   bool                 `protobuf:"varint,4,opt,name=deterministic_cq_id,json=deterministicCqId,proto3" json:"deterministic_cq_id,omitempty"`
 	Backend             *Sync_BackendOptions `protobuf:"bytes,5,opt,name=backend,proto3" json:"backend,omitempty"`
+	Shard               *Sync_Request_Shard  `protobuf:"bytes,6,opt,name=shard,proto3,oneof" json:"shard,omitempty"`
 }
 
 func (x *Sync_Request) Reset() {
@@ -1500,6 +1501,13 @@ func (x *Sync_Request) GetDeterministicCqId() bool {
 func (x *Sync_Request) GetBackend() *Sync_BackendOptions {
 	if x != nil {
 		return x.Backend
+	}
+	return nil
+}
+
+func (x *Sync_Request) GetShard() *Sync_Request_Shard {
+	if x != nil {
+		return x.Shard
 	}
 	return nil
 }
@@ -1599,6 +1607,61 @@ func (*Sync_Response_Insert) isSync_Response_Message() {}
 
 func (*Sync_Response_DeleteRecord) isSync_Response_Message() {}
 
+type Sync_Request_Shard struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Num   int32 `protobuf:"varint,1,opt,name=num,proto3" json:"num,omitempty"`
+	Total int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+}
+
+func (x *Sync_Request_Shard) Reset() {
+	*x = Sync_Request_Shard{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Sync_Request_Shard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sync_Request_Shard) ProtoMessage() {}
+
+func (x *Sync_Request_Shard) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sync_Request_Shard.ProtoReflect.Descriptor instead.
+func (*Sync_Request_Shard) Descriptor() ([]byte, []int) {
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 4, 0}
+}
+
+func (x *Sync_Request_Shard) GetNum() int32 {
+	if x != nil {
+		return x.Num
+	}
+	return 0
+}
+
+func (x *Sync_Request_Shard) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
 type Read_Request struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1611,7 +1674,7 @@ type Read_Request struct {
 func (x *Read_Request) Reset() {
 	*x = Read_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1624,7 +1687,7 @@ func (x *Read_Request) String() string {
 func (*Read_Request) ProtoMessage() {}
 
 func (x *Read_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1659,7 +1722,7 @@ type Read_Response struct {
 func (x *Read_Response) Reset() {
 	*x = Read_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1672,7 +1735,7 @@ func (x *Read_Response) String() string {
 func (*Read_Response) ProtoMessage() {}
 
 func (x *Read_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1708,7 +1771,7 @@ type Write_MessageMigrateTable struct {
 func (x *Write_MessageMigrateTable) Reset() {
 	*x = Write_MessageMigrateTable{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1721,7 +1784,7 @@ func (x *Write_MessageMigrateTable) String() string {
 func (*Write_MessageMigrateTable) ProtoMessage() {}
 
 func (x *Write_MessageMigrateTable) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1763,7 +1826,7 @@ type Write_MessageInsert struct {
 func (x *Write_MessageInsert) Reset() {
 	*x = Write_MessageInsert{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1776,7 +1839,7 @@ func (x *Write_MessageInsert) String() string {
 func (*Write_MessageInsert) ProtoMessage() {}
 
 func (x *Write_MessageInsert) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1816,7 +1879,7 @@ type Write_MessageDeleteStale struct {
 func (x *Write_MessageDeleteStale) Reset() {
 	*x = Write_MessageDeleteStale{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1829,7 +1892,7 @@ func (x *Write_MessageDeleteStale) String() string {
 func (*Write_MessageDeleteStale) ProtoMessage() {}
 
 func (x *Write_MessageDeleteStale) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1887,7 +1950,7 @@ type Write_MessageDeleteRecord struct {
 func (x *Write_MessageDeleteRecord) Reset() {
 	*x = Write_MessageDeleteRecord{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1900,7 +1963,7 @@ func (x *Write_MessageDeleteRecord) String() string {
 func (*Write_MessageDeleteRecord) ProtoMessage() {}
 
 func (x *Write_MessageDeleteRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1954,7 +2017,7 @@ type Write_Request struct {
 func (x *Write_Request) Reset() {
 	*x = Write_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1967,7 +2030,7 @@ func (x *Write_Request) String() string {
 func (*Write_Request) ProtoMessage() {}
 
 func (x *Write_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2055,7 +2118,7 @@ type Write_Response struct {
 func (x *Write_Response) Reset() {
 	*x = Write_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2068,7 +2131,7 @@ func (x *Write_Response) String() string {
 func (*Write_Response) ProtoMessage() {}
 
 func (x *Write_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2096,7 +2159,7 @@ type Transform_Request struct {
 func (x *Transform_Request) Reset() {
 	*x = Transform_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2109,7 +2172,7 @@ func (x *Transform_Request) String() string {
 func (*Transform_Request) ProtoMessage() {}
 
 func (x *Transform_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2144,7 +2207,7 @@ type Transform_Response struct {
 func (x *Transform_Response) Reset() {
 	*x = Transform_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2157,7 +2220,7 @@ func (x *Transform_Response) String() string {
 func (*Transform_Response) ProtoMessage() {}
 
 func (x *Transform_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2192,7 +2255,7 @@ type TransformSchema_Request struct {
 func (x *TransformSchema_Request) Reset() {
 	*x = TransformSchema_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2205,7 +2268,7 @@ func (x *TransformSchema_Request) String() string {
 func (*TransformSchema_Request) ProtoMessage() {}
 
 func (x *TransformSchema_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2240,7 +2303,7 @@ type TransformSchema_Response struct {
 func (x *TransformSchema_Response) Reset() {
 	*x = TransformSchema_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2253,7 +2316,7 @@ func (x *TransformSchema_Response) String() string {
 func (*TransformSchema_Response) ProtoMessage() {}
 
 func (x *TransformSchema_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2285,7 +2348,7 @@ type Close_Request struct {
 func (x *Close_Request) Reset() {
 	*x = Close_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2298,7 +2361,7 @@ func (x *Close_Request) String() string {
 func (*Close_Request) ProtoMessage() {}
 
 func (x *Close_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2323,7 +2386,7 @@ type Close_Response struct {
 func (x *Close_Response) Reset() {
 	*x = Close_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2336,7 +2399,7 @@ func (x *Close_Response) String() string {
 func (*Close_Response) ProtoMessage() {}
 
 func (x *Close_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2363,7 +2426,7 @@ type TestConnection_Request struct {
 func (x *TestConnection_Request) Reset() {
 	*x = TestConnection_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2376,7 +2439,7 @@ func (x *TestConnection_Request) String() string {
 func (*TestConnection_Request) ProtoMessage() {}
 
 func (x *TestConnection_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2412,7 +2475,7 @@ type TestConnection_Response struct {
 func (x *TestConnection_Response) Reset() {
 	*x = TestConnection_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
+		mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2425,7 +2488,7 @@ func (x *TestConnection_Response) String() string {
 func (*TestConnection_Response) ProtoMessage() {}
 
 func (x *TestConnection_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2502,7 +2565,7 @@ var file_plugin_pb_plugin_v3_plugin_proto_rawDesc = []byte{
 	0x44, 0x65, 0x70, 0x65, 0x6e, 0x64, 0x65, 0x6e, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x1a,
 	0x22, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x74,
 	0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0c, 0x52, 0x06, 0x74, 0x61, 0x62,
-	0x6c, 0x65, 0x73, 0x22, 0xf4, 0x06, 0x0a, 0x04, 0x53, 0x79, 0x6e, 0x63, 0x1a, 0x27, 0x0a, 0x0d,
+	0x6c, 0x65, 0x73, 0x22, 0xf4, 0x07, 0x0a, 0x04, 0x53, 0x79, 0x6e, 0x63, 0x1a, 0x27, 0x0a, 0x0d,
 	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x73, 0x65, 0x72, 0x74, 0x12, 0x16, 0x0a,
 	0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x72,
 	0x65, 0x63, 0x6f, 0x72, 0x64, 0x1a, 0x2b, 0x0a, 0x13, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
@@ -2526,7 +2589,7 @@ var file_plugin_pb_plugin_v3_plugin_proto_rawDesc = []byte{
 	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x4e, 0x61,
 	0x6d, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x1a, 0xeb, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16,
+	0x6f, 0x6e, 0x1a, 0xeb, 0x02, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16,
 	0x0a, 0x06, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06,
 	0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x6b, 0x69, 0x70, 0x5f, 0x74,
 	0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x6b, 0x69,
@@ -2541,6 +2604,14 @@ var file_plugin_pb_plugin_v3_plugin_proto_rawDesc = []byte{
 	0x6c, 0x6f, 0x75, 0x64, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
 	0x2e, 0x76, 0x33, 0x2e, 0x53, 0x79, 0x6e, 0x63, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64,
 	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64,
+	0x12, 0x43, 0x0a, 0x05, 0x73, 0x68, 0x61, 0x72, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x6c, 0x75,
+	0x67, 0x69, 0x6e, 0x2e, 0x76, 0x33, 0x2e, 0x53, 0x79, 0x6e, 0x63, 0x2e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x2e, 0x53, 0x68, 0x61, 0x72, 0x64, 0x48, 0x00, 0x52, 0x05, 0x73, 0x68, 0x61,
+	0x72, 0x64, 0x88, 0x01, 0x01, 0x1a, 0x2f, 0x0a, 0x05, 0x53, 0x68, 0x61, 0x72, 0x64, 0x12, 0x10,
+	0x0a, 0x03, 0x6e, 0x75, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x03, 0x6e, 0x75, 0x6d,
+	0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42, 0x08, 0x0a, 0x06, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x64,
 	0x1a, 0x87, 0x02, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x55, 0x0a,
 	0x0d, 0x6d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x71, 0x75, 0x65, 0x72,
@@ -2761,7 +2832,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP() []byte {
 }
 
 var file_plugin_pb_plugin_v3_plugin_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_plugin_pb_plugin_v3_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
+var file_plugin_pb_plugin_v3_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
 var file_plugin_pb_plugin_v3_plugin_proto_goTypes = []any{
 	(Predicate_Operator)(0),           // 0: cloudquery.plugin.v3.Predicate.Operator
 	(PredicatesGroup_GroupingType)(0), // 1: cloudquery.plugin.v3.PredicatesGroup.GroupingType
@@ -2796,23 +2867,24 @@ var file_plugin_pb_plugin_v3_plugin_proto_goTypes = []any{
 	(*Sync_BackendOptions)(nil),       // 30: cloudquery.plugin.v3.Sync.BackendOptions
 	(*Sync_Request)(nil),              // 31: cloudquery.plugin.v3.Sync.Request
 	(*Sync_Response)(nil),             // 32: cloudquery.plugin.v3.Sync.Response
-	(*Read_Request)(nil),              // 33: cloudquery.plugin.v3.Read.Request
-	(*Read_Response)(nil),             // 34: cloudquery.plugin.v3.Read.Response
-	(*Write_MessageMigrateTable)(nil), // 35: cloudquery.plugin.v3.Write.MessageMigrateTable
-	(*Write_MessageInsert)(nil),       // 36: cloudquery.plugin.v3.Write.MessageInsert
-	(*Write_MessageDeleteStale)(nil),  // 37: cloudquery.plugin.v3.Write.MessageDeleteStale
-	(*Write_MessageDeleteRecord)(nil), // 38: cloudquery.plugin.v3.Write.MessageDeleteRecord
-	(*Write_Request)(nil),             // 39: cloudquery.plugin.v3.Write.Request
-	(*Write_Response)(nil),            // 40: cloudquery.plugin.v3.Write.Response
-	(*Transform_Request)(nil),         // 41: cloudquery.plugin.v3.Transform.Request
-	(*Transform_Response)(nil),        // 42: cloudquery.plugin.v3.Transform.Response
-	(*TransformSchema_Request)(nil),   // 43: cloudquery.plugin.v3.TransformSchema.Request
-	(*TransformSchema_Response)(nil),  // 44: cloudquery.plugin.v3.TransformSchema.Response
-	(*Close_Request)(nil),             // 45: cloudquery.plugin.v3.Close.Request
-	(*Close_Response)(nil),            // 46: cloudquery.plugin.v3.Close.Response
-	(*TestConnection_Request)(nil),    // 47: cloudquery.plugin.v3.TestConnection.Request
-	(*TestConnection_Response)(nil),   // 48: cloudquery.plugin.v3.TestConnection.Response
-	(*timestamppb.Timestamp)(nil),     // 49: google.protobuf.Timestamp
+	(*Sync_Request_Shard)(nil),        // 33: cloudquery.plugin.v3.Sync.Request.Shard
+	(*Read_Request)(nil),              // 34: cloudquery.plugin.v3.Read.Request
+	(*Read_Response)(nil),             // 35: cloudquery.plugin.v3.Read.Response
+	(*Write_MessageMigrateTable)(nil), // 36: cloudquery.plugin.v3.Write.MessageMigrateTable
+	(*Write_MessageInsert)(nil),       // 37: cloudquery.plugin.v3.Write.MessageInsert
+	(*Write_MessageDeleteStale)(nil),  // 38: cloudquery.plugin.v3.Write.MessageDeleteStale
+	(*Write_MessageDeleteRecord)(nil), // 39: cloudquery.plugin.v3.Write.MessageDeleteRecord
+	(*Write_Request)(nil),             // 40: cloudquery.plugin.v3.Write.Request
+	(*Write_Response)(nil),            // 41: cloudquery.plugin.v3.Write.Response
+	(*Transform_Request)(nil),         // 42: cloudquery.plugin.v3.Transform.Request
+	(*Transform_Response)(nil),        // 43: cloudquery.plugin.v3.Transform.Response
+	(*TransformSchema_Request)(nil),   // 44: cloudquery.plugin.v3.TransformSchema.Request
+	(*TransformSchema_Response)(nil),  // 45: cloudquery.plugin.v3.TransformSchema.Response
+	(*Close_Request)(nil),             // 46: cloudquery.plugin.v3.Close.Request
+	(*Close_Response)(nil),            // 47: cloudquery.plugin.v3.Close.Response
+	(*TestConnection_Request)(nil),    // 48: cloudquery.plugin.v3.TestConnection.Request
+	(*TestConnection_Response)(nil),   // 49: cloudquery.plugin.v3.TestConnection.Response
+	(*timestamppb.Timestamp)(nil),     // 50: google.protobuf.Timestamp
 }
 var file_plugin_pb_plugin_v3_plugin_proto_depIdxs = []int32{
 	0,  // 0: cloudquery.plugin.v3.Predicate.operator:type_name -> cloudquery.plugin.v3.Predicate.Operator
@@ -2821,45 +2893,46 @@ var file_plugin_pb_plugin_v3_plugin_proto_depIdxs = []int32{
 	11, // 3: cloudquery.plugin.v3.Sync.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
 	9,  // 4: cloudquery.plugin.v3.Sync.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
 	30, // 5: cloudquery.plugin.v3.Sync.Request.backend:type_name -> cloudquery.plugin.v3.Sync.BackendOptions
-	28, // 6: cloudquery.plugin.v3.Sync.Response.migrate_table:type_name -> cloudquery.plugin.v3.Sync.MessageMigrateTable
-	27, // 7: cloudquery.plugin.v3.Sync.Response.insert:type_name -> cloudquery.plugin.v3.Sync.MessageInsert
-	29, // 8: cloudquery.plugin.v3.Sync.Response.delete_record:type_name -> cloudquery.plugin.v3.Sync.MessageDeleteRecord
-	49, // 9: cloudquery.plugin.v3.Write.MessageDeleteStale.sync_time:type_name -> google.protobuf.Timestamp
-	11, // 10: cloudquery.plugin.v3.Write.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
-	9,  // 11: cloudquery.plugin.v3.Write.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
-	35, // 12: cloudquery.plugin.v3.Write.Request.migrate_table:type_name -> cloudquery.plugin.v3.Write.MessageMigrateTable
-	36, // 13: cloudquery.plugin.v3.Write.Request.insert:type_name -> cloudquery.plugin.v3.Write.MessageInsert
-	37, // 14: cloudquery.plugin.v3.Write.Request.delete:type_name -> cloudquery.plugin.v3.Write.MessageDeleteStale
-	38, // 15: cloudquery.plugin.v3.Write.Request.delete_record:type_name -> cloudquery.plugin.v3.Write.MessageDeleteRecord
-	17, // 16: cloudquery.plugin.v3.Plugin.GetName:input_type -> cloudquery.plugin.v3.GetName.Request
-	19, // 17: cloudquery.plugin.v3.Plugin.GetVersion:input_type -> cloudquery.plugin.v3.GetVersion.Request
-	21, // 18: cloudquery.plugin.v3.Plugin.GetSpecSchema:input_type -> cloudquery.plugin.v3.GetSpecSchema.Request
-	23, // 19: cloudquery.plugin.v3.Plugin.Init:input_type -> cloudquery.plugin.v3.Init.Request
-	25, // 20: cloudquery.plugin.v3.Plugin.GetTables:input_type -> cloudquery.plugin.v3.GetTables.Request
-	31, // 21: cloudquery.plugin.v3.Plugin.Sync:input_type -> cloudquery.plugin.v3.Sync.Request
-	33, // 22: cloudquery.plugin.v3.Plugin.Read:input_type -> cloudquery.plugin.v3.Read.Request
-	39, // 23: cloudquery.plugin.v3.Plugin.Write:input_type -> cloudquery.plugin.v3.Write.Request
-	41, // 24: cloudquery.plugin.v3.Plugin.Transform:input_type -> cloudquery.plugin.v3.Transform.Request
-	43, // 25: cloudquery.plugin.v3.Plugin.TransformSchema:input_type -> cloudquery.plugin.v3.TransformSchema.Request
-	45, // 26: cloudquery.plugin.v3.Plugin.Close:input_type -> cloudquery.plugin.v3.Close.Request
-	47, // 27: cloudquery.plugin.v3.Plugin.TestConnection:input_type -> cloudquery.plugin.v3.TestConnection.Request
-	18, // 28: cloudquery.plugin.v3.Plugin.GetName:output_type -> cloudquery.plugin.v3.GetName.Response
-	20, // 29: cloudquery.plugin.v3.Plugin.GetVersion:output_type -> cloudquery.plugin.v3.GetVersion.Response
-	22, // 30: cloudquery.plugin.v3.Plugin.GetSpecSchema:output_type -> cloudquery.plugin.v3.GetSpecSchema.Response
-	24, // 31: cloudquery.plugin.v3.Plugin.Init:output_type -> cloudquery.plugin.v3.Init.Response
-	26, // 32: cloudquery.plugin.v3.Plugin.GetTables:output_type -> cloudquery.plugin.v3.GetTables.Response
-	32, // 33: cloudquery.plugin.v3.Plugin.Sync:output_type -> cloudquery.plugin.v3.Sync.Response
-	34, // 34: cloudquery.plugin.v3.Plugin.Read:output_type -> cloudquery.plugin.v3.Read.Response
-	40, // 35: cloudquery.plugin.v3.Plugin.Write:output_type -> cloudquery.plugin.v3.Write.Response
-	42, // 36: cloudquery.plugin.v3.Plugin.Transform:output_type -> cloudquery.plugin.v3.Transform.Response
-	44, // 37: cloudquery.plugin.v3.Plugin.TransformSchema:output_type -> cloudquery.plugin.v3.TransformSchema.Response
-	46, // 38: cloudquery.plugin.v3.Plugin.Close:output_type -> cloudquery.plugin.v3.Close.Response
-	48, // 39: cloudquery.plugin.v3.Plugin.TestConnection:output_type -> cloudquery.plugin.v3.TestConnection.Response
-	28, // [28:40] is the sub-list for method output_type
-	16, // [16:28] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	33, // 6: cloudquery.plugin.v3.Sync.Request.shard:type_name -> cloudquery.plugin.v3.Sync.Request.Shard
+	28, // 7: cloudquery.plugin.v3.Sync.Response.migrate_table:type_name -> cloudquery.plugin.v3.Sync.MessageMigrateTable
+	27, // 8: cloudquery.plugin.v3.Sync.Response.insert:type_name -> cloudquery.plugin.v3.Sync.MessageInsert
+	29, // 9: cloudquery.plugin.v3.Sync.Response.delete_record:type_name -> cloudquery.plugin.v3.Sync.MessageDeleteRecord
+	50, // 10: cloudquery.plugin.v3.Write.MessageDeleteStale.sync_time:type_name -> google.protobuf.Timestamp
+	11, // 11: cloudquery.plugin.v3.Write.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
+	9,  // 12: cloudquery.plugin.v3.Write.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
+	36, // 13: cloudquery.plugin.v3.Write.Request.migrate_table:type_name -> cloudquery.plugin.v3.Write.MessageMigrateTable
+	37, // 14: cloudquery.plugin.v3.Write.Request.insert:type_name -> cloudquery.plugin.v3.Write.MessageInsert
+	38, // 15: cloudquery.plugin.v3.Write.Request.delete:type_name -> cloudquery.plugin.v3.Write.MessageDeleteStale
+	39, // 16: cloudquery.plugin.v3.Write.Request.delete_record:type_name -> cloudquery.plugin.v3.Write.MessageDeleteRecord
+	17, // 17: cloudquery.plugin.v3.Plugin.GetName:input_type -> cloudquery.plugin.v3.GetName.Request
+	19, // 18: cloudquery.plugin.v3.Plugin.GetVersion:input_type -> cloudquery.plugin.v3.GetVersion.Request
+	21, // 19: cloudquery.plugin.v3.Plugin.GetSpecSchema:input_type -> cloudquery.plugin.v3.GetSpecSchema.Request
+	23, // 20: cloudquery.plugin.v3.Plugin.Init:input_type -> cloudquery.plugin.v3.Init.Request
+	25, // 21: cloudquery.plugin.v3.Plugin.GetTables:input_type -> cloudquery.plugin.v3.GetTables.Request
+	31, // 22: cloudquery.plugin.v3.Plugin.Sync:input_type -> cloudquery.plugin.v3.Sync.Request
+	34, // 23: cloudquery.plugin.v3.Plugin.Read:input_type -> cloudquery.plugin.v3.Read.Request
+	40, // 24: cloudquery.plugin.v3.Plugin.Write:input_type -> cloudquery.plugin.v3.Write.Request
+	42, // 25: cloudquery.plugin.v3.Plugin.Transform:input_type -> cloudquery.plugin.v3.Transform.Request
+	44, // 26: cloudquery.plugin.v3.Plugin.TransformSchema:input_type -> cloudquery.plugin.v3.TransformSchema.Request
+	46, // 27: cloudquery.plugin.v3.Plugin.Close:input_type -> cloudquery.plugin.v3.Close.Request
+	48, // 28: cloudquery.plugin.v3.Plugin.TestConnection:input_type -> cloudquery.plugin.v3.TestConnection.Request
+	18, // 29: cloudquery.plugin.v3.Plugin.GetName:output_type -> cloudquery.plugin.v3.GetName.Response
+	20, // 30: cloudquery.plugin.v3.Plugin.GetVersion:output_type -> cloudquery.plugin.v3.GetVersion.Response
+	22, // 31: cloudquery.plugin.v3.Plugin.GetSpecSchema:output_type -> cloudquery.plugin.v3.GetSpecSchema.Response
+	24, // 32: cloudquery.plugin.v3.Plugin.Init:output_type -> cloudquery.plugin.v3.Init.Response
+	26, // 33: cloudquery.plugin.v3.Plugin.GetTables:output_type -> cloudquery.plugin.v3.GetTables.Response
+	32, // 34: cloudquery.plugin.v3.Plugin.Sync:output_type -> cloudquery.plugin.v3.Sync.Response
+	35, // 35: cloudquery.plugin.v3.Plugin.Read:output_type -> cloudquery.plugin.v3.Read.Response
+	41, // 36: cloudquery.plugin.v3.Plugin.Write:output_type -> cloudquery.plugin.v3.Write.Response
+	43, // 37: cloudquery.plugin.v3.Plugin.Transform:output_type -> cloudquery.plugin.v3.Transform.Response
+	45, // 38: cloudquery.plugin.v3.Plugin.TransformSchema:output_type -> cloudquery.plugin.v3.TransformSchema.Response
+	47, // 39: cloudquery.plugin.v3.Plugin.Close:output_type -> cloudquery.plugin.v3.Close.Response
+	49, // 40: cloudquery.plugin.v3.Plugin.TestConnection:output_type -> cloudquery.plugin.v3.TestConnection.Response
+	29, // [29:41] is the sub-list for method output_type
+	17, // [17:29] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_plugin_pb_plugin_v3_plugin_proto_init() }
@@ -3241,7 +3314,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31].Exporter = func(v any, i int) any {
-			switch v := v.(*Read_Request); i {
+			switch v := v.(*Sync_Request_Shard); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3253,7 +3326,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32].Exporter = func(v any, i int) any {
-			switch v := v.(*Read_Response); i {
+			switch v := v.(*Read_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3265,7 +3338,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_MessageMigrateTable); i {
+			switch v := v.(*Read_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3277,7 +3350,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_MessageInsert); i {
+			switch v := v.(*Write_MessageMigrateTable); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3289,7 +3362,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_MessageDeleteStale); i {
+			switch v := v.(*Write_MessageInsert); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3301,7 +3374,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_MessageDeleteRecord); i {
+			switch v := v.(*Write_MessageDeleteStale); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3313,7 +3386,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_Request); i {
+			switch v := v.(*Write_MessageDeleteRecord); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3325,7 +3398,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38].Exporter = func(v any, i int) any {
-			switch v := v.(*Write_Response); i {
+			switch v := v.(*Write_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3337,7 +3410,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39].Exporter = func(v any, i int) any {
-			switch v := v.(*Transform_Request); i {
+			switch v := v.(*Write_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3349,7 +3422,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40].Exporter = func(v any, i int) any {
-			switch v := v.(*Transform_Response); i {
+			switch v := v.(*Transform_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3361,7 +3434,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41].Exporter = func(v any, i int) any {
-			switch v := v.(*TransformSchema_Request); i {
+			switch v := v.(*Transform_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3373,7 +3446,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42].Exporter = func(v any, i int) any {
-			switch v := v.(*TransformSchema_Response); i {
+			switch v := v.(*TransformSchema_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3385,7 +3458,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43].Exporter = func(v any, i int) any {
-			switch v := v.(*Close_Request); i {
+			switch v := v.(*TransformSchema_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3397,7 +3470,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44].Exporter = func(v any, i int) any {
-			switch v := v.(*Close_Response); i {
+			switch v := v.(*Close_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3409,7 +3482,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45].Exporter = func(v any, i int) any {
-			switch v := v.(*TestConnection_Request); i {
+			switch v := v.(*Close_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3421,6 +3494,18 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			}
 		}
 		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46].Exporter = func(v any, i int) any {
+			switch v := v.(*TestConnection_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47].Exporter = func(v any, i int) any {
 			switch v := v.(*TestConnection_Response); i {
 			case 0:
 				return &v.state
@@ -3434,12 +3519,13 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 		}
 	}
 	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[20].OneofWrappers = []any{}
+	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[29].OneofWrappers = []any{}
 	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[30].OneofWrappers = []any{
 		(*Sync_Response_MigrateTable)(nil),
 		(*Sync_Response_Insert)(nil),
 		(*Sync_Response_DeleteRecord)(nil),
 	}
-	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37].OneofWrappers = []any{
+	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38].OneofWrappers = []any{
 		(*Write_Request_MigrateTable)(nil),
 		(*Write_Request_Insert)(nil),
 		(*Write_Request_Delete)(nil),
@@ -3451,7 +3537,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_plugin_pb_plugin_v3_plugin_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   47,
+			NumMessages:   48,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
