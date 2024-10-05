@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
-	google.golang.org/grpc v1.67.0
+	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
 )
