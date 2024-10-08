@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.22.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.22.4...v1.22.5) (2024-10-08)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/schollz/progressbar/v3 to v3.16.1 ([#410](https://github.com/cloudquery/plugin-pb-go/issues/410)) ([b96b6da](https://github.com/cloudquery/plugin-pb-go/commit/b96b6da6b1e807690d4e6e532b29a777bf8f3746))
+* **deps:** Update module google.golang.org/grpc to v1.67.1 ([#412](https://github.com/cloudquery/plugin-pb-go/issues/412)) ([b52b41c](https://github.com/cloudquery/plugin-pb-go/commit/b52b41c108fb37873c46d412827a4018dd1429c6))
+* Generate Go Code from `plugin-pb` ([#413](https://github.com/cloudquery/plugin-pb-go/issues/413)) ([9bcc208](https://github.com/cloudquery/plugin-pb-go/commit/9bcc208fcd40a50fd03302166d197fa5197c18c8))
+
 ## [1.22.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.22.3...v1.22.4) (2024-09-21)
 
 
