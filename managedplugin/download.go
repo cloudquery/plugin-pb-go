@@ -411,3 +411,23 @@ func WithBinarySuffix(filePath string) string {
 	}
 	return filePath
 }
+
+func findLatestPluginVersion(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (string, error) {
+	if ops.TeamName == "" {
+		return "", nil
+	}
+
+	resp, err := c.ListPluginVersionsWithResponse(ctx, ops.PluginTeam, cloudquery_api.PluginKind(ops.PluginKind), ops.PluginName, &cloudquery_api.ListPluginVersionsParams{})
+	if err != nil {
+		return "", fmt.Errorf("failed to list plugin versions: %w", err)
+	}
+	if resp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list plugin versions: %w", err)
+	}
+
+	if len(resp.JSON200.Items) == 0 {
+		return "", fmt.Errorf("no plugin versions found")
+	}
+
+	return resp.JSON200.Items[0].Name, nil
+}
