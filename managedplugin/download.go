@@ -412,7 +412,7 @@ func WithBinarySuffix(filePath string) string {
 	return filePath
 }
 
-func findLatestPluginVersion(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (string, error) {
+func FindLatestPluginVersion(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (string, error) {
 	if ops.TeamName == "" {
 		return "", fmt.Errorf("team name is required to find the latest plugin version")
 	}
