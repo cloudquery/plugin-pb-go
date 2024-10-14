@@ -692,11 +692,19 @@ func (c *Client) FindLatestPluginVersion(ctx context.Context, typ PluginType) (s
 		return "", fmt.Errorf("plugin registry is not cloudquery; cannot find latest plugin version")
 	}
 
+	if c.teamName == "" {
+		return "", fmt.Errorf("team name is required to find the latest plugin version")
+	}
+
 	pathSplit := strings.Split(c.config.Path, "/")
 	if len(pathSplit) != 2 {
 		return "", fmt.Errorf("invalid cloudquery plugin path: %s. format should be team/name", c.config.Path)
 	}
 	org, name := pathSplit[0], pathSplit[1]
+
+	if org != "cloudquery" {
+		return "", fmt.Errorf("plugin org is not cloudquery; cannot find latest plugin version")
+	}
 
 	ops := HubDownloadOptions{
 		AuthToken:     c.authToken,
@@ -712,10 +720,6 @@ func (c *Client) FindLatestPluginVersion(ctx context.Context, typ PluginType) (s
 		return "", fmt.Errorf("failed to get hub client: %w", err)
 	}
 
-	if ops.TeamName == "" {
-		return "", fmt.Errorf("team name is required to find the latest plugin version")
-	}
-
 	resp, err := hubClient.GetPluginWithResponse(ctx, ops.PluginTeam, cloudquery_api.PluginKind(ops.PluginKind), ops.PluginName)
 	if err != nil {
 		return "", fmt.Errorf("failed to get plugin: %w", err)
@@ -726,7 +730,7 @@ func (c *Client) FindLatestPluginVersion(ctx context.Context, typ PluginType) (s
 	}
 
 	if resp.JSON200.LatestVersion == nil {
-		return "", fmt.Errorf("no latest plugin version found")
+		return "", nil // It's possible to have no latest version (unpublished plugins)
 	}
 
 	return *resp.JSON200.LatestVersion, nil
