@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.23.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.22.4...v1.23.0) (2024-10-14)
+
+
+### Features
+
+* Implement API to get latest plugin version. ([#415](https://github.com/cloudquery/plugin-pb-go/issues/415)) ([eac217c](https://github.com/cloudquery/plugin-pb-go/commit/eac217ce282777c9f1fe678fd457bd5352cd28b6))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.13.1 ([#416](https://github.com/cloudquery/plugin-pb-go/issues/416)) ([e02834b](https://github.com/cloudquery/plugin-pb-go/commit/e02834ba9e4e4bcee9c58c5818d2529c3ec7a408))
+* **deps:** Update module github.com/schollz/progressbar/v3 to v3.16.1 ([#410](https://github.com/cloudquery/plugin-pb-go/issues/410)) ([b96b6da](https://github.com/cloudquery/plugin-pb-go/commit/b96b6da6b1e807690d4e6e532b29a777bf8f3746))
+* **deps:** Update module google.golang.org/grpc to v1.67.1 ([#412](https://github.com/cloudquery/plugin-pb-go/issues/412)) ([b52b41c](https://github.com/cloudquery/plugin-pb-go/commit/b52b41c108fb37873c46d412827a4018dd1429c6))
+* **deps:** Update module google.golang.org/protobuf to v1.35.1 ([#414](https://github.com/cloudquery/plugin-pb-go/issues/414)) ([700ffa6](https://github.com/cloudquery/plugin-pb-go/commit/700ffa639ca6bec24a4e0c1898c1c68bdb4c3ac4))
+* Generate Go Code from `plugin-pb` ([#413](https://github.com/cloudquery/plugin-pb-go/issues/413)) ([9bcc208](https://github.com/cloudquery/plugin-pb-go/commit/9bcc208fcd40a50fd03302166d197fa5197c18c8))
+
 ## [1.22.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.22.3...v1.22.4) (2024-09-21)
 
 
