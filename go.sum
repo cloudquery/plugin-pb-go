@@ -14,11 +14,6 @@ github.com/avast/retry-go/v4 v4.6.0/go.mod h1:gvWlPhBVsvBbLkVGDg/KwvBv0bEkCOLRRS
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
 github.com/cenkalti/backoff/v4 v4.2.1 h1:y4OZtCnogmCPw98Zjyt5a6+QwPLGkiQsYW5oUqylYbM=
 github.com/cenkalti/backoff/v4 v4.2.1/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
-<<<<<<< HEAD
-=======
-github.com/chengxilo/virtualterm v1.0.4 h1:Z6IpERbRVlfB8WkOmtbHiDbBANU7cimRIof7mk9/PwM=
-github.com/chengxilo/virtualterm v1.0.4/go.mod h1:DyxxBZz/x1iqJjFxTFcr6/x+jSpqN0iwWCOK1q10rlY=
->>>>>>> 0bfc38f (Implement PluginVersionWarner for unauthenticated version checking.)
 github.com/cloudquery/cloudquery-api-go v1.13.1 h1:jU/mpVjgamRXZUWEu+ucNZcLk9OIm5YV6q9B5en5rqQ=
 github.com/cloudquery/cloudquery-api-go v1.13.1/go.mod h1:5oo8HHnv2Y7NgcVvZn59xFlYKJUyeP0tcN8JH3IP2Aw=
 github.com/containerd/log v0.1.0 h1:TCJt7ioM2cr/tfR8GPbGf9/VRAX8D2B4PjzCpfX540I=
