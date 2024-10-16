@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
-	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
@@ -685,55 +684,6 @@ func (c *Client) Versions(ctx context.Context) ([]int, error) {
 		res[i] = int(v)
 	}
 	return res, nil
-}
-
-func (c *Client) FindLatestPluginVersion(ctx context.Context, typ PluginType) (string, error) {
-	if c.config.Registry != RegistryCloudQuery {
-		return "", fmt.Errorf("plugin registry is not cloudquery; cannot find latest plugin version")
-	}
-
-	if c.teamName == "" {
-		return "", fmt.Errorf("team name is required to find the latest plugin version")
-	}
-
-	pathSplit := strings.Split(c.config.Path, "/")
-	if len(pathSplit) != 2 {
-		return "", fmt.Errorf("invalid cloudquery plugin path: %s. format should be team/name", c.config.Path)
-	}
-	org, name := pathSplit[0], pathSplit[1]
-
-	if org != "cloudquery" {
-		return "", fmt.Errorf("plugin org is not cloudquery; cannot find latest plugin version")
-	}
-
-	ops := HubDownloadOptions{
-		AuthToken:     c.authToken,
-		TeamName:      c.teamName,
-		LocalPath:     c.LocalPath,
-		PluginTeam:    org,
-		PluginKind:    typ.String(),
-		PluginName:    name,
-		PluginVersion: c.config.Version,
-	}
-	hubClient, err := getHubClient(c.logger, ops)
-	if err != nil {
-		return "", fmt.Errorf("failed to get hub client: %w", err)
-	}
-
-	resp, err := hubClient.GetPluginWithResponse(ctx, ops.PluginTeam, cloudquery_api.PluginKind(ops.PluginKind), ops.PluginName)
-	if err != nil {
-		return "", fmt.Errorf("failed to get plugin: %w", err)
-	}
-
-	if resp.JSON200 == nil {
-		return "", fmt.Errorf("failed to get latest plugin version: %w", err)
-	}
-
-	if resp.JSON200.LatestVersion == nil {
-		return "", nil // It's possible to have no latest version (unpublished plugins)
-	}
-
-	return *resp.JSON200.LatestVersion, nil
 }
 
 func (c *Client) MaxVersion(ctx context.Context) (int, error) {

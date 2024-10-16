@@ -5,6 +5,7 @@ go 1.22.0
 toolchain go1.23.1
 
 require (
+	github.com/Masterminds/semver v1.5.0
 	github.com/apache/arrow/go/v17 v17.0.0
 	github.com/avast/retry-go/v4 v4.6.0
 	github.com/cloudquery/cloudquery-api-go v1.13.1
