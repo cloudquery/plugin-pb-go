@@ -48,6 +48,9 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 // WarnIfOutdated requests the latest version of a plugin from the hub and warns if the client's supplied version is outdated.
 // It returns true if nothing went wrong comparing the versions, and the client's version is outdated; false otherwise.
 func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, name string, kind PluginType, actualVersion string) (bool, error) {
+	if p == nil {
+		return false, nil
+	}
 	if actualVersion == "" {
 		return false, nil
 	}
