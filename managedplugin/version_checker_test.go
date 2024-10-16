@@ -12,7 +12,7 @@ import (
 func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
 	require.NoError(t, err)
-	warned, err := versionWarner.WarnIfOutdated(context.Background(), "unknown", "unknown", PluginSource, "1.0.0")
+	warned, err := versionWarner.WarnIfOutdated(context.Background(), "unknown", "unknown", "source", "1.0.0")
 	assert.Error(t, err)
 	assert.False(t, warned)
 }
@@ -21,9 +21,9 @@ func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
 func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
 	require.NoError(t, err)
-	latestVersion, err := versionWarner.getLatestVersion(context.Background(), "cloudquery", "aws", PluginSource)
+	latestVersion, err := versionWarner.getLatestVersion(context.Background(), "cloudquery", "aws", "source")
 	assert.NoError(t, err)
-	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", PluginSource, latestVersion.String())
+	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", "source", latestVersion.String())
 	assert.NoError(t, err)
 	assert.False(t, hasWarned)
 }
@@ -33,7 +33,7 @@ func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
 func TestPluginLatestVersionWarns(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
 	require.NoError(t, err)
-	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", PluginSource, "v1.0.0")
+	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", "source", "v1.0.0")
 	assert.NoError(t, err)
 	assert.True(t, hasWarned)
 }
