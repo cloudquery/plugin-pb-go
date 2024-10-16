@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.23.1...v1.24.0) (2024-10-16)
+
+
+### Features
+
+* Implement PluginVersionWarner to warn on outdated plugins. ([#419](https://github.com/cloudquery/plugin-pb-go/issues/419)) ([dc7f2bd](https://github.com/cloudquery/plugin-pb-go/commit/dc7f2bd2e6d8180e5e8cf0651d08ba40a951da66))
+
 ## [1.23.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.23.0...v1.23.1) (2024-10-14)
 
 
