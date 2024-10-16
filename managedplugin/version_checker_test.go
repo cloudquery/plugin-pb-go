@@ -10,7 +10,7 @@ import (
 )
 
 func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
-	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
+	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
 	warned, err := versionWarner.WarnIfOutdated(context.Background(), "unknown", "unknown", "source", "1.0.0")
 	assert.Error(t, err)
@@ -19,7 +19,7 @@ func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
 
 // Note: this is an integration test that requires Internet access and the hub to be running
 func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
-	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
+	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
 	latestVersion, err := versionWarner.getLatestVersion(context.Background(), "cloudquery", "aws", "source")
 	assert.NoError(t, err)
@@ -31,7 +31,7 @@ func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
 // Note: this is an integration test that requires Internet access and the hub to be running
 // CloudQuery's aws source plugin must exist in the hub, and be over version v1.0.0
 func TestPluginLatestVersionWarns(t *testing.T) {
-	versionWarner, err := NewPluginVersionWarner(zerolog.Nop())
+	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
 	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", "source", "v1.0.0")
 	assert.NoError(t, err)

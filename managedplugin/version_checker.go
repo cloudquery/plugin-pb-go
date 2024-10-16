@@ -14,8 +14,8 @@ type PluginVersionWarner struct {
 	logger    zerolog.Logger
 }
 
-func NewPluginVersionWarner(logger zerolog.Logger) (*PluginVersionWarner, error) {
-	hubClient, err := getHubClient(logger, HubDownloadOptions{}) // Does not use auth token, since API call is public
+func NewPluginVersionWarner(logger zerolog.Logger, optionalAuthToken string) (*PluginVersionWarner, error) {
+	hubClient, err := getHubClient(logger, HubDownloadOptions{AuthToken: optionalAuthToken})
 	if err != nil {
 		return nil, err
 	}
