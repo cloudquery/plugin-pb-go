@@ -26,7 +26,7 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 	if p == nil {
 		return nil, fmt.Errorf("plugin version warner is not initialized")
 	}
-	if kind != "source" && kind != "destination" && kind != "transformer" {
+	if kind != PluginSource.String() && kind != PluginDestination.String() && kind != PluginTransformer.String() {
 		p.logger.Debug().Str("plugin", name).Str("kind", kind).Msg("invalid kind")
 		return nil, fmt.Errorf("invalid kind: %s", kind)
 	}
