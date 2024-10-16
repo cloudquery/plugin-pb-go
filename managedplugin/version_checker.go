@@ -22,11 +22,15 @@ func NewPluginVersionWarner(logger zerolog.Logger) (*PluginVersionWarner, error)
 	return &PluginVersionWarner{hubClient: hubClient, logger: logger}, nil
 }
 
-func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, name string, kind PluginType) (*semver.Version, error) {
+func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
 	if p == nil {
 		return nil, fmt.Errorf("plugin version warner is not initialized")
 	}
-	resp, err := p.hubClient.GetPluginWithResponse(ctx, org, cloudquery_api.PluginKind(kind.String()), name)
+	if kind != "source" && kind != "destination" && kind != "transformer" {
+		p.logger.Debug().Str("plugin", name).Str("kind", kind).Msg("invalid kind")
+		return nil, fmt.Errorf("invalid kind: %s", kind)
+	}
+	resp, err := p.hubClient.GetPluginWithResponse(ctx, org, cloudquery_api.PluginKind(kind), name)
 	if err != nil {
 		p.logger.Debug().Str("plugin", name).Err(err).Msg("failed to get plugin info from hub")
 		return nil, err
@@ -50,7 +54,7 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 
 // WarnIfOutdated requests the latest version of a plugin from the hub and warns if the client's supplied version is outdated.
 // It returns true if nothing went wrong comparing the versions, and the client's version is outdated; false otherwise.
-func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, name string, kind PluginType, actualVersion string) (bool, error) {
+func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, name string, kind string, actualVersion string) (bool, error) {
 	if p == nil {
 		return false, fmt.Errorf("plugin version warner is not initialized")
 	}
