@@ -548,6 +548,8 @@ func (c *Client) getPluginArgs() []string {
 func (c *Client) readLogLines(reader io.ReadCloser) {
 	defer c.wg.Done()
 	lr := NewLogReader(reader)
+	// reset the context to avoid duplicate fields in the logs when streaming logs from plugins
+	pluginsLogger := c.logger.With().Reset().Timestamp().Logger()
 	for {
 		line, err := lr.NextLine()
 		if errors.Is(err, io.EOF) {
@@ -565,7 +567,7 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
 			c.logger.Info().Str("level", "unknown").Msg(string(line))
 		} else {
-			c.jsonToLog(c.logger, structuredLogLine)
+			c.jsonToLog(pluginsLogger, structuredLogLine)
 		}
 	}
 }
