@@ -4,7 +4,7 @@ import "github.com/rs/zerolog"
 
 func (c *Client) jsonToLog(l zerolog.Logger, msg map[string]any) {
 	level := msg["level"]
-	// Delete fields already added by the CLI so that they don't appear twice in the logs when we stream it from plugins
+	// The log level is part of the log message received from the plugin, so we need to remove it before logging
 	delete(msg, "level")
 	switch level {
 	case "trace":
