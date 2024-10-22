@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.24.0...v1.24.1) (2024-10-22)
+
+
+### Bug Fixes
+
+* Reset logger context when streaming logs from plugins ([#421](https://github.com/cloudquery/plugin-pb-go/issues/421)) ([608e08a](https://github.com/cloudquery/plugin-pb-go/commit/608e08a5080e39180b737a036023867eb51d5065))
+
 ## [1.24.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.23.1...v1.24.0) (2024-10-16)
 
 
