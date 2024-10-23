@@ -3,6 +3,7 @@ package managedplugin
 import (
 	"context"
 	"path"
+	"strings"
 	"testing"
 
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
@@ -59,7 +60,7 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.testName, func(t *testing.T) {
-			assetSource, err := DownloadPluginFromHub(context.Background(), c, HubDownloadOptions{
+			assetSource, err := DownloadPluginFromHub(context.Background(), zerolog.Nop(), c, HubDownloadOptions{
 				LocalPath:     path.Join(tmp, tc.testName),
 				AuthToken:     "",
 				TeamName:      "",
@@ -76,6 +77,56 @@ func TestDownloadPluginFromCloudQueryHub(t *testing.T) {
 			if (err != nil) != tc.wantErr {
 				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestDownloadPluginNonExistentVersionFromCloudQueryHub(t *testing.T) {
+	tmp := t.TempDir()
+	cases := []struct {
+		testName string
+		team     string
+		plugin   string
+		typ      PluginType
+		version  string
+		wantErr  bool
+		errStr   string
+	}{
+		{
+			testName: "should download test plugin from cloudquery registry with non-existent version",
+			team:     "cloudquery", plugin: "aws", version: "v9000.0.0", typ: PluginSource, wantErr: true,
+			// This is only a prefix as the latest version won't be fixed in an integration test
+			errStr: "version v9000.0.0 does not exist, consider using the latest version at https://hub.cloudquery.io/plugins/source/cloudquery/aws/v",
+		},
+	}
+	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL())
+	if err != nil {
+		t.Fatalf("failed to create Hub API client: %v", err)
+	}
+	for _, tc := range cases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assetSource, err := DownloadPluginFromHub(context.Background(), zerolog.Nop(), c, HubDownloadOptions{
+				LocalPath:     path.Join(tmp, tc.testName),
+				AuthToken:     "",
+				TeamName:      "",
+				PluginTeam:    tc.team,
+				PluginKind:    tc.typ.String(),
+				PluginName:    tc.plugin,
+				PluginVersion: tc.version,
+			},
+				DownloaderOptions{},
+			)
+			if assetSource != AssetSourceRemote {
+				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() got = %v, want %v", assetSource, AssetSourceRemote)
+			}
+			if (err != nil) != tc.wantErr {
+				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+
+			if tc.wantErr && !strings.HasPrefix(err.Error(), tc.errStr) {
+				t.Errorf("TestDownloadPluginFromCloudQueryIntegration() got error = %v, want %s", err, tc.errStr)
 			}
 		})
 	}

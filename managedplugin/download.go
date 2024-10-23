@@ -131,14 +131,14 @@ type DownloaderOptions struct {
 	NoProgress bool
 }
 
-func DownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
+func DownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
 	if _, err := os.Stat(ops.LocalPath); err == nil {
 		return AssetSourceCached, nil
 	}
-	return AssetSourceRemote, doDownloadPluginFromHub(ctx, c, ops, dops)
+	return AssetSourceRemote, doDownloadPluginFromHub(ctx, logger, c, ops, dops)
 }
 
-func doDownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
+func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(ops.LocalPath)
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
@@ -154,6 +154,22 @@ func doDownloadPluginFromHub(ctx context.Context, c *cloudquery_api.ClientWithRe
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
+		// See if the plugin exists, but not the version.
+		pvw, err := NewPluginVersionWarner(logger, ops.AuthToken)
+		if err != nil {
+			return fmt.Errorf("failed to create plugin version warner: %w", err)
+		}
+
+		ver, err := pvw.getLatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
+		if err != nil {
+			return fmt.Errorf("failed to get latest version for plugin %v %v/%v@%v: %w", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, err)
+		}
+
+		if ver != nil {
+			return fmt.Errorf("version %s does not exist, consider using the latest version at %s", ops.PluginVersion,
+				fmt.Sprintf("https://hub.cloudquery.io/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
+		}
+
 		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 	case http.StatusTooManyRequests:
 		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")

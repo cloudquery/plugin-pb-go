@@ -234,7 +234,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 			}
 			return AssetSourceCached, nil
 		}
-		return DownloadPluginFromHub(ctx, hubClient, ops, dops)
+		return DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
 	default:
 		return AssetSourceUnknown, fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
