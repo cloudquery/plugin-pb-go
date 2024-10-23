@@ -148,6 +148,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	if err != nil {
 		return fmt.Errorf("failed to get plugin metadata from hub: %w", err)
 	}
+
 	switch statusCode {
 	case http.StatusOK:
 		// we allow this status code
@@ -157,12 +158,12 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		// See if the plugin exists, but not the version.
 		pvw, err := NewPluginVersionWarner(logger, ops.AuthToken)
 		if err != nil {
-			return fmt.Errorf("failed to create plugin version warner: %w", err)
+			return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 		}
 
 		ver, err := pvw.getLatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
 		if err != nil {
-			return fmt.Errorf("failed to get latest version for plugin %v %v/%v@%v: %w", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, err)
+			return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 		}
 
 		if ver != nil {
