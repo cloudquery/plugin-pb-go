@@ -155,15 +155,17 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	case http.StatusUnauthorized:
 		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
+		var errRetryWithLogin = fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+
 		// See if the plugin exists, but not the version.
 		pvw, err := NewPluginVersionWarner(logger, ops.AuthToken)
 		if err != nil {
-			return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+			return errRetryWithLogin
 		}
 
 		ver, err := pvw.getLatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
 		if err != nil {
-			return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+			return errRetryWithLogin
 		}
 
 		if ver != nil {
@@ -171,7 +173,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 				fmt.Sprintf("https://hub.cloudquery.io/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
 		}
 
-		return fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
+		return errRetryWithLogin
 	case http.StatusTooManyRequests:
 		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
