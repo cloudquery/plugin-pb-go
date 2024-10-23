@@ -30,6 +30,10 @@ func isDockerPlugin(ctx context.Context, c *cloudquery_api.ClientWithResponses, 
 		return false, fmt.Errorf("failed to get %s plugin (name: %s/%s@%s) information: %w", cloudquery_api.PluginKind(ops.PluginKind), ops.PluginTeam, ops.PluginName, ops.PluginVersion, err)
 	}
 	if p.StatusCode() != http.StatusOK {
+		if p.StatusCode() == http.StatusNotFound {
+			// Not found is handled in doDownloadPluginFromHub as we direct the user to the latest version
+			return false, nil
+		}
 		return false, fmt.Errorf("failed to get %s plugin (name: %s/%s@%s) information: %s", cloudquery_api.PluginKind(ops.PluginKind), ops.PluginTeam, ops.PluginName, ops.PluginVersion, p.Status())
 	}
 	if p.JSON200 == nil {
