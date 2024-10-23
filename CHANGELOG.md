@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.24.1...v1.25.0) (2024-10-23)
+
+
+### Features
+
+* Link to latest version on 404 hub downloads ([#423](https://github.com/cloudquery/plugin-pb-go/issues/423)) ([b4ca098](https://github.com/cloudquery/plugin-pb-go/commit/b4ca09837f39311fce53d786681c6c2f55aa1115))
+
 ## [1.24.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.24.0...v1.24.1) (2024-10-22)
 
 
