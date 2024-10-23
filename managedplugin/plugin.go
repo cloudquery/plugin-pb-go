@@ -219,7 +219,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 		if err != nil {
 			return AssetSourceUnknown, err
 		}
-		isDocker, err := isDockerPlugin(ctx, hubClient, ops)
+		isDocker, err := validateDockerPlugin(ctx, c.logger, hubClient, ops)
 		if err != nil {
 			return AssetSourceUnknown, err
 		}
