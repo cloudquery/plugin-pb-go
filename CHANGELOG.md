@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.25.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.0...v1.25.1) (2024-11-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to f66d83c ([#425](https://github.com/cloudquery/plugin-pb-go/issues/425)) ([2562563](https://github.com/cloudquery/plugin-pb-go/commit/2562563092b9e11378538bd5d8c8d0afd94210f4))
+* **deps:** Update module github.com/schollz/progressbar/v3 to v3.17.0 ([#426](https://github.com/cloudquery/plugin-pb-go/issues/426)) ([ad8f125](https://github.com/cloudquery/plugin-pb-go/commit/ad8f125569794c9c2e62a00f961a3fc8f4c53e0e))
+
 ## [1.25.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.24.1...v1.25.0) (2024-10-23)
 
 
