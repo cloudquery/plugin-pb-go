@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.1...v1.25.2) (2024-11-04)
+
+
+### Bug Fixes
+
+* Revert "fix(deps): Update module github.com/schollz/progressbar/v3 to v3.17.0" ([#428](https://github.com/cloudquery/plugin-pb-go/issues/428)) ([c7100a0](https://github.com/cloudquery/plugin-pb-go/commit/c7100a00e376fa0b8d5b0960b3dee0c0c8f1f8ba))
+
 ## [1.25.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.0...v1.25.1) (2024-11-01)
 
 
