@@ -18,7 +18,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/rs/zerolog v1.33.0
 	github.com/schollz/progressbar/v3 v3.14.6
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	google.golang.org/grpc v1.68.0
