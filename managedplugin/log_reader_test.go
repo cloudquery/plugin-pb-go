@@ -9,9 +9,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func longStr(len int) string {
-	b := make([]byte, len)
-	for i := 0; i < len; i++ {
+func longStr(length int) string {
+	b := make([]byte, length)
+	for i := 0; i < length; i++ {
 		b[i] = byte(65 + (i % 26)) // cycle through letters A to Z
 	}
 	return string(b)
