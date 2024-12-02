@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/apache/arrow/go/v17 v17.0.0
 	github.com/avast/retry-go/v4 v4.6.0
-	github.com/cloudquery/cloudquery-api-go v1.13.1
+	github.com/cloudquery/cloudquery-api-go v1.13.3
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v26.1.5+incompatible
 	github.com/docker/go-connections v0.5.0
