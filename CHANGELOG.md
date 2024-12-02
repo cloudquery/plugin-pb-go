@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.25.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.2...v1.25.3) (2024-12-02)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 2d47ceb ([#434](https://github.com/cloudquery/plugin-pb-go/issues/434)) ([d72162f](https://github.com/cloudquery/plugin-pb-go/commit/d72162f9c7af2b643694e31c88c626c8184b9155))
+* **deps:** Update module github.com/stretchr/testify to v1.10.0 ([#437](https://github.com/cloudquery/plugin-pb-go/issues/437)) ([fdd949b](https://github.com/cloudquery/plugin-pb-go/commit/fdd949b12e71de085b7c6e1b0a27105f4ccb6948))
+* **deps:** Update module google.golang.org/grpc to v1.68.0 ([#430](https://github.com/cloudquery/plugin-pb-go/issues/430)) ([95df7a6](https://github.com/cloudquery/plugin-pb-go/commit/95df7a6fa0bd26e17a0242d3e847ade1833325cb))
+* **deps:** Update module google.golang.org/protobuf to v1.35.2 ([#433](https://github.com/cloudquery/plugin-pb-go/issues/433)) ([b99b888](https://github.com/cloudquery/plugin-pb-go/commit/b99b888f496b095d9dfd565a622b31d7ce0143fc))
+* Generate Go Code from `plugin-pb` ([#432](https://github.com/cloudquery/plugin-pb-go/issues/432)) ([d9f6f21](https://github.com/cloudquery/plugin-pb-go/commit/d9f6f21a07d7cde29ff631577244ce0390d40025))
+
 ## [1.25.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.1...v1.25.2) (2024-11-04)
 
 
