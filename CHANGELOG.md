@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.4...v1.25.5) (2024-12-02)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/hashicorp/go-retryablehttp to v0.7.7 [SECURITY] ([#440](https://github.com/cloudquery/plugin-pb-go/issues/440)) ([1ef2d93](https://github.com/cloudquery/plugin-pb-go/commit/1ef2d93228a48d92637e27d174c74ea9662c4ae9))
+
 ## [1.25.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.3...v1.25.4) (2024-12-02)
 
 
