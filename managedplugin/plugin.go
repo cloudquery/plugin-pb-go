@@ -662,11 +662,11 @@ func (c *Client) oldDiscovery(ctx context.Context) ([]int, error) {
 	versions := make([]int, len(versionsRes.Versions))
 	for i, vStr := range versionsRes.Versions {
 		vStr = strings.TrimPrefix(vStr, "v")
-		v, err := strconv.ParseInt(vStr, 10, 64)
+		v, err := strconv.Atoi(vStr)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse version %s: %w", vStr, err)
 		}
-		versions[i] = int(v)
+		versions[i] = v
 	}
 	return versions, nil
 }
