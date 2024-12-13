@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.6...v1.26.0) (2024-12-13)
+
+
+### Features
+
+* Update to Arrow v18 ([#445](https://github.com/cloudquery/plugin-pb-go/issues/445)) ([2cccfa7](https://github.com/cloudquery/plugin-pb-go/commit/2cccfa7a12637997e000efd5b1441228a903b038))
+
 ## [1.25.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.25.5...v1.25.6) (2024-12-03)
 
 
