@@ -18,6 +18,9 @@ func (c *Client) jsonToLog(l zerolog.Logger, msg map[string]any) {
 		c.metrics.incrementWarnings()
 	case "error":
 		l.Error().Fields(msg).Msg("")
+		if msg["message"].(string) == "table resolver finished with error" && msg["table"].(string) != "" {
+			c.metrics.addErroredTable(msg["table"].(string))
+		}
 		c.metrics.incrementErrors()
 	default:
 		l.Error().Fields(msg).Msg("unknown level")

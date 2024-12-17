@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync/atomic"
+
+	"github.com/cloudquery/plugin-pb-go/metrics/set"
 )
 
 type AssetSource int
@@ -45,9 +47,10 @@ func AssetSourceFromString(s string) (AssetSource, error) {
 }
 
 type Metrics struct {
-	Errors      uint64
-	Warnings    uint64
-	AssetSource AssetSource
+	Errors        uint64
+	Warnings      uint64
+	AssetSource   AssetSource
+	ErroredTables *set.SyncSortedStringSet
 }
 
 func (m *Metrics) incrementErrors() {
@@ -56,4 +59,11 @@ func (m *Metrics) incrementErrors() {
 
 func (m *Metrics) incrementWarnings() {
 	atomic.AddUint64(&m.Warnings, 1)
+}
+
+func (m *Metrics) addErroredTable(table string) {
+	if m.ErroredTables == nil {
+		m.ErroredTables = set.NewSyncSortedStringSet()
+	}
+	m.ErroredTables.Add(table)
 }
