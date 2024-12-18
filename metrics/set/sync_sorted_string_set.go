@@ -21,6 +21,7 @@ func NewSyncSortedStringSet() *SyncSortedStringSet {
 	}
 }
 
+// Add adds a string to the set.
 func (e *SyncSortedStringSet) Add(table string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -28,7 +29,12 @@ func (e *SyncSortedStringSet) Add(table string) {
 	e.tables[table] = struct{}{}
 }
 
+// Get returns a comma-separated, sorted string of all the strings in the set.
 func (e *SyncSortedStringSet) Get() string {
+	if e == nil {
+		return ""
+	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
 

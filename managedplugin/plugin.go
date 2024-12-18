@@ -277,9 +277,10 @@ func (c *Client) ConnectionString() string {
 
 func (c *Client) Metrics() Metrics {
 	return Metrics{
-		Errors:      atomic.LoadUint64(&c.metrics.Errors),
-		Warnings:    atomic.LoadUint64(&c.metrics.Warnings),
-		AssetSource: c.metrics.AssetSource,
+		Errors:        atomic.LoadUint64(&c.metrics.Errors),
+		Warnings:      atomic.LoadUint64(&c.metrics.Warnings),
+		AssetSource:   c.metrics.AssetSource,
+		ErroredTables: c.metrics.ErroredTables,
 	}
 }
 
