@@ -11,22 +11,22 @@ import (
 // - Use `Add` to add a string to the set.
 // - Use `Get` to get a comma-separated, sorted string of all the strings in the set.
 type SyncSortedStringSet struct {
-	mu     sync.Mutex
-	tables map[string]struct{}
+	mu      sync.Mutex
+	strings map[string]struct{}
 }
 
 func NewSyncSortedStringSet() *SyncSortedStringSet {
 	return &SyncSortedStringSet{
-		tables: make(map[string]struct{}),
+		strings: make(map[string]struct{}),
 	}
 }
 
 // Add adds a string to the set.
-func (e *SyncSortedStringSet) Add(table string) {
+func (e *SyncSortedStringSet) Add(str string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	e.tables[table] = struct{}{}
+	e.strings[str] = struct{}{}
 }
 
 // Get returns a comma-separated, sorted string of all the strings in the set.
@@ -38,8 +38,8 @@ func (e *SyncSortedStringSet) Get() string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	keys := make([]string, 0, len(e.tables))
-	for k := range e.tables {
+	keys := make([]string, 0, len(e.strings))
+	for k := range e.strings {
 		keys = append(keys, k)
 	}
 
