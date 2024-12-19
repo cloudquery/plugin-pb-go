@@ -1,6 +1,10 @@
 package managedplugin
 
-import "github.com/rs/zerolog"
+import (
+	"strings"
+
+	"github.com/rs/zerolog"
+)
 
 type Option func(*Client)
 
@@ -48,13 +52,13 @@ func WithOtelEndpointInsecure() Option {
 
 func WithAuthToken(authToken string) Option {
 	return func(c *Client) {
-		c.authToken = authToken
+		c.authToken = strings.TrimSpace(authToken)
 	}
 }
 
 func WithTeamName(teamName string) Option {
 	return func(c *Client) {
-		c.teamName = teamName
+		c.teamName = strings.TrimSpace(teamName)
 	}
 }
 
