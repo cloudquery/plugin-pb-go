@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.26.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.2...v1.26.3) (2024-12-23)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to b2144cd ([#458](https://github.com/cloudquery/plugin-pb-go/issues/458)) ([e18b487](https://github.com/cloudquery/plugin-pb-go/commit/e18b487ecf026787b959174bdfff011caa07e1e2))
+* **deps:** Update Google Golang modules ([#460](https://github.com/cloudquery/plugin-pb-go/issues/460)) ([770b69c](https://github.com/cloudquery/plugin-pb-go/commit/770b69c939327b72769c33b3ce7e9a8f0daadd8e))
+* **deps:** Update module google.golang.org/grpc to v1.69.0 ([#456](https://github.com/cloudquery/plugin-pb-go/issues/456)) ([6f9a494](https://github.com/cloudquery/plugin-pb-go/commit/6f9a494e6517d587e3d05427042ca30713a21881))
+
 ## [1.26.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.1...v1.26.2) (2024-12-19)
 
 
