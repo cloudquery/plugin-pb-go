@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.26.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.4...v1.26.5) (2025-01-20)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.1.0 ([#469](https://github.com/cloudquery/plugin-pb-go/issues/469)) ([6fb698c](https://github.com/cloudquery/plugin-pb-go/commit/6fb698c3f8bfb2c88af255fcec95cfe6a925cff9))
+* **deps:** Update module google.golang.org/protobuf to v1.36.2 ([#468](https://github.com/cloudquery/plugin-pb-go/issues/468)) ([b4a4429](https://github.com/cloudquery/plugin-pb-go/commit/b4a4429f969db20b31dc7726853c18c4e40d7392))
+* Generate Go Code from `plugin-pb` ([#466](https://github.com/cloudquery/plugin-pb-go/issues/466)) ([afe3f86](https://github.com/cloudquery/plugin-pb-go/commit/afe3f86c4173465e75cf908c95d2e1ede590ef1c))
+
 ## [1.26.4](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.3...v1.26.4) (2025-01-07)
 
 
