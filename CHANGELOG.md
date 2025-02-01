@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.26.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.5...v1.26.6) (2025-02-01)
+
+
+### Bug Fixes
+
+* **deps:** Update Google Golang modules ([#470](https://github.com/cloudquery/plugin-pb-go/issues/470)) ([a7aeff8](https://github.com/cloudquery/plugin-pb-go/commit/a7aeff88b6da94d2c7d5db21a3d6682a93b0775b))
+* **deps:** Update Google Golang modules ([#474](https://github.com/cloudquery/plugin-pb-go/issues/474)) ([b4d9942](https://github.com/cloudquery/plugin-pb-go/commit/b4d99429275a8627f7b273141058f5e5cfee3f02))
+* Generate Go Code from `plugin-pb` ([#472](https://github.com/cloudquery/plugin-pb-go/issues/472)) ([66eab22](https://github.com/cloudquery/plugin-pb-go/commit/66eab2280e0079207e8ad79c353428950266677e))
+
 ## [1.26.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.4...v1.26.5) (2025-01-20)
 
 
