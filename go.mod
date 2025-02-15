@@ -1,8 +1,6 @@
 module github.com/cloudquery/plugin-pb-go
 
-go 1.22.7
-
-toolchain go1.23.3
+go 1.23.5
 
 require (
 	github.com/Masterminds/semver v1.5.0
