@@ -153,7 +153,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	case http.StatusOK:
 		// we allow this status code
 	case http.StatusUnauthorized:
-		return fmt.Errorf("unauthorized. Try logging in via `cloudquery login`")
+		return errors.New("unauthorized. Try logging in via `cloudquery login`")
 	case http.StatusNotFound:
 		var errRetryWithLogin = fmt.Errorf("failed to download plugin %v %v/%v@%v: plugin version not found. If you're trying to use a private plugin you'll need to run `cloudquery login` first", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion)
 
@@ -175,7 +175,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 
 		return errRetryWithLogin
 	case http.StatusTooManyRequests:
-		return fmt.Errorf("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
+		return errors.New("too many download requests. Try logging in via `cloudquery login` to increase rate limits")
 	default:
 		return fmt.Errorf("failed to download plugin %v %v/%v@%v: unexpected status code %v", ops.PluginKind, ops.PluginTeam, ops.PluginName, ops.PluginVersion, statusCode)
 	}
@@ -184,7 +184,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	}
 	location := pluginAsset.Location
 	if len(location) == 0 {
-		return fmt.Errorf("failed to get plugin metadata from hub: empty location from response")
+		return errors.New("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)

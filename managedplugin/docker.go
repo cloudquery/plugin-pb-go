@@ -3,6 +3,7 @@ package managedplugin
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -16,8 +17,8 @@ import (
 )
 
 var (
-	ErrLoginRequired = fmt.Errorf("login required")
-	ErrTeamRequired  = fmt.Errorf("team required")
+	ErrLoginRequired = errors.New("login required")
+	ErrTeamRequired  = errors.New("team required")
 )
 
 type dockerProgressReader struct {
