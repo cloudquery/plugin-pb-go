@@ -594,9 +594,9 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 				return nil
 			}
 			if state == connectivity.Shutdown {
-				return fmt.Errorf("connection shutdown")
+				return errors.New("connection shutdown")
 			}
-			return fmt.Errorf("connection not ready")
+			return errors.New("connection not ready")
 		},
 		retry.RetryIf(func(err error) bool {
 			return err.Error() == "connection not ready"

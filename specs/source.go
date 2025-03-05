@@ -99,7 +99,7 @@ func (s *Source) UnmarshalBackendSpec(out any) error {
 
 func (s *Source) Validate() error {
 	if s.Name == "" {
-		return fmt.Errorf("name is required")
+		return errors.New("name is required")
 	}
 	if s.Path == "" {
 		msg := "path is required"
@@ -112,19 +112,19 @@ func (s *Source) Validate() error {
 	}
 
 	if len(s.Tables) == 0 {
-		return fmt.Errorf("tables configuration is required. Hint: set the tables you want to sync by adding `tables: [...]` or use `cloudquery tables` to list available tables")
+		return errors.New("tables configuration is required. Hint: set the tables you want to sync by adding `tables: [...]` or use `cloudquery tables` to list available tables")
 	}
 
 	if s.Registry.NeedVersion() {
 		if s.Version == "" {
-			return fmt.Errorf("version is required")
+			return errors.New("version is required")
 		}
 		if !strings.HasPrefix(s.Version, "v") {
-			return fmt.Errorf("version must start with v")
+			return errors.New("version must start with v")
 		}
 	}
 	if len(s.Destinations) == 0 {
-		return fmt.Errorf("at least one destination is required")
+		return errors.New("at least one destination is required")
 	}
 	if !funk.Contains(AllSchedulers, s.Scheduler) {
 		return fmt.Errorf("unknown scheduler %v. Must be one of: %v", s.Scheduler, AllSchedulers.String())
