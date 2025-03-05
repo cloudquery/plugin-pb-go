@@ -8,7 +8,6 @@ issues:
 linters-settings:
   errcheck:
     check-blank: false
-    ignore: fmt:.*,[rR]ead|[wW]rite|[cC]lose,io:Copy
   gocritic:
     disabled-checks:
       - commentFormatting
