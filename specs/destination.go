@@ -45,7 +45,7 @@ func (d *Destination) UnmarshalSpec(out any) error {
 
 func (d *Destination) Validate() error {
 	if d.Name == "" {
-		return fmt.Errorf("name is required")
+		return errors.New("name is required")
 	}
 	if d.Path == "" {
 		msg := "path is required"
@@ -59,14 +59,14 @@ func (d *Destination) Validate() error {
 
 	if d.Registry.NeedVersion() {
 		if d.Version == "" {
-			return fmt.Errorf("version is required")
+			return errors.New("version is required")
 		}
 		if !strings.HasPrefix(d.Version, "v") {
-			return fmt.Errorf("version must start with v")
+			return errors.New("version must start with v")
 		}
 	}
 	if d.BatchSize < 0 {
-		return fmt.Errorf("batch_size must be greater than 0")
+		return errors.New("batch_size must be greater than 0")
 	}
 	return nil
 }

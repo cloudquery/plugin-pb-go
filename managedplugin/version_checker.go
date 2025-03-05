@@ -2,6 +2,7 @@ package managedplugin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Masterminds/semver"
@@ -24,7 +25,7 @@ func NewPluginVersionWarner(logger zerolog.Logger, optionalAuthToken string) (*P
 
 func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
 	if p == nil {
-		return nil, fmt.Errorf("plugin version warner is not initialized")
+		return nil, errors.New("plugin version warner is not initialized")
 	}
 	if kind != PluginSource.String() && kind != PluginDestination.String() && kind != PluginTransformer.String() {
 		p.logger.Debug().Str("plugin", name).Str("kind", kind).Msg("invalid kind")
@@ -37,11 +38,11 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 	}
 	if resp.JSON200 == nil {
 		p.logger.Debug().Str("plugin", name).Msg("failed to get plugin info from hub, request didn't error but 200 response is nil")
-		return nil, fmt.Errorf("failed to get plugin info from hub, request didn't error but 200 response is nil")
+		return nil, errors.New("failed to get plugin info from hub, request didn't error but 200 response is nil")
 	}
 	if resp.JSON200.LatestVersion == nil {
 		p.logger.Debug().Str("plugin", name).Msg("cannot check if plugin is outdated, latest version is nil")
-		return nil, fmt.Errorf("cannot check if plugin is outdated, latest version is nil")
+		return nil, errors.New("cannot check if plugin is outdated, latest version is nil")
 	}
 	latestVersion := *resp.JSON200.LatestVersion
 	latestSemver, err := semver.NewVersion(latestVersion)
@@ -56,7 +57,7 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 // It returns true if nothing went wrong comparing the versions, and the client's version is outdated; false otherwise.
 func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, name string, kind string, actualVersion string) (bool, error) {
 	if p == nil {
-		return false, fmt.Errorf("plugin version warner is not initialized")
+		return false, errors.New("plugin version warner is not initialized")
 	}
 	if actualVersion == "" {
 		return false, nil
