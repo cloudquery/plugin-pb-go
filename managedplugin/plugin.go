@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultDownloadDir = ".cq"
-	maxMsgSize         = 100 * 1024 * 1024 // 100 MiB
+	maxGrpcMsgSize     = 200 * 1024 * 1024 // 200 MiB
 
 	containerPortMappingRetries           = 30
 	containerPortMappingInitialRetryDelay = 100 * time.Millisecond
@@ -579,8 +579,8 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 	c.Conn, err = grpc.DialContext(ctx, path,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(maxMsgSize),
-			grpc.MaxCallSendMsgSize(maxMsgSize),
+			grpc.MaxCallRecvMsgSize(maxGrpcMsgSize),
+			grpc.MaxCallSendMsgSize(maxGrpcMsgSize),
 		),
 	)
 	if err != nil {
@@ -626,8 +626,8 @@ func (c *Client) connectToUnixSocket(ctx context.Context) error {
 		grpc.WithBlock(),
 		grpc.WithContextDialer(dialer),
 		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(maxMsgSize),
-			grpc.MaxCallSendMsgSize(maxMsgSize),
+			grpc.MaxCallRecvMsgSize(maxGrpcMsgSize),
+			grpc.MaxCallSendMsgSize(maxGrpcMsgSize),
 		))
 	return err
 }
