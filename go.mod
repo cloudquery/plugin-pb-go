@@ -7,7 +7,7 @@ toolchain go1.23.3
 require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/apache/arrow-go/v18 v18.2.0
-	github.com/avast/retry-go/v4 v4.6.0
+	github.com/avast/retry-go/v4 v4.6.1
 	github.com/cloudquery/cloudquery-api-go v1.13.8
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v26.1.5+incompatible
