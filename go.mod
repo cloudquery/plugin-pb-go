@@ -15,7 +15,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/opencontainers/image-spec v1.1.0
+	github.com/opencontainers/image-spec v1.1.1
 	github.com/rs/zerolog v1.33.0
 	github.com/schollz/progressbar/v3 v3.14.6
 	github.com/stretchr/testify v1.10.0
