@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.26.11](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.10...v1.26.11) (2025-05-07)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 7e4ce0a ([#495](https://github.com/cloudquery/plugin-pb-go/issues/495)) ([a3b1469](https://github.com/cloudquery/plugin-pb-go/commit/a3b1469dfe83c4cac4c5e1bf1bb1230d208756b8))
+* **deps:** Update module github.com/avast/retry-go/v4 to v4.6.1 ([#496](https://github.com/cloudquery/plugin-pb-go/issues/496)) ([87a0419](https://github.com/cloudquery/plugin-pb-go/commit/87a041992d27601d7c757bab9520cf6e0f1101f4))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.13.9 ([#501](https://github.com/cloudquery/plugin-pb-go/issues/501)) ([1dd9fb3](https://github.com/cloudquery/plugin-pb-go/commit/1dd9fb38d6f77c2ebefedc79306221405f618883))
+* **deps:** Update module github.com/opencontainers/image-spec to v1.1.1 ([#498](https://github.com/cloudquery/plugin-pb-go/issues/498)) ([bdeb449](https://github.com/cloudquery/plugin-pb-go/commit/bdeb4496a659127497d72ffe9a77deff781efc32))
+* **deps:** Update module github.com/rs/zerolog to v1.34.0 ([#499](https://github.com/cloudquery/plugin-pb-go/issues/499)) ([98b7bc7](https://github.com/cloudquery/plugin-pb-go/commit/98b7bc7ad1c61479980a837b13b6f467fb5fdf7c))
+* **deps:** Update module google.golang.org/grpc to v1.72.0 ([#500](https://github.com/cloudquery/plugin-pb-go/issues/500)) ([e729db0](https://github.com/cloudquery/plugin-pb-go/commit/e729db092e292283a20822d33b7a3d12bf745b91))
+
 ## [1.26.10](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.9...v1.26.10) (2025-04-28)
 
 
