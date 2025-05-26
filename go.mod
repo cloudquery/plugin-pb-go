@@ -6,7 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/Masterminds/semver v1.5.0
-	github.com/apache/arrow-go/v18 v18.2.0
+	github.com/apache/arrow-go/v18 v18.3.0
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/cloudquery/cloudquery-api-go v1.13.9
 	github.com/distribution/reference v0.6.0
@@ -64,7 +64,7 @@ require (
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.31.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/tools v0.32.0 // indirect
