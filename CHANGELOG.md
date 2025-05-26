@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.26.12](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.11...v1.26.12) (2025-05-26)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.3.0 ([#504](https://github.com/cloudquery/plugin-pb-go/issues/504)) ([cce9278](https://github.com/cloudquery/plugin-pb-go/commit/cce927863f42f818d1a1b991ef4635b133ee17d7))
+* **deps:** Update module google.golang.org/grpc to v1.72.1 ([#502](https://github.com/cloudquery/plugin-pb-go/issues/502)) ([da15eb1](https://github.com/cloudquery/plugin-pb-go/commit/da15eb1ad96a7e189ca4521c60f6ff28e9255e27))
+
 ## [1.26.11](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.10...v1.26.11) (2025-05-07)
 
 
