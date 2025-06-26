@@ -1415,6 +1415,7 @@ type Sync_Request struct {
 	DeterministicCqId   bool                   `protobuf:"varint,4,opt,name=deterministic_cq_id,json=deterministicCqId,proto3" json:"deterministic_cq_id,omitempty"`
 	Backend             *Sync_BackendOptions   `protobuf:"bytes,5,opt,name=backend,proto3" json:"backend,omitempty"`
 	Shard               *Sync_Request_Shard    `protobuf:"bytes,6,opt,name=shard,proto3,oneof" json:"shard,omitempty"`
+	WithErrorMessages   bool                   `protobuf:"varint,7,opt,name=withErrorMessages,proto3" json:"withErrorMessages,omitempty"` // If true, the plugin will send error messages in the response stream
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1489,6 +1490,13 @@ func (x *Sync_Request) GetShard() *Sync_Request_Shard {
 		return x.Shard
 	}
 	return nil
+}
+
+func (x *Sync_Request) GetWithErrorMessages() bool {
+	if x != nil {
+		return x.WithErrorMessages
+	}
+	return false
 }
 
 type Sync_Response struct {
@@ -2517,7 +2525,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"skipTables\x122\n" +
 	"\x15skip_dependent_tables\x18\x03 \x01(\bR\x13skipDependentTables\x1a\"\n" +
 	"\bResponse\x12\x16\n" +
-	"\x06tables\x18\x01 \x03(\fR\x06tables\"\xfa\b\n" +
+	"\x06tables\x18\x01 \x03(\fR\x06tables\"\xa8\t\n" +
 	"\x04Sync\x1a'\n" +
 	"\rMessageInsert\x12\x16\n" +
 	"\x06record\x18\x01 \x01(\fR\x06record\x1a+\n" +
@@ -2537,7 +2545,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"table_name\x18\x01 \x01(\tR\ttableName\x12\x1e\n" +
 	"\n" +
 	"connection\x18\x02 \x01(\tR\n" +
-	"connection\x1a\xeb\x02\n" +
+	"connection\x1a\x99\x03\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06tables\x18\x01 \x03(\tR\x06tables\x12\x1f\n" +
 	"\vskip_tables\x18\x02 \x03(\tR\n" +
@@ -2545,7 +2553,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x15skip_dependent_tables\x18\x03 \x01(\bR\x13skipDependentTables\x12.\n" +
 	"\x13deterministic_cq_id\x18\x04 \x01(\bR\x11deterministicCqId\x12C\n" +
 	"\abackend\x18\x05 \x01(\v2).cloudquery.plugin.v3.Sync.BackendOptionsR\abackend\x12C\n" +
-	"\x05shard\x18\x06 \x01(\v2(.cloudquery.plugin.v3.Sync.Request.ShardH\x00R\x05shard\x88\x01\x01\x1a/\n" +
+	"\x05shard\x18\x06 \x01(\v2(.cloudquery.plugin.v3.Sync.Request.ShardH\x00R\x05shard\x88\x01\x01\x12,\n" +
+	"\x11withErrorMessages\x18\a \x01(\bR\x11withErrorMessages\x1a/\n" +
 	"\x05Shard\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x05R\x03num\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05totalB\b\n" +
