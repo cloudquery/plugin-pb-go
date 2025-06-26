@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.26.13](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.12...v1.26.13) (2025-06-26)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/grpc to v1.72.2 ([#505](https://github.com/cloudquery/plugin-pb-go/issues/505)) ([d0161de](https://github.com/cloudquery/plugin-pb-go/commit/d0161de0ec3b71bcfff322064379b15123101005))
+* **deps:** Update module google.golang.org/grpc to v1.73.0 ([#507](https://github.com/cloudquery/plugin-pb-go/issues/507)) ([8fd4588](https://github.com/cloudquery/plugin-pb-go/commit/8fd4588b69391fbb35d507323cd2107c7d0d8d2d))
+* Generate Go Code from `plugin-pb` ([#508](https://github.com/cloudquery/plugin-pb-go/issues/508)) ([a7c294e](https://github.com/cloudquery/plugin-pb-go/commit/a7c294ec437913f3fbb91761801a6b9303adb5e1))
+* Generate Go Code from `plugin-pb` ([#509](https://github.com/cloudquery/plugin-pb-go/issues/509)) ([9cdaa50](https://github.com/cloudquery/plugin-pb-go/commit/9cdaa503017c1d524e81e3057077255f8ae5b8d2))
+
 ## [1.26.12](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.11...v1.26.12) (2025-05-26)
 
 
