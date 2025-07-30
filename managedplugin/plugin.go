@@ -291,20 +291,20 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
 
-	portBindings, err := nat.ParsePortSpec("7777/tcp")
+	portMappings, err := nat.ParsePortSpec("7777/tcp")
 	if err != nil {
 		return fmt.Errorf("failed to parse port spec: %w", err)
 	}
 
-	if len(portBindings) == 0 {
+	if len(portMappings) == 0 {
 		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port bindings found"))
 	}
 
-	portBinding := portBindings[0]
+	portMapping := portMappings[0]
 
 	config := &container.Config{
 		ExposedPorts: nat.PortSet{
-			portBinding.Port: {},
+			portMapping.Port: {},
 		},
 		Image: configPath,
 		Cmd:   pluginArgs,
@@ -315,7 +315,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	hostConfig := &container.HostConfig{
 		ExtraHosts: c.dockerExtraHosts,
 		PortBindings: map[nat.Port][]nat.PortBinding{
-			portBinding.Port: {portBinding.Binding},
+			portMapping.Port: {portMapping.Binding},
 		},
 	}
 
@@ -338,7 +338,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 
 	var hostConnection string
 	err = retry.Do(func() error {
-		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portBinding.Port)
+		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portMapping.Port)
 		return err
 	}, retry.RetryIf(func(err error) bool {
 		return err.Error() == "failed to get port mapping for container"
