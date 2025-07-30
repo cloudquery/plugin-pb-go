@@ -290,24 +290,32 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	}
 	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
+
+	portMappings, err := nat.ParsePortSpec("7777/tcp")
+	if err != nil {
+		return fmt.Errorf("failed to parse port spec: %w", err)
+	}
+
+	if len(portMappings) == 0 {
+		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port mappings found"))
+	}
+
+	portMapping := portMappings[0]
+
 	config := &container.Config{
 		ExposedPorts: nat.PortSet{
-			"7777/tcp": struct{}{},
+			portMapping.Port: {},
 		},
 		Image: configPath,
 		Cmd:   pluginArgs,
 		Tty:   true,
 		Env:   c.config.Environment,
 	}
+
 	hostConfig := &container.HostConfig{
 		ExtraHosts: c.dockerExtraHosts,
 		PortBindings: map[nat.Port][]nat.PortBinding{
-			"7777/tcp": {
-				{
-					HostIP:   "localhost",
-					HostPort: "", // let host assign a random unused port
-				},
-			},
+			portMapping.Port: {portMapping.Binding},
 		},
 	}
 
@@ -330,7 +338,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 
 	var hostConnection string
 	err = retry.Do(func() error {
-		hostConnection, err = getHostConnection(ctx, cli, resp.ID)
+		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portMapping.Port)
 		return err
 	}, retry.RetryIf(func(err error) bool {
 		return err.Error() == "failed to get port mapping for container"
@@ -362,7 +370,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	return c.connectUsingTCP(ctx, hostConnection)
 }
 
-func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string) (string, error) {
+func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string, port nat.Port) (string, error) {
 	// Retrieve the dynamically assigned HOST port
 	containerJSON, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
@@ -374,11 +382,11 @@ func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerI
 			return "", errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
 		}
 	}
-	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports["7777/tcp"]) == 0 {
+	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports[port]) == 0 {
 		return "", errors.New("failed to get port mapping for container")
 	}
-	hostPort := containerJSON.NetworkSettings.Ports["7777/tcp"][0].HostPort
-	return "localhost:" + hostPort, nil
+	portBinding := containerJSON.NetworkSettings.Ports[port][0]
+	return portBinding.HostIP + ":" + portBinding.HostPort, nil
 }
 
 func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
