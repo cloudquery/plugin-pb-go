@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.26.18](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.17...v1.26.18) (2025-07-30)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/docker/docker to v28.3.3+incompatible [SECURITY] ([#528](https://github.com/cloudquery/plugin-pb-go/issues/528)) ([bcf436e](https://github.com/cloudquery/plugin-pb-go/commit/bcf436eb7262b8814fc6e43e0f2fcbe777f69ec8))
+* Use Docker SDK to configure  port binding ([#526](https://github.com/cloudquery/plugin-pb-go/issues/526)) ([63023a1](https://github.com/cloudquery/plugin-pb-go/commit/63023a175eb14841b5eb941096280eda7772d240))
+
 ## [1.26.17](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.16...v1.26.17) (2025-07-30)
 
 
