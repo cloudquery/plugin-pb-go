@@ -290,24 +290,32 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	}
 	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
+
+	portBindings, err := nat.ParsePortSpec("7777/tcp")
+	if err != nil {
+		return fmt.Errorf("failed to parse port spec: %w", err)
+	}
+
+	if len(portBindings) == 0 {
+		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port bindings found"))
+	}
+
+	portBinding := portBindings[0]
+
 	config := &container.Config{
 		ExposedPorts: nat.PortSet{
-			"7777/tcp": struct{}{},
+			portBinding.Port: {},
 		},
 		Image: configPath,
 		Cmd:   pluginArgs,
 		Tty:   true,
 		Env:   c.config.Environment,
 	}
+
 	hostConfig := &container.HostConfig{
 		ExtraHosts: c.dockerExtraHosts,
 		PortBindings: map[nat.Port][]nat.PortBinding{
-			"7777/tcp": {
-				{
-					HostIP:   "localhost",
-					HostPort: "", // let host assign a random unused port
-				},
-			},
+			portBinding.Port: {portBinding.Binding},
 		},
 	}
 
@@ -377,8 +385,8 @@ func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerI
 	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports["7777/tcp"]) == 0 {
 		return "", errors.New("failed to get port mapping for container")
 	}
-	hostPort := containerJSON.NetworkSettings.Ports["7777/tcp"][0].HostPort
-	return "localhost:" + hostPort, nil
+	portBinding := containerJSON.NetworkSettings.Ports["7777/tcp"][0]
+	return portBinding.HostIP + ":" + portBinding.HostPort, nil
 }
 
 func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
