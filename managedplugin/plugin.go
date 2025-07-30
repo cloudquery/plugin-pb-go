@@ -297,7 +297,7 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	}
 
 	if len(portMappings) == 0 {
-		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port bindings found"))
+		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port mappings found"))
 	}
 
 	portMapping := portMappings[0]
