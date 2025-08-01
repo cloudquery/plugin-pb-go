@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/apache/arrow-go/v18 v18.4.0
 	github.com/avast/retry-go/v4 v4.6.1
-	github.com/cloudquery/cloudquery-api-go v1.14.0
+	github.com/cloudquery/cloudquery-api-go v1.14.1
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v28.3.3+incompatible
 	github.com/docker/go-connections v0.5.0
@@ -51,7 +51,7 @@ require (
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/oapi-codegen/runtime v1.1.1 // indirect
+	github.com/oapi-codegen/runtime v1.1.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
