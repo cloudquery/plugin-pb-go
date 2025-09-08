@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.26.19](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.18...v1.26.19) (2025-09-08)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 645b1fa ([#529](https://github.com/cloudquery/plugin-pb-go/issues/529)) ([1870e75](https://github.com/cloudquery/plugin-pb-go/commit/1870e752cc804bf2a70f4d00e7e1c9ed39555b3f))
+* **deps:** Update golang.org/x/exp digest to 8b4c13b ([#540](https://github.com/cloudquery/plugin-pb-go/issues/540)) ([0926228](https://github.com/cloudquery/plugin-pb-go/commit/09262286bdc8a0973015cf1d13497356d28f6e01))
+* **deps:** Update Google Golang modules ([#543](https://github.com/cloudquery/plugin-pb-go/issues/543)) ([aaed073](https://github.com/cloudquery/plugin-pb-go/commit/aaed073e77492c308d310142f1ec317994ec8344))
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.4.1 ([#544](https://github.com/cloudquery/plugin-pb-go/issues/544)) ([ef6b743](https://github.com/cloudquery/plugin-pb-go/commit/ef6b74379983f17b7a3dfd3e8211a2063d1b88d0))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.1 ([#531](https://github.com/cloudquery/plugin-pb-go/issues/531)) ([b9b44c5](https://github.com/cloudquery/plugin-pb-go/commit/b9b44c5b594e595532a8d3e5d425769b735b32f5))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.2 ([#542](https://github.com/cloudquery/plugin-pb-go/issues/542)) ([860d536](https://github.com/cloudquery/plugin-pb-go/commit/860d536ccc599ab71c6e9e4b9acc95284bb7cc2c))
+* **deps:** Update module github.com/docker/go-connections to v0.6.0 ([#541](https://github.com/cloudquery/plugin-pb-go/issues/541)) ([28b6d54](https://github.com/cloudquery/plugin-pb-go/commit/28b6d5412281a4aa6ddd776a94dcc27389d67d05))
+* **deps:** Update module github.com/stretchr/testify to v1.11.0 ([#537](https://github.com/cloudquery/plugin-pb-go/issues/537)) ([187b057](https://github.com/cloudquery/plugin-pb-go/commit/187b0570280fc6b1215d8603601483229aa621ea))
+* **deps:** Update module google.golang.org/grpc to v1.74.2 ([#533](https://github.com/cloudquery/plugin-pb-go/issues/533)) ([f93d1ad](https://github.com/cloudquery/plugin-pb-go/commit/f93d1ad98ed9e575a0239b9543b7c2789b138a8c))
+* **deps:** Update module google.golang.org/protobuf to v1.36.7 ([#534](https://github.com/cloudquery/plugin-pb-go/issues/534)) ([e082ea0](https://github.com/cloudquery/plugin-pb-go/commit/e082ea038d98502cf7010a6acfc95cc9dc21166c))
+* Generate Go Code from `plugin-pb` ([#532](https://github.com/cloudquery/plugin-pb-go/issues/532)) ([c5ae723](https://github.com/cloudquery/plugin-pb-go/commit/c5ae7236adcd6106de05e09e3ce2595c480cf6fb))
+* Generate Go Code from `plugin-pb` ([#535](https://github.com/cloudquery/plugin-pb-go/issues/535)) ([2124920](https://github.com/cloudquery/plugin-pb-go/commit/212492030b07c8559a45365ba60ff9d006c60464))
+
 ## [1.26.18](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.17...v1.26.18) (2025-07-30)
 
 
