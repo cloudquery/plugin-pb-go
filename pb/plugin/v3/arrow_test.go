@@ -49,7 +49,7 @@ func TestRecordRoundTrip(t *testing.T) {
 	bldr := array.NewRecordBuilder(memory.DefaultAllocator, sc)
 	bldr.Field(0).(*array.Int64Builder).AppendValues([]int64{1, 2, 3}, nil)
 	bldr.Field(1).(*array.Float64Builder).AppendValues([]float64{1.1, 2.2, 3.3}, nil)
-	rec := bldr.NewRecord()
+	rec := bldr.NewRecordBatch()
 	defer rec.Release()
 
 	b, err := RecordToBytes(rec)

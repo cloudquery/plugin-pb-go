@@ -20,7 +20,7 @@ func SchemasToBytes(schemas []*arrow.Schema) ([][]byte, error) {
 	return ret, nil
 }
 
-func RecordToBytes(record arrow.Record) ([]byte, error) {
+func RecordToBytes(record arrow.RecordBatch) ([]byte, error) {
 	var buf bytes.Buffer
 	wr := ipc.NewWriter(&buf, ipc.WithSchema(record.Schema()))
 	if err := wr.Write(record); err != nil {
