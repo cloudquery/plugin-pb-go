@@ -48,7 +48,7 @@ func NewSchemasFromBytes(b [][]byte) ([]*arrow.Schema, error) {
 	return schemas, nil
 }
 
-func RecordToBytes(record arrow.Record) ([]byte, error) {
+func RecordToBytes(record arrow.RecordBatch) ([]byte, error) {
 	var buf bytes.Buffer
 	wr := ipc.NewWriter(&buf, ipc.WithSchema(record.Schema()))
 	if err := wr.Write(record); err != nil {
@@ -60,13 +60,13 @@ func RecordToBytes(record arrow.Record) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func NewRecordFromBytes(b []byte) (arrow.Record, error) {
+func NewRecordFromBytes(b []byte) (arrow.RecordBatch, error) {
 	rdr, err := ipc.NewReader(bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
 	for rdr.Next() {
-		rec := rdr.Record()
+		rec := rdr.RecordBatch()
 		rec.Retain()
 		return rec, nil
 	}
