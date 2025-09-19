@@ -18,8 +18,8 @@ github.com/avast/retry-go/v4 v4.6.1/go.mod h1:V6oF8njAwxJ5gRo1Q7Cxab24xs5NCWZBea
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
 github.com/cenkalti/backoff/v4 v4.2.1 h1:y4OZtCnogmCPw98Zjyt5a6+QwPLGkiQsYW5oUqylYbM=
 github.com/cenkalti/backoff/v4 v4.2.1/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
-github.com/cloudquery/cloudquery-api-go v1.14.3 h1:f6nR5PsxGl932BMDzsjK6rXpHQbkQ7xL8DW2yBSUKn0=
-github.com/cloudquery/cloudquery-api-go v1.14.3/go.mod h1:KMcMIaX4l3C2QGHzlqeV7Ac9thX7L/sWXMM5wEmcKZI=
+github.com/cloudquery/cloudquery-api-go v1.14.4 h1:2uq0mNM58SGyX+vuCwqG9aeJXMbkxy5XXdnRT+YHAiA=
+github.com/cloudquery/cloudquery-api-go v1.14.4/go.mod h1:KMcMIaX4l3C2QGHzlqeV7Ac9thX7L/sWXMM5wEmcKZI=
 github.com/containerd/errdefs v1.0.0 h1:tg5yIfIlQIrxYtu9ajqY42W3lpS19XqdxRQeEwYG8PI=
 github.com/containerd/errdefs v1.0.0/go.mod h1:+YBYIdtsnF4Iw6nWZhJcqGSg/dwvV7tyJ/kCkyJ2k+M=
 github.com/containerd/errdefs/pkg v0.3.0 h1:9IKJ06FvyNlexW690DXuQNx2KA2cUJXx151Xdx3ZPPE=
