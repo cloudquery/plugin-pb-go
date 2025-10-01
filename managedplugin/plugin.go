@@ -246,12 +246,10 @@ func (c *Client) execPlugin(ctx context.Context) error {
 		return c.connectUsingTCP(ctx, c.config.Path)
 	case RegistryLocal:
 		return c.startLocal(ctx, c.config.Path)
-	case RegistryGithub:
+	case RegistryGithub, RegistryCloudQuery:
 		return c.startLocal(ctx, c.LocalPath)
 	case RegistryDocker:
 		return c.startDockerPlugin(ctx, c.config.Path)
-	case RegistryCloudQuery:
-		return c.startLocal(ctx, c.LocalPath)
 	default:
 		return fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
@@ -260,7 +258,7 @@ func (c *Client) execPlugin(ctx context.Context) error {
 func (c *Client) ConnectionString() string {
 	tgt := c.Conn.Target()
 	switch c.registry {
-	case RegistryGrpc:
+	case RegistryGrpc, RegistryDocker:
 		return tgt
 	case RegistryLocal,
 		RegistryGithub,
@@ -269,8 +267,6 @@ func (c *Client) ConnectionString() string {
 			return tgt
 		}
 		return "unix://" + tgt
-	case RegistryDocker:
-		return tgt
 	}
 	return tgt
 }
