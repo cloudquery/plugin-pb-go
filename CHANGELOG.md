@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.24](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.23...v1.26.24) (2025-10-03)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.5 ([#561](https://github.com/cloudquery/plugin-pb-go/issues/561)) ([a1168b5](https://github.com/cloudquery/plugin-pb-go/commit/a1168b555e6ac1345aac7b36869cb7d01365ccb7))
+
 ## [1.26.23](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.22...v1.26.23) (2025-10-03)
 
 
