@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.25](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.24...v1.26.25) (2025-10-29)
+
+
+### Bug Fixes
+
+* Correct plugin type in log messages ([#565](https://github.com/cloudquery/plugin-pb-go/issues/565)) ([4bdc28e](https://github.com/cloudquery/plugin-pb-go/commit/4bdc28ed33cf51e7420b6150eb1bd447853da731))
+
 ## [1.26.24](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.23...v1.26.24) (2025-10-18)
 
 
