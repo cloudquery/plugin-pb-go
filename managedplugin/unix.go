@@ -17,17 +17,17 @@ func getSysProcAttr() *syscall.SysProcAttr {
 }
 
 func (c *Client) terminateProcess() error {
-	c.logger.Debug().Msg("sending interrupt signal to source plugin")
+	c.logger.Debug().Msgf("sending interrupt signal to %s plugin", c.typ.String())
 	if err := c.cmd.Process.Signal(os.Interrupt); err != nil {
-		c.logger.Error().Err(err).Msg("failed to send interrupt signal to source plugin")
+		c.logger.Error().Err(err).Msgf("failed to send interrupt signal to %s plugin", c.typ.String())
 	}
 	timer := time.AfterFunc(5*time.Second, func() {
-		c.logger.Info().Msg("sending kill signal to source plugin")
+		c.logger.Info().Msgf("sending kill signal to %s plugin", c.typ.String())
 		if err := c.cmd.Process.Kill(); err != nil {
-			c.logger.Error().Err(err).Msg("failed to kill source plugin")
+			c.logger.Error().Err(err).Msgf("failed to kill %s plugin", c.typ.String())
 		}
 	})
-	c.logger.Info().Msg("waiting for source plugin to terminate")
+	c.logger.Info().Msgf("waiting for %s plugin to terminate", c.typ.String())
 	st, err := c.cmd.Process.Wait()
 	timer.Stop()
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *Client) terminateProcess() error {
 		if st.ExitCode() == 137 {
 			additionalInfo = " (Out of Memory)"
 		}
-		return fmt.Errorf("source plugin process failed with %s%s", st.String(), additionalInfo)
+		return fmt.Errorf("%s plugin process failed with %s%s", c.typ.String(), st.String(), additionalInfo)
 	}
 
 	return nil
