@@ -104,6 +104,7 @@ type Client struct {
 	useTCP               bool
 	tcpAddr              string
 	dockerExtraHosts     []string
+	typ                  PluginType
 }
 
 // typ will be deprecated soon but now required for a transition period
@@ -151,6 +152,7 @@ func NewClient(ctx context.Context, typ PluginType, config Config, opts ...Optio
 		registry:     config.Registry,
 		cqDockerHost: DefaultCloudQueryDockerHost,
 		dockerAuth:   config.DockerAuth,
+		typ:          typ,
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -588,7 +590,7 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 		),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to dial grpc source plugin at %s: %w", path, err)
+		return fmt.Errorf("failed to dial grpc %s plugin at %s: %w", c.typ.String(), path, err)
 	}
 
 	return retry.Do(
@@ -759,7 +761,7 @@ func (c *Client) Terminate() error {
 
 	if c.Conn != nil {
 		if err := c.Conn.Close(); err != nil {
-			c.logger.Error().Err(err).Msg("failed to close gRPC connection to source plugin")
+			c.logger.Error().Err(err).Msgf("failed to close gRPC connection to %s plugin", c.typ.String())
 		}
 		c.Conn = nil
 	}
