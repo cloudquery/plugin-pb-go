@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.26.26](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.25...v1.26.26) (2025-11-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to a4bb9ff ([#567](https://github.com/cloudquery/plugin-pb-go/issues/567)) ([0939fc4](https://github.com/cloudquery/plugin-pb-go/commit/0939fc446fd6a0e1be5a758502b44891ba157a69))
+* **deps:** Update module github.com/avast/retry-go/v4 to v4.7.0 ([#568](https://github.com/cloudquery/plugin-pb-go/issues/568)) ([f82ca8d](https://github.com/cloudquery/plugin-pb-go/commit/f82ca8d26a575ca5430df506848e2ba952a90c46))
+* **deps:** Update module github.com/docker/docker to v28.5.1+incompatible ([#570](https://github.com/cloudquery/plugin-pb-go/issues/570)) ([1be1f94](https://github.com/cloudquery/plugin-pb-go/commit/1be1f9461cd4af343242e097eaf094e4a01d7633))
+
 ## [1.26.25](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.24...v1.26.25) (2025-10-29)
 
 
