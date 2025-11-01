@@ -20,7 +20,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.6
 	github.com/stretchr/testify v1.11.1
 	github.com/thoas/go-funk v0.9.3
-	golang.org/x/exp v0.0.0-20250911091902-df9299821621
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1
@@ -63,14 +63,14 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
-	golang.org/x/mod v0.28.0 // indirect
-	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/mod v0.29.0 // indirect
+	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/telemetry v0.0.0-20250908211612-aef8a434d053 // indirect
-	golang.org/x/term v0.35.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
-	golang.org/x/tools v0.37.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
+	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
