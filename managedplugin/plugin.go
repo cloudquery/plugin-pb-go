@@ -223,7 +223,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 		}
 		isDocker, err := validateDockerPlugin(ctx, c.logger, hubClient, ops)
 		if err != nil {
-			c.logger.Error().Err(err).Msg("failed to validate docker plugin, falling back to download from hub")
+			c.logger.Error().Err(err).Msg("failed to validate docker plugin, falling back to download from hub or using cached plugin")
 			return DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
 		}
 		if isDocker {
