@@ -223,7 +223,8 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 		}
 		isDocker, err := validateDockerPlugin(ctx, c.logger, hubClient, ops)
 		if err != nil {
-			return AssetSourceUnknown, err
+			c.logger.Error().Err(err).Msg("failed to validate docker plugin, falling back to download from hub or using cached plugin")
+			return DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
 		}
 		if isDocker {
 			path := fmt.Sprintf(c.cqDockerHost+"/%s/%s-%s:%s", ops.PluginTeam, ops.PluginKind, ops.PluginName, ops.PluginVersion)
