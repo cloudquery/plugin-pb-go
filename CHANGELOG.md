@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.27](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.26...v1.26.27) (2025-11-18)
+
+
+### Bug Fixes
+
+* Fallback to cached plugin in case docker plugin check fails ([#571](https://github.com/cloudquery/plugin-pb-go/issues/571)) ([1032497](https://github.com/cloudquery/plugin-pb-go/commit/1032497544e731ab2721502767d25b1ee646c2b4))
+
 ## [1.26.26](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.25...v1.26.26) (2025-11-01)
 
 
