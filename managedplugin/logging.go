@@ -2,10 +2,17 @@ package managedplugin
 
 import "github.com/rs/zerolog"
 
-func (c *Client) jsonToLog(l zerolog.Logger, msg map[string]any) {
+func (c *Client) jsonToLog(l zerolog.Logger, msg map[string]any, protectedFields []string) {
 	level := msg["level"]
 	// The log level is part of the log message received from the plugin, so we need to remove it before logging
 	delete(msg, "level")
+
+	// Remove protected fields from log message to avoid duplication
+	for _, field := range protectedFields {
+		if _, found := msg[field]; found {
+			delete(msg, field)
+		}
+	}
 	switch level {
 	case "trace":
 		l.Trace().Fields(msg).Msg("")
