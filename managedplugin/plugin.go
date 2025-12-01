@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"github.com/cloudquery/plugin-pb-go/internal/env"
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
@@ -557,6 +558,12 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 	lr := NewLogReader(reader)
 	// reset the context to avoid duplicate fields in the logs when streaming logs from plugins
 	pluginsLogger := c.logger.With().Reset().Timestamp().Logger()
+	protectedFields := make([]string, 0)
+	tenantID := env.TenantID()
+	if tenantID != "" {
+		pluginsLogger = pluginsLogger.With().Str("tenant_id", tenantID).Logger()
+		protectedFields = append(protectedFields, "tenant_id")
+	}
 	for {
 		line, err := lr.NextLine()
 		if errors.Is(err, io.EOF) {
@@ -574,7 +581,7 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
 			c.logger.Info().Str("level", "unknown").Msg(string(line))
 		} else {
-			c.jsonToLog(pluginsLogger, structuredLogLine)
+			c.jsonToLog(pluginsLogger, structuredLogLine, protectedFields)
 		}
 	}
 }
