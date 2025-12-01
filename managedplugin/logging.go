@@ -9,9 +9,7 @@ func (c *Client) jsonToLog(l zerolog.Logger, msg map[string]any, protectedFields
 
 	// Remove protected fields from log message to avoid duplication
 	for _, field := range protectedFields {
-		if _, found := msg[field]; found {
-			delete(msg, field)
-		}
+		delete(msg, field)
 	}
 	switch level {
 	case "trace":
