@@ -555,9 +555,11 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 	lr := NewLogReader(reader)
 	// reset the context to avoid duplicate fields in the logs when streaming logs from plugins
 	pluginsLogger := c.logger.With().Reset().Timestamp().Logger()
+	protectedFields := make([]string, 0)
 	tenantID := env.TenantID()
 	if tenantID != "" {
 		pluginsLogger = pluginsLogger.With().Str("tenant_id", tenantID).Logger()
+		protectedFields = append(protectedFields, "tenant_id")
 	}
 	for {
 		line, err := lr.NextLine()
@@ -576,7 +578,7 @@ func (c *Client) readLogLines(reader io.ReadCloser) {
 		if err := json.Unmarshal(line, &structuredLogLine); err != nil {
 			c.logger.Info().Str("level", "unknown").Msg(string(line))
 		} else {
-			c.jsonToLog(pluginsLogger, structuredLogLine, []string{"tenant_id"})
+			c.jsonToLog(pluginsLogger, structuredLogLine, protectedFields)
 		}
 	}
 }
