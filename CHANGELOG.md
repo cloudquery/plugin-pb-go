@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.27.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.27...v1.27.0) (2025-12-01)
+
+
+### Features
+
+* Support logging of tenant ID ([#580](https://github.com/cloudquery/plugin-pb-go/issues/580)) ([4634b49](https://github.com/cloudquery/plugin-pb-go/commit/4634b49256cba6ebe9e39c5aacc4092263b86102))
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/docker/docker to v28.5.2+incompatible ([#576](https://github.com/cloudquery/plugin-pb-go/issues/576)) ([2794c32](https://github.com/cloudquery/plugin-pb-go/commit/2794c326338db4776ead3950aa116358e02daf44))
+* **deps:** Update module google.golang.org/grpc to v1.77.0 ([#575](https://github.com/cloudquery/plugin-pb-go/issues/575)) ([bdbb9be](https://github.com/cloudquery/plugin-pb-go/commit/bdbb9be94979705b89e30a27022a8cfcdfbd9109))
+* Generate Go Code from `plugin-pb` ([#573](https://github.com/cloudquery/plugin-pb-go/issues/573)) ([1ac0dfc](https://github.com/cloudquery/plugin-pb-go/commit/1ac0dfc2caeb12e9a4f89a0bd87a44bd67bd6f34))
+
 ## [1.26.27](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.26...v1.26.27) (2025-11-18)
 
 
