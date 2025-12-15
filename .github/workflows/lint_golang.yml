@@ -23,7 +23,7 @@ jobs:
           # We use a manually configured cache key to avoid conflicts with the test action cache
           # See https://github.com/actions/setup-go/issues/358
           cache: false
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build
@@ -34,5 +34,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.6.2
+          version: v2.7.2
           args: --verbose

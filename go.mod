@@ -6,9 +6,9 @@ toolchain go1.24.6
 
 require (
 	github.com/Masterminds/semver v1.5.0
-	github.com/apache/arrow-go/v18 v18.4.1
+	github.com/apache/arrow-go/v18 v18.5.0
 	github.com/avast/retry-go/v5 v5.0.0
-	github.com/cloudquery/cloudquery-api-go v1.14.6
+	github.com/cloudquery/cloudquery-api-go v1.14.7
 	github.com/distribution/reference v0.6.0
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/go-connections v0.6.0
@@ -20,9 +20,9 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.6
 	github.com/stretchr/testify v1.11.1
 	github.com/thoas/go-funk v0.9.3
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
+	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9
 	google.golang.org/grpc v1.77.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -38,10 +38,10 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/google/flatbuffers v25.2.10+incompatible // indirect
+	github.com/google/flatbuffers v25.9.23+incompatible // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -63,14 +63,14 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
-	golang.org/x/mod v0.29.0 // indirect
-	golang.org/x/net v0.46.1-0.20251013234738-63d1a5100f82 // indirect
-	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.37.0 // indirect
-	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
-	golang.org/x/term v0.36.0 // indirect
-	golang.org/x/text v0.30.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/telemetry v0.0.0-20251203150158-8fff8a5912fc // indirect
+	golang.org/x/term v0.38.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
