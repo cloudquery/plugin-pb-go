@@ -341,6 +341,9 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 		retry.RetryIf(func(err error) bool {
 			return err.Error() == "failed to get port mapping for container"
 		}),
+		// this should generally succeed on first or second try, because we're only waiting for the container to start
+		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
+		// connection.
 		retry.Attempts(containerPortMappingRetries),
 		retry.Delay(containerPortMappingInitialRetryDelay),
 		retry.DelayType(retry.BackOffDelay),
