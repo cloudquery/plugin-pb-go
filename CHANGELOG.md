@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.27.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.0...v1.27.1) (2025-12-15)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 8475f28 ([#584](https://github.com/cloudquery/plugin-pb-go/issues/584)) ([812b081](https://github.com/cloudquery/plugin-pb-go/commit/812b0816ff5c8726e65a040d18d01a3785311087))
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.5.0 ([#587](https://github.com/cloudquery/plugin-pb-go/issues/587)) ([f0969ad](https://github.com/cloudquery/plugin-pb-go/commit/f0969ad20cee58fc897b4b95c6485625e461d2fb))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.6 ([#581](https://github.com/cloudquery/plugin-pb-go/issues/581)) ([c0fb0f8](https://github.com/cloudquery/plugin-pb-go/commit/c0fb0f845e479e5dc37d9748b0dd2443a6a38958))
+* **deps:** Update module google.golang.org/protobuf to v1.36.11 ([#585](https://github.com/cloudquery/plugin-pb-go/issues/585)) ([782e43e](https://github.com/cloudquery/plugin-pb-go/commit/782e43ecd0ec605e32c92dcdf9869b858d896068))
+* Generate Go Code from `plugin-pb` ([#583](https://github.com/cloudquery/plugin-pb-go/issues/583)) ([159d925](https://github.com/cloudquery/plugin-pb-go/commit/159d92566a5d4289a264341af62dfd9b190b6c47))
+
 ## [1.27.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.26.27...v1.27.0) (2025-12-01)
 
 
