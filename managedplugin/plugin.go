@@ -337,20 +337,20 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	}
 
 	var hostConnection string
-	err = retry.Do(func() error {
-		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portMapping.Port)
-		return err
-	}, retry.RetryIf(func(err error) bool {
-		return err.Error() == "failed to get port mapping for container"
-	}),
-		// this should generally succeed on first or second try, because we're only waiting for the container to start
-		// to get the port mapping, not the plugin to start. The plugin will be waited for when we establish the tcp
-		// connection.
+	options := []retry.Option{
+		retry.RetryIf(func(err error) bool {
+			return err.Error() == "failed to get port mapping for container"
+		}),
 		retry.Attempts(containerPortMappingRetries),
 		retry.Delay(containerPortMappingInitialRetryDelay),
 		retry.DelayType(retry.BackOffDelay),
-		retry.MaxDelay(1*time.Second),
-	)
+		retry.MaxDelay(1 * time.Second),
+	}
+	retrier := retry.New(options...)
+	err = retrier.Do(func() error {
+		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portMapping.Port)
+		return err
+	})
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
 	}
@@ -390,7 +390,17 @@ func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerI
 }
 
 func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
-	err := retry.Do(func() error {
+	options := []retry.Option{
+		retry.RetryIf(func(err error) bool {
+			return err != nil
+		}),
+		retry.Attempts(containerRunningRetries),
+		retry.Delay(containerRunningInitialRetryDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1 * time.Second),
+	}
+	retrier := retry.New(options...)
+	err := retrier.Do(func() error {
 		containerJSON, err := cli.ContainerInspect(ctx, containerID)
 		if err != nil {
 			return fmt.Errorf("failed to inspect container: %w", err)
@@ -404,14 +414,7 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 			}
 		}
 		return errors.New("container not running")
-	}, retry.RetryIf(func(err error) bool {
-		return err != nil
-	}),
-		retry.Attempts(containerRunningRetries),
-		retry.Delay(containerRunningInitialRetryDelay),
-		retry.DelayType(retry.BackOffDelay),
-		retry.MaxDelay(1*time.Second),
-	)
+	})
 	return err
 }
 
@@ -432,7 +435,16 @@ func getFreeTCPAddr() (string, error) {
 
 func (c *Client) startLocal(ctx context.Context, path string) error {
 	attempt := 0
-	return retry.Do(
+	options := []retry.Option{
+		retry.Attempts(3),
+		retry.Delay(1 * time.Second),
+		retry.LastErrorOnly(true),
+		retry.OnRetry(func(n uint, err error) {
+			c.logger.Debug().Err(err).Int("attempt", int(n)).Msg("failed to start plugin, retrying")
+		}),
+	}
+	retrier := retry.New(options...)
+	return retrier.Do(
 		func() error {
 			attempt++
 			c.logger.Debug().Str("path", path).Int("attempt", attempt).Msg("starting plugin")
@@ -454,12 +466,6 @@ func (c *Client) startLocal(ctx context.Context, path string) error {
 			}
 			return err
 		},
-		retry.Attempts(3),
-		retry.Delay(1*time.Second),
-		retry.LastErrorOnly(true),
-		retry.OnRetry(func(n uint, err error) {
-			c.logger.Debug().Err(err).Int("attempt", int(n)).Msg("failed to start plugin, retrying")
-		}),
 	)
 }
 
@@ -601,7 +607,17 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to dial grpc %s plugin at %s: %w", c.typ.String(), path, err)
 	}
 
-	return retry.Do(
+	options := []retry.Option{
+		retry.RetryIf(func(err error) bool {
+			return err.Error() == "connection not ready"
+		}),
+		retry.Delay(containerServerHealthyInitialRetryDelay),
+		retry.Attempts(containerServerHealthyRetries),
+		retry.DelayType(retry.BackOffDelay),
+		retry.MaxDelay(1 * time.Second),
+	}
+	retrier := retry.New(options...)
+	return retrier.Do(
 		func() error {
 			state := c.Conn.GetState()
 			if state == connectivity.Idle || state == connectivity.Ready {
@@ -612,13 +628,6 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 			}
 			return errors.New("connection not ready")
 		},
-		retry.RetryIf(func(err error) bool {
-			return err.Error() == "connection not ready"
-		}),
-		retry.Delay(containerServerHealthyInitialRetryDelay),
-		retry.Attempts(containerServerHealthyRetries),
-		retry.DelayType(retry.BackOffDelay),
-		retry.MaxDelay(1*time.Second),
 	)
 }
 
