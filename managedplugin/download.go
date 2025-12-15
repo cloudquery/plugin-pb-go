@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	"github.com/rs/zerolog"
 	"github.com/schollz/progressbar/v3"

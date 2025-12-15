@@ -16,7 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	"github.com/cloudquery/plugin-pb-go/internal/env"
 	pbBase "github.com/cloudquery/plugin-pb-go/pb/base/v0"
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
