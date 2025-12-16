@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.1...v1.27.2) (2025-12-16)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/avast/retry-go/v4 to v5 ([#591](https://github.com/cloudquery/plugin-pb-go/issues/591)) ([617017c](https://github.com/cloudquery/plugin-pb-go/commit/617017cdafa26b526ffa7460cb30e8f8268c250e))
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.7 ([#592](https://github.com/cloudquery/plugin-pb-go/issues/592)) ([f695a0e](https://github.com/cloudquery/plugin-pb-go/commit/f695a0e305d67f0eb3ba5fed75e775b395d17692))
+
 ## [1.27.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.0...v1.27.1) (2025-12-15)
 
 
