@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	"github.com/rs/zerolog"
 	"github.com/schollz/progressbar/v3"
@@ -74,8 +74,18 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 		err429 = errors.New("429")
 	)
 
+	options := []retry.Option{
+		retry.RetryIf(func(err error) bool {
+			return err == err401 || err == err429
+		}),
+		retry.Context(ctx),
+		retry.Attempts(RetryAttempts),
+		retry.Delay(RetryWaitTime),
+		retry.LastErrorOnly(true),
+	}
+	retrier := retry.New(options...)
 	for _, downloadURL := range urls {
-		err := retry.Do(func() error {
+		err := retrier.Do(func() error {
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 			if err != nil {
 				return fmt.Errorf("failed create request %s: %w", downloadURL, err)
@@ -101,14 +111,7 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
 				return fmt.Errorf("statusCode %d", resp.StatusCode)
 			}
-		}, retry.RetryIf(func(err error) bool {
-			return err == err401 || err == err429
-		}),
-			retry.Context(ctx),
-			retry.Attempts(RetryAttempts),
-			retry.Delay(RetryWaitTime),
-			retry.LastErrorOnly(true),
-		)
+		})
 		if err == err404 {
 			continue
 		}
@@ -338,7 +341,16 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 	defer out.Close()
 
 	checksum := ""
-	err = retry.Do(func() error {
+	options := []retry.Option{
+		retry.RetryIf(func(err error) bool {
+			return err.Error() == "statusCode != 200"
+		}),
+		retry.Context(ctx),
+		retry.Attempts(RetryAttempts),
+		retry.Delay(RetryWaitTime),
+	}
+	retrier := retry.New(options...)
+	err = retrier.Do(func() error {
 		checksum = ""
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
@@ -384,13 +396,7 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		}
 		checksum = fmt.Sprintf("%x", s.Sum(nil))
 		return nil
-	}, retry.RetryIf(func(err error) bool {
-		return err.Error() == "statusCode != 200"
-	}),
-		retry.Context(ctx),
-		retry.Attempts(RetryAttempts),
-		retry.Delay(RetryWaitTime),
-	)
+	})
 	if err != nil {
 		for _, e := range err.(retry.Error) {
 			if e.Error() == "not found" {
