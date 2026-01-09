@@ -53,9 +53,6 @@ type Source struct {
 	// DeterministicCQID is a flag that indicates whether the source plugin should generate a random UUID as the value of _cq_id
 	// or whether it should calculate a UUID that is a hash of the primary keys (if they exist) or the entire resource.
 	DeterministicCQID bool `json:"deterministic_cq_id,omitempty"`
-
-	// SentryDSN is the DSN used to report errors to Sentry
-	SentryDSN string `json:"sentry_dsn,omitempty"`
 }
 
 func (s *Source) SetDefaults() {
