@@ -21,6 +21,9 @@ type Destination struct {
 	BatchSizeBytes int         `json:"batch_size_bytes,omitempty"`
 	Spec           any         `json:"spec,omitempty"`
 	PKMode         PKMode      `json:"pk_mode,omitempty"`
+
+	// SentryDSN is the DSN used to report errors to Sentry
+	SentryDSN string `json:"sentry_dsn,omitempty"`
 }
 
 func (d *Destination) SetDefaults(defaultBatchSize, defaultBatchSizeBytes int) {

@@ -77,6 +77,7 @@ type Config struct {
 	Version     string
 	Environment []string // environment variables to pass to the plugin in key=value format
 	DockerAuth  string
+	SentryDSN   string
 }
 
 type Client struct {
@@ -549,6 +550,8 @@ func (c *Client) getPluginArgs() []string {
 	}
 	if c.noSentry {
 		args = append(args, "--no-sentry")
+	} else if len(c.config.SentryDSN) > 0 {
+		args = append(args, "--sentry-dsn", c.config.SentryDSN)
 	}
 	if c.licenseFile != "" {
 		args = append(args, "--license", c.licenseFile)
