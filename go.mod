@@ -17,7 +17,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/rs/zerolog v1.34.0
-	github.com/schollz/progressbar/v3 v3.14.6
+	github.com/schollz/progressbar/v3 v3.19.0
 	github.com/stretchr/testify v1.11.1
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
