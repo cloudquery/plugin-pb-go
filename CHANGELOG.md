@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.6](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.5...v1.27.6) (2026-02-02)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 716be56 ([#601](https://github.com/cloudquery/plugin-pb-go/issues/601)) ([072fb4d](https://github.com/cloudquery/plugin-pb-go/commit/072fb4dccc18ab4d6480b93f722191444e1781a2))
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.5.1 ([#605](https://github.com/cloudquery/plugin-pb-go/issues/605)) ([1884bbd](https://github.com/cloudquery/plugin-pb-go/commit/1884bbd72b2b2c92dd9565e346fcf6a424bebcc3))
+
 ## [1.27.5](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.4...v1.27.5) (2026-01-03)
 
 
