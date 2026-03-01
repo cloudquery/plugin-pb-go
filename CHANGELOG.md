@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.8](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.7...v1.27.8) (2026-03-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to 3dfff04 ([#609](https://github.com/cloudquery/plugin-pb-go/issues/609)) ([dc2d440](https://github.com/cloudquery/plugin-pb-go/commit/dc2d4405299ae6a52bc19bca3d792664867ab748))
+
 ## [1.27.7](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.6...v1.27.7) (2026-02-21)
 
 
