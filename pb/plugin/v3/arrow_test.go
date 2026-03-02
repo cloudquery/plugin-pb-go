@@ -1,4 +1,4 @@
-package plugin
+package plugin //nolint:revive
 
 import (
 	"testing"
