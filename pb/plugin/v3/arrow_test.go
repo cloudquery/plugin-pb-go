@@ -1,4 +1,4 @@
-package plugin
+package plugin //nolint:revive // var-naming: package name conflicts with standard library but is appropriate for this context
 
 import (
 	"testing"
