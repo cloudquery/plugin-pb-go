@@ -25,3 +25,4 @@ plugin-pb
 .DS_Store
 
 .idea/
+bin/

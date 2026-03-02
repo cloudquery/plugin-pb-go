@@ -1,4 +1,4 @@
-package metrics
+package metrics //nolint:revive // var-naming: package name conflicts with standard library but is appropriate for this context
 
 import (
 	"sync/atomic"
