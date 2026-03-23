@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.11](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.10...v1.27.11) (2026-03-23)
+
+
+### Bug Fixes
+
+* Prevent panic on non-retryable download errors ([#619](https://github.com/cloudquery/plugin-pb-go/issues/619)) ([04f5add](https://github.com/cloudquery/plugin-pb-go/commit/04f5addaf15225e44aa0f0cd7bc5ee8c175ff124))
+
 ## [1.27.10](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.9...v1.27.10) (2026-03-19)
 
 
