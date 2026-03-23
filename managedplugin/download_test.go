@@ -145,7 +145,7 @@ func TestDownloadPluginNonExistentVersionFromCloudQueryHub(t *testing.T) {
 			testName: "should download test plugin from cloudquery registry with non-existent version",
 			team:     "cloudquery", plugin: "aws", version: "v9000.0.0", typ: PluginSource, wantErr: true,
 			// This is only a prefix as the latest version won't be fixed in an integration test
-			errStr: "version v9000.0.0 does not exist, consider using the latest version at https://hub.cloudquery.io/plugins/source/cloudquery/aws/v",
+			errStr: "version v9000.0.0 does not exist, consider using the latest version at https://www.cloudquery.io/hub/plugins/source/cloudquery/aws/v",
 		},
 	}
 	c, err := cloudquery_api.NewClientWithResponses(APIBaseURL())

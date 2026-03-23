@@ -76,7 +76,7 @@ func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, na
 			Str("plugin", name).
 			Str("using_version", actualVersionSemver.String()).
 			Str("latest_version", latestVersionSemver.String()).
-			Str("url", fmt.Sprintf("https://hub.cloudquery.io/plugins/%s/%s/%s", kind, org, name)).
+			Str("url", fmt.Sprintf("https://www.cloudquery.io/hub/plugins/%s/%s/%s", kind, org, name)).
 			Msg("Plugin is outdated, consider upgrading to the latest version.")
 		return true, nil
 	}

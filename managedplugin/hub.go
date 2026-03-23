@@ -46,7 +46,7 @@ func validateDockerPlugin(ctx context.Context, logger zerolog.Logger, c *cloudqu
 
 		if ver != nil {
 			return false, fmt.Errorf("version %s does not exist, consider using the latest version at %s", ops.PluginVersion,
-				fmt.Sprintf("https://hub.cloudquery.io/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
+				fmt.Sprintf("https://www.cloudquery.io/hub/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
 		}
 	}
 	if p.StatusCode() != http.StatusOK {
