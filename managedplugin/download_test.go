@@ -2,13 +2,61 @@ package managedplugin
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
 	"github.com/rs/zerolog"
 )
+
+func TestDownloadFileNonRetryErrorDoesNotPanic(t *testing.T) {
+	t.Helper()
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("downloadFile panicked: %v", r)
+		}
+	}()
+
+	_, err := downloadFile(context.Background(), localPath, "://invalid-url", DownloaderOptions{NoProgress: true})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed downloading URL") {
+		t.Fatalf("expected wrapped download error, got: %v", err)
+	}
+}
+
+func TestDownloadFileNotFoundDoesNotPanic(t *testing.T) {
+	t.Helper()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	t.Cleanup(server.Close)
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("downloadFile panicked: %v", r)
+		}
+	}()
+
+	_, err := downloadFile(context.Background(), localPath, server.URL, DownloaderOptions{NoProgress: true})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if err.Error() != "not found" {
+		t.Fatalf("expected not found error, got: %v", err)
+	}
+}
 
 func TestDownloadPluginFromGithubIntegration(t *testing.T) {
 	tmp := t.TempDir()

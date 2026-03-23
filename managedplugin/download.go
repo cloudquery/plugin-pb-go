@@ -340,10 +340,13 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 	}
 	defer out.Close()
 
+	errStatusCodeNotOK := errors.New("statusCode != 200")
+	errNotFound := errors.New("not found")
+
 	checksum := ""
 	options := []retry.Option{
 		retry.RetryIf(func(err error) bool {
-			return err.Error() == "statusCode != 200"
+			return errors.Is(err, errStatusCodeNotOK)
 		}),
 		retry.Context(ctx),
 		retry.Attempts(RetryAttempts),
@@ -366,10 +369,10 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
-			return errors.New("not found")
+			return errNotFound
 		} else if resp.StatusCode != http.StatusOK {
 			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-			return errors.New("statusCode != 200")
+			return errStatusCodeNotOK
 		}
 
 		urlForLog := downloadURL
@@ -398,10 +401,8 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		return nil
 	})
 	if err != nil {
-		for _, e := range err.(retry.Error) {
-			if e.Error() == "not found" {
-				return "", e
-			}
+		if errors.Is(err, errNotFound) {
+			return "", errNotFound
 		}
 		return "", fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
 	}
