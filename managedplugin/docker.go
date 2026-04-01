@@ -73,10 +73,8 @@ func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
 }
 
 func newDockerClient(options ...client.Opt) (*client.Client, error) {
-	defaultOptions := []client.Opt{
-		client.FromEnv,
-		client.WithAPIVersionNegotiation(),
-	}
+	defaultOptions := make([]client.Opt, 0, 2+len(options))
+	defaultOptions = append(defaultOptions, client.FromEnv, client.WithAPIVersionNegotiation())
 	options = append(defaultOptions, options...)
 	return client.NewClientWithOpts(options...)
 }
