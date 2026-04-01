@@ -38,7 +38,7 @@ func (r *LogReader) NextLine() ([]byte, error) {
 	if !isPrefix || err != nil {
 		return line, err
 	}
-	prefix := make([]byte, logReaderPrefixLen)
+	prefix := make([]byte, logReaderPrefixLen, logReaderPrefixLen+len(ellipsis))
 	for i := 0; isPrefix; i++ {
 		// this loop is entered if a log line is too long to fit into the buffer. We discard it by
 		// iterating until isPrefix becomes false. We only log the first few bytes of the line to help with
