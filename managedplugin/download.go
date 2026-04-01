@@ -173,7 +173,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 
 		if ver != nil {
 			return fmt.Errorf("version %s does not exist, consider using the latest version at %s", ops.PluginVersion,
-				fmt.Sprintf("https://hub.cloudquery.io/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
+				fmt.Sprintf("https://www.cloudquery.io/hub/plugins/%s/%s/%s/v%s", ops.PluginKind, ops.PluginTeam, ops.PluginName, ver.String()))
 		}
 
 		return errRetryWithLogin
