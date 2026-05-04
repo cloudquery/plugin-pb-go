@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.27.15](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.14...v1.27.15) (2026-05-04)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency go to v1.26.2 ([#639](https://github.com/cloudquery/plugin-pb-go/issues/639)) ([e722e32](https://github.com/cloudquery/plugin-pb-go/commit/e722e32858f0064c1eb620a6b892c92411bb3af2))
+* **deps:** Update golang.org/x/exp digest to 746e56f ([#638](https://github.com/cloudquery/plugin-pb-go/issues/638)) ([e383d57](https://github.com/cloudquery/plugin-pb-go/commit/e383d570f1d1b8b074aa933fd0bbf9b65747f0c2))
+* **deps:** Update module github.com/apache/arrow-go/v18 to v18.6.0 ([#645](https://github.com/cloudquery/plugin-pb-go/issues/645)) ([c12c6f6](https://github.com/cloudquery/plugin-pb-go/commit/c12c6f688057e41c52939fad58e82e0562d78a25))
+* **deps:** Update module github.com/docker/go-connections to v0.7.0 ([#640](https://github.com/cloudquery/plugin-pb-go/issues/640)) ([aa62f5e](https://github.com/cloudquery/plugin-pb-go/commit/aa62f5e40e15e3e310f6a3b581e782218c878b76))
+* **deps:** Update module github.com/rs/zerolog to v1.35.1 ([#641](https://github.com/cloudquery/plugin-pb-go/issues/641)) ([c55982e](https://github.com/cloudquery/plugin-pb-go/commit/c55982ecd1c47b6965e12071cef5603fa5180774))
+* **deps:** Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp to v1.43.0 [SECURITY] ([#636](https://github.com/cloudquery/plugin-pb-go/issues/636)) ([dedf738](https://github.com/cloudquery/plugin-pb-go/commit/dedf738e6149d19fbd996eede674e6a6de53e68d))
+* **deps:** Update module google.golang.org/grpc to v1.80.0 ([#634](https://github.com/cloudquery/plugin-pb-go/issues/634)) ([b4a0c33](https://github.com/cloudquery/plugin-pb-go/commit/b4a0c33b6c4ff39021e2bb359965da65a3002f8d))
+
 ## [1.27.14](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.13...v1.27.14) (2026-04-01)
 
 
