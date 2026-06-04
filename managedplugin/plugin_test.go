@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -210,6 +211,33 @@ func TestIsDirectory(t *testing.T) {
 	}
 	if isFileBool {
 		t.Fatal("expected file")
+	}
+}
+
+func TestValidateChecksum(t *testing.T) {
+	tempDir := t.TempDir()
+	tempFile := filepath.Join(tempDir, "testFile")
+	if err := os.WriteFile(tempFile, []byte("test content"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	// sha256 of "test content"
+	const checksum = "6ae8a75555209fd6c44157c0aed8016e763ff435a19cf186f76863140143ff72"
+
+	// valid checksum should pass
+	if err := validateChecksum(tempFile, checksum); err != nil {
+		t.Fatal(err)
+	}
+	// "sha256:" prefix and uppercase should be accepted
+	if err := validateChecksum(tempFile, "sha256:"+strings.ToUpper(checksum)); err != nil {
+		t.Fatal(err)
+	}
+	// mismatched checksum should fail
+	if err := validateChecksum(tempFile, "deadbeef"); err == nil {
+		t.Fatal("expected checksum mismatch error")
+	}
+	// missing file should fail
+	if err := validateChecksum(filepath.Join(tempDir, "missing"), checksum); err == nil {
+		t.Fatal("expected error for missing file")
 	}
 }
 
