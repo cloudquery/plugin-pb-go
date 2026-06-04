@@ -2,6 +2,8 @@ package managedplugin
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -77,6 +79,7 @@ type Config struct {
 	Version     string
 	Environment []string // environment variables to pass to the plugin in key=value format
 	DockerAuth  string
+	Checksum    string // if set, the SHA-256 checksum (hex encoded, optionally prefixed with "sha256:") of the plugin binary is validated before executing. Supported for local and cloudquery registries.
 }
 
 type Client struct {
@@ -182,7 +185,15 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 	case RegistryGrpc:
 		return AssetSourceUnknown, nil // GRPC plugins are not downloaded
 	case RegistryLocal:
-		return AssetSourceUnknown, validateLocalExecPath(c.config.Path)
+		if err := validateLocalExecPath(c.config.Path); err != nil {
+			return AssetSourceUnknown, err
+		}
+		if c.config.Checksum != "" {
+			if err := validateChecksum(c.config.Path, c.config.Checksum); err != nil {
+				return AssetSourceUnknown, err
+			}
+		}
+		return AssetSourceUnknown, nil
 	case RegistryGithub:
 		pathSplit := strings.Split(c.config.Path, "/")
 		if len(pathSplit) != 2 {
@@ -228,6 +239,9 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 			return DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
 		}
 		if isDocker {
+			if c.config.Checksum != "" {
+				return AssetSourceUnknown, fmt.Errorf("checksum validation is not supported for docker packaged plugin %s", c.config.Path)
+			}
 			path := fmt.Sprintf(c.cqDockerHost+"/%s/%s-%s:%s", ops.PluginTeam, ops.PluginKind, ops.PluginName, ops.PluginVersion)
 			c.config.Registry = RegistryDocker // will be used by exec step
 			c.config.Path = path
@@ -238,7 +252,16 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 			}
 			return AssetSourceCached, nil
 		}
-		return DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
+		assetSource, err := DownloadPluginFromHub(ctx, c.logger, hubClient, ops, dops)
+		if err != nil {
+			return assetSource, err
+		}
+		if c.config.Checksum != "" {
+			if err := validateChecksum(c.LocalPath, c.config.Checksum); err != nil {
+				return assetSource, err
+			}
+		}
+		return assetSource, nil
 	default:
 		return AssetSourceUnknown, fmt.Errorf("unknown registry %s", c.config.Registry.String())
 	}
@@ -800,6 +823,26 @@ func isDirectory(path string) (bool, error) {
 		return false, err
 	}
 	return fileInfo.IsDir(), err
+}
+
+// validateChecksum computes the SHA-256 checksum of the file at filePath and compares it
+// to the expected checksum (hex encoded, optionally prefixed with "sha256:").
+func validateChecksum(filePath string, expected string) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin %s for checksum validation: %w", filePath, err)
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return fmt.Errorf("failed to calculate checksum of plugin %s: %w", filePath, err)
+	}
+	actual := hex.EncodeToString(h.Sum(nil))
+	expected = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(expected), "sha256:"))
+	if actual != expected {
+		return fmt.Errorf("plugin checksum mismatch for %s: expected %s, got %s", filePath, expected, actual)
+	}
+	return nil
 }
 
 func validateLocalExecPath(filePath string) error {
