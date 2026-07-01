@@ -33,6 +33,7 @@ linters:
       disable:
         - fieldalignment
         - shadow
+        - inline
       enable-all: true
     revive:
       enable-all-rules: true
