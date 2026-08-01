@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/rs/zerolog v1.35.1
-	github.com/schollz/progressbar/v3 v3.14.6
+	github.com/schollz/progressbar/v3 v3.19.1
 	github.com/stretchr/testify v1.11.1
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976
@@ -43,7 +43,7 @@ require (
 	github.com/klauspost/compress v1.19.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
@@ -64,7 +64,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/term v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
