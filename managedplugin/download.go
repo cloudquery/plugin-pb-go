@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,6 +24,7 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
+	MaxRetryWaitTime   = 8 * time.Second
 )
 
 func APIBaseURL() string {
@@ -190,6 +190,8 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return errors.New("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
+	defer os.Remove(pluginZipPath)
+
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
@@ -201,28 +203,45 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return fmt.Errorf("checksum mismatch: expected %s, got %s", pluginAsset.Checksum, writtenChecksum)
 	}
 
-	archive, err := zip.OpenReader(pluginZipPath)
+	pathInArchive := fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH)
+	return extractPluginBinary(pluginZipPath, pathInArchive, ops.LocalPath)
+}
+
+// extractPluginBinary writes the binary to a temporary file and renames it into
+// place, so a failure part way through never leaves a truncated binary that the
+// next run treats as a cached plugin.
+func extractPluginBinary(archivePath, pathInArchive, localPath string) error {
+	archive, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 	defer archive.Close()
 
-	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH))
+	fileInArchive, err := archive.Open(pathInArchive)
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive: %w", err)
+		return fmt.Errorf("failed to open plugin archive %s: %w", pathInArchive, err)
 	}
+	defer fileInArchive.Close()
 
-	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	out, err := os.CreateTemp(filepath.Dir(localPath), filepath.Base(localPath)+".tmp")
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
 	}
-	_, err = io.Copy(out, fileInArchive)
-	if err != nil {
+	tmpPath := out.Name()
+	defer os.Remove(tmpPath)
+
+	if _, err := io.Copy(out, fileInArchive); err != nil {
+		out.Close()
 		return fmt.Errorf("failed to copy body to file: %w", err)
 	}
-	err = out.Close()
-	if err != nil {
+	if err := out.Close(); err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
+	}
+	if err := os.Chmod(tmpPath, 0744); err != nil {
+		return fmt.Errorf("failed to set permissions on %s: %w", localPath, err)
+	}
+	if err := os.Rename(tmpPath, localPath); err != nil {
+		return fmt.Errorf("failed to move plugin binary to %s: %w", localPath, err)
 	}
 	return nil
 }
@@ -283,16 +302,12 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
+	logger.Debug().Msg(fmt.Sprintf("Downloading %s", redactURLQuery(downloadURL)))
+	defer os.Remove(pluginZipPath)
+
 	if _, err := downloadFile(ctx, pluginZipPath, downloadURL, dops); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
-
-	archive, err := zip.OpenReader(pluginZipPath)
-	if err != nil {
-		return fmt.Errorf("failed to open plugin archive: %w", err)
-	}
-	defer archive.Close()
 
 	var pathInArchive string
 	switch {
@@ -312,24 +327,7 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 		return fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
-	pathInArchive = WithBinarySuffix(pathInArchive)
-	fileInArchive, err := archive.Open(pathInArchive)
-	if err != nil {
-		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
-	}
-	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
-	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
-	}
-	_, err = io.Copy(out, fileInArchive)
-	if err != nil {
-		return fmt.Errorf("failed to copy body to file: %w", err)
-	}
-	err = out.Close()
-	if err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
-	}
-	return nil
+	return extractPluginBinary(pluginZipPath, WithBinarySuffix(pathInArchive), localPath)
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
@@ -340,48 +338,49 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 	}
 	defer out.Close()
 
-	errStatusCodeNotOK := errors.New("statusCode != 200")
-	errNotFound := errors.New("not found")
+	urlForLog := redactURLQuery(downloadURL)
 
 	checksum := ""
 	options := []retry.Option{
-		retry.RetryIf(func(err error) bool {
-			return errors.Is(err, errStatusCodeNotOK)
-		}),
+		retry.RetryIf(isRetryableDownloadError),
 		retry.Context(ctx),
 		retry.Attempts(RetryAttempts),
 		retry.Delay(RetryWaitTime),
+		retry.MaxDelay(MaxRetryWaitTime),
 	}
 	retrier := retry.New(options...)
 	err = retrier.Do(func() error {
 		checksum = ""
+		// Each attempt rewrites the file from the start, so a body that was cut off
+		// mid-copy cannot leave its bytes in front of the next attempt's download.
+		if err := truncateFile(out); err != nil {
+			return err
+		}
+
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", downloadURL, err)
+			return fmt.Errorf("failed create request %s: %w", urlForLog, err)
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
+			return fmt.Errorf("failed to get url %s: %w", urlForLog, err)
 		}
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errNotFound
 		} else if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-			return errStatusCodeNotOK
+			if isRetryableStatusCode(resp.StatusCode) {
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
+			} else {
+				fmt.Printf("Failed downloading %s with status code %d\n", urlForLog, resp.StatusCode)
+			}
+			return &httpStatusError{statusCode: resp.StatusCode}
 		}
 
-		urlForLog := downloadURL
-		parsedURL, err := url.Parse(downloadURL)
-		if err == nil {
-			parsedURL.RawQuery = ""
-			parsedURL.Fragment = ""
-			urlForLog = parsedURL.String()
-		}
 		fmt.Printf("Downloading %s\n", urlForLog)
 
 		s := sha256.New()
@@ -393,9 +392,12 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		}
 
 		// Write the body to file
-		_, err = io.Copy(io.MultiWriter(writers...), resp.Body)
+		written, err := io.Copy(io.MultiWriter(writers...), resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
+		}
+		if resp.ContentLength >= 0 && written != resp.ContentLength {
+			return fmt.Errorf("%w: %s got %d bytes, want %d", errShortRead, out.Name(), written, resp.ContentLength)
 		}
 		checksum = fmt.Sprintf("%x", s.Sum(nil))
 		return nil
@@ -404,9 +406,19 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		if errors.Is(err, errNotFound) {
 			return "", errNotFound
 		}
-		return "", fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
+		return "", fmt.Errorf("failed downloading URL %q. Error %w", urlForLog, err)
 	}
 	return checksum, nil
+}
+
+func truncateFile(f *os.File) error {
+	if err := f.Truncate(0); err != nil {
+		return fmt.Errorf("failed to truncate file %s: %w", f.Name(), err)
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("failed to rewind file %s: %w", f.Name(), err)
+	}
+	return nil
 }
 
 func downloadProgressBar(maxBytes int64, description ...string) *progressbar.ProgressBar {
