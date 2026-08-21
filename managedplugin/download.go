@@ -190,8 +190,6 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return errors.New("failed to get plugin metadata from hub: empty location from response")
 	}
 	pluginZipPath := ops.LocalPath + ".zip"
-	defer os.Remove(pluginZipPath)
-
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
@@ -203,45 +201,28 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return fmt.Errorf("checksum mismatch: expected %s, got %s", pluginAsset.Checksum, writtenChecksum)
 	}
 
-	pathInArchive := fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH)
-	return extractPluginBinary(pluginZipPath, pathInArchive, ops.LocalPath)
-}
-
-// extractPluginBinary writes the binary to a temporary file and renames it into
-// place, so a failure part way through never leaves a truncated binary that the
-// next run treats as a cached plugin.
-func extractPluginBinary(archivePath, pathInArchive, localPath string) error {
-	archive, err := zip.OpenReader(archivePath)
+	archive, err := zip.OpenReader(pluginZipPath)
 	if err != nil {
 		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 	defer archive.Close()
 
-	fileInArchive, err := archive.Open(pathInArchive)
+	fileInArchive, err := archive.Open(fmt.Sprintf("plugin-%s-%s-%s-%s", ops.PluginName, ops.PluginVersion, runtime.GOOS, runtime.GOARCH))
 	if err != nil {
-		return fmt.Errorf("failed to open plugin archive %s: %w", pathInArchive, err)
+		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
-	defer fileInArchive.Close()
 
-	out, err := os.CreateTemp(filepath.Dir(localPath), filepath.Base(localPath)+".tmp")
+	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
 	}
-	tmpPath := out.Name()
-	defer os.Remove(tmpPath)
-
-	if _, err := io.Copy(out, fileInArchive); err != nil {
-		out.Close()
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
 		return fmt.Errorf("failed to copy body to file: %w", err)
 	}
-	if err := out.Close(); err != nil {
+	err = out.Close()
+	if err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
-	}
-	if err := os.Chmod(tmpPath, 0744); err != nil {
-		return fmt.Errorf("failed to set permissions on %s: %w", localPath, err)
-	}
-	if err := os.Rename(tmpPath, localPath); err != nil {
-		return fmt.Errorf("failed to move plugin binary to %s: %w", localPath, err)
 	}
 	return nil
 }
@@ -302,12 +283,16 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 	if err != nil {
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
-	logger.Debug().Msg(fmt.Sprintf("Downloading %s", redactURLQuery(downloadURL)))
-	defer os.Remove(pluginZipPath)
-
+	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
 	if _, err := downloadFile(ctx, pluginZipPath, downloadURL, dops); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
+
+	archive, err := zip.OpenReader(pluginZipPath)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+	defer archive.Close()
 
 	var pathInArchive string
 	switch {
@@ -327,7 +312,24 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 		return fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
-	return extractPluginBinary(pluginZipPath, WithBinarySuffix(pathInArchive), localPath)
+	pathInArchive = WithBinarySuffix(pathInArchive)
+	fileInArchive, err := archive.Open(pathInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
+	}
+	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
