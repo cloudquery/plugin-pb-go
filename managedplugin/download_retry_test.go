@@ -11,7 +11,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -244,7 +243,10 @@ func TestDownloadFileRetriesConnectionRefused(t *testing.T) {
 	localPath := filepath.Join(t.TempDir(), "plugin.zip")
 	_, err = downloadFile(context.Background(), localPath, "http://"+addr+"/asset", DownloaderOptions{NoProgress: true})
 	require.Error(t, err)
-	require.Equal(t, int(downloadRetryAttempts), strings.Count(err.Error(), "connection refused"))
+
+	// The refusal message is platform specific, so count the attempts that the
+	// retry aggregate numbers instead of matching on it.
+	require.Contains(t, err.Error(), fmt.Sprintf("#%d:", downloadRetryAttempts))
 }
 
 func TestIsRetryableDownloadErrorWindowsSocketMessages(t *testing.T) {
