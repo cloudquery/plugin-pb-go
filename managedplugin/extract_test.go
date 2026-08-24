@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,14 +41,15 @@ func corruptZip(t *testing.T, entry string) []byte {
 
 // TestDownloadPluginFromHubRemovesPartialBinary covers the caching trap: the hub
 // path never re-downloads once a file exists at LocalPath, so an extraction that
-// fails after the file is created would poison every later run.
+// fails after the file is created would poison every later run. The download
+// checksum cannot catch this - it is verified before extraction begins, and is
+// skipped entirely when the hub returns no checksum.
 func TestDownloadPluginFromHubRemovesPartialBinary(t *testing.T) {
 	const (
 		pluginName    = "envzero"
 		pluginVersion = "v2.1.0"
 	)
 	archive := corruptZip(t, fmt.Sprintf("plugin-%s-%s-%s-%s", pluginName, pluginVersion, runtime.GOOS, runtime.GOARCH))
-	checksum := fmt.Sprintf("%x", sha256.Sum256(archive))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/asset.zip", func(w http.ResponseWriter, _ *http.Request) {
@@ -60,9 +60,10 @@ func TestDownloadPluginFromHubRemovesPartialBinary(t *testing.T) {
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		// An empty checksum is only warned about, so the archive reaches
+		// extraction unverified - the realistic way a bad zip gets that far.
 		_ = json.NewEncoder(w).Encode(cloudquery_api.PluginAsset{
 			Location: server.URL + "/asset.zip",
-			Checksum: checksum,
 		})
 	})
 
