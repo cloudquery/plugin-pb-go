@@ -303,11 +303,15 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 		return fmt.Errorf("failed to get plugin url: %w", err)
 	}
 	logger.Debug().Msg(fmt.Sprintf("Downloading %s", downloadURL))
-	defer os.Remove(pluginZipPath)
-
 	if _, err := downloadFile(ctx, pluginZipPath, downloadURL, dops); err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
 	}
+
+	archive, err := zip.OpenReader(pluginZipPath)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive: %w", err)
+	}
+	defer archive.Close()
 
 	var pathInArchive string
 	switch {
@@ -327,7 +331,24 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 		return fmt.Errorf("unknown GitHub %s", downloadURL)
 	}
 
-	return extractPluginBinary(pluginZipPath, WithBinarySuffix(pathInArchive), localPath)
+	pathInArchive = WithBinarySuffix(pathInArchive)
+	fileInArchive, err := archive.Open(pathInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
+	}
+	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
