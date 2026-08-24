@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,11 @@ func TestExtractPluginBinary(t *testing.T) {
 
 	info, err := os.Stat(localPath)
 	require.NoError(t, err)
-	require.Equal(t, os.FileMode(0744), info.Mode().Perm())
+	if runtime.GOOS != "windows" {
+		// Windows maps Chmod onto the read-only bit alone, so the execute bit
+		// never survives there - with or without this change.
+		require.Equal(t, os.FileMode(0744), info.Mode().Perm())
+	}
 }
 
 // TestExtractPluginBinaryLeavesNoPartialFile guards the caching path: a failed
