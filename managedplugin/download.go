@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,6 +24,7 @@ const (
 	DefaultDownloadDir = ".cq"
 	RetryAttempts      = 5
 	RetryWaitTime      = 1 * time.Second
+	MaxRetryWaitTime   = 8 * time.Second
 )
 
 func APIBaseURL() string {
@@ -71,28 +71,31 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	var (
 		err404 = errors.New("404")
 		err401 = errors.New("401")
-		err429 = errors.New("429")
 	)
 
 	options := []retry.Option{
 		retry.RetryIf(func(err error) bool {
-			return err == err401 || err == err429
+			// The classifier treats 401 as permanent; this probe has always
+			// retried it because the GitHub asset host returns it spuriously.
+			return errors.Is(err, err401) || isRetryableDownloadError(err)
 		}),
 		retry.Context(ctx),
-		retry.Attempts(RetryAttempts),
-		retry.Delay(RetryWaitTime),
+		retry.Attempts(downloadRetryAttempts),
+		retry.Delay(downloadRetryDelay),
+		retry.MaxDelay(downloadRetryMaxDelay),
 		retry.LastErrorOnly(true),
 	}
 	retrier := retry.New(options...)
 	for _, downloadURL := range urls {
+		urlForLog := redactURLQuery(downloadURL)
 		err := retrier.Do(func() error {
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 			if err != nil {
-				return fmt.Errorf("failed create request %s: %w", downloadURL, err)
+				return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 			}
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
-				return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
+				return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 			}
 			resp.Body.Close()
 			// Check server response
@@ -102,17 +105,18 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			case http.StatusNotFound:
 				return err404
 			case http.StatusUnauthorized:
-				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
 				return err401
-			case http.StatusTooManyRequests:
-				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-				return err429
 			default:
-				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
-				return fmt.Errorf("statusCode %d", resp.StatusCode)
+				if isRetryableStatusCode(resp.StatusCode) {
+					fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
+				} else {
+					fmt.Printf("Failed downloading %s with status code %d\n", urlForLog, resp.StatusCode)
+				}
+				return &httpStatusError{statusCode: resp.StatusCode}
 			}
 		})
-		if err == err404 {
+		if errors.Is(err, err404) {
 			continue
 		}
 		return downloadURL, err
@@ -340,48 +344,49 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 	}
 	defer out.Close()
 
-	errStatusCodeNotOK := errors.New("statusCode != 200")
-	errNotFound := errors.New("not found")
+	urlForLog := redactURLQuery(downloadURL)
 
 	checksum := ""
 	options := []retry.Option{
-		retry.RetryIf(func(err error) bool {
-			return errors.Is(err, errStatusCodeNotOK)
-		}),
+		retry.RetryIf(isRetryableDownloadError),
 		retry.Context(ctx),
-		retry.Attempts(RetryAttempts),
-		retry.Delay(RetryWaitTime),
+		retry.Attempts(downloadRetryAttempts),
+		retry.Delay(downloadRetryDelay),
+		retry.MaxDelay(downloadRetryMaxDelay),
 	}
 	retrier := retry.New(options...)
 	err = retrier.Do(func() error {
 		checksum = ""
+		// Each attempt rewrites the file from the start, so a body that was cut off
+		// mid-copy cannot leave its bytes in front of the next attempt's download.
+		if err := truncateFile(out); err != nil {
+			return err
+		}
+
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", downloadURL, err)
+			return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
+			return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 		}
 		defer resp.Body.Close()
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errNotFound
 		} else if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-			return errStatusCodeNotOK
+			if isRetryableStatusCode(resp.StatusCode) {
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
+			} else {
+				fmt.Printf("Failed downloading %s with status code %d\n", urlForLog, resp.StatusCode)
+			}
+			return &httpStatusError{statusCode: resp.StatusCode}
 		}
 
-		urlForLog := downloadURL
-		parsedURL, err := url.Parse(downloadURL)
-		if err == nil {
-			parsedURL.RawQuery = ""
-			parsedURL.Fragment = ""
-			urlForLog = parsedURL.String()
-		}
 		fmt.Printf("Downloading %s\n", urlForLog)
 
 		s := sha256.New()
@@ -393,9 +398,12 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		}
 
 		// Write the body to file
-		_, err = io.Copy(io.MultiWriter(writers...), resp.Body)
+		written, err := io.Copy(io.MultiWriter(writers...), resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
+		}
+		if resp.ContentLength >= 0 && written != resp.ContentLength {
+			return fmt.Errorf("%w: %s got %d bytes, want %d", errShortRead, out.Name(), written, resp.ContentLength)
 		}
 		checksum = fmt.Sprintf("%x", s.Sum(nil))
 		return nil
@@ -404,9 +412,19 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		if errors.Is(err, errNotFound) {
 			return "", errNotFound
 		}
-		return "", fmt.Errorf("failed downloading URL %q. Error %w", downloadURL, err)
+		return "", fmt.Errorf("failed downloading URL %q. Error %w", urlForLog, err)
 	}
 	return checksum, nil
+}
+
+func truncateFile(f *os.File) error {
+	if err := f.Truncate(0); err != nil {
+		return fmt.Errorf("failed to truncate file %s: %w", f.Name(), err)
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("failed to rewind file %s: %w", f.Name(), err)
+	}
+	return nil
 }
 
 func downloadProgressBar(maxBytes int64, description ...string) *progressbar.ProgressBar {
