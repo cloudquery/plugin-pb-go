@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.17](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.16...v1.27.17) (2026-08-24)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/protobuf to v1.36.12 ([#674](https://github.com/cloudquery/plugin-pb-go/issues/674)) ([0bbd596](https://github.com/cloudquery/plugin-pb-go/commit/0bbd59615cce545d8421a422a13e0bb86f990031))
+* Retry plugin downloads that drop mid-body ([#672](https://github.com/cloudquery/plugin-pb-go/issues/672)) ([3afec5a](https://github.com/cloudquery/plugin-pb-go/commit/3afec5a5c17bad34e5b187bb27a9b7601cb05471))
+
 ## [1.27.16](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.15...v1.27.16) (2026-08-11)
 
 
