@@ -71,28 +71,31 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 	var (
 		err404 = errors.New("404")
 		err401 = errors.New("401")
-		err429 = errors.New("429")
 	)
 
 	options := []retry.Option{
 		retry.RetryIf(func(err error) bool {
-			return err == err401 || err == err429
+			// The classifier treats 401 as permanent; this probe has always
+			// retried it because the GitHub asset host returns it spuriously.
+			return errors.Is(err, err401) || isRetryableDownloadError(err)
 		}),
 		retry.Context(ctx),
-		retry.Attempts(RetryAttempts),
-		retry.Delay(RetryWaitTime),
+		retry.Attempts(downloadRetryAttempts),
+		retry.Delay(downloadRetryDelay),
+		retry.MaxDelay(downloadRetryMaxDelay),
 		retry.LastErrorOnly(true),
 	}
 	retrier := retry.New(options...)
 	for _, downloadURL := range urls {
+		urlForLog := redactURLQuery(downloadURL)
 		err := retrier.Do(func() error {
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 			if err != nil {
-				return fmt.Errorf("failed create request %s: %w", downloadURL, err)
+				return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 			}
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
-				return fmt.Errorf("failed to get url %s: %w", downloadURL, err)
+				return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 			}
 			resp.Body.Close()
 			// Check server response
@@ -102,17 +105,18 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			case http.StatusNotFound:
 				return err404
 			case http.StatusUnauthorized:
-				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
+				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
 				return err401
-			case http.StatusTooManyRequests:
-				fmt.Printf("Failed downloading %s with status code %d. Retrying\n", downloadURL, resp.StatusCode)
-				return err429
 			default:
-				fmt.Printf("Failed downloading %s with status code %d\n", downloadURL, resp.StatusCode)
-				return fmt.Errorf("statusCode %d", resp.StatusCode)
+				if isRetryableStatusCode(resp.StatusCode) {
+					fmt.Printf("Failed downloading %s with status code %d. Retrying\n", urlForLog, resp.StatusCode)
+				} else {
+					fmt.Printf("Failed downloading %s with status code %d\n", urlForLog, resp.StatusCode)
+				}
+				return &httpStatusError{statusCode: resp.StatusCode}
 			}
 		})
-		if err == err404 {
+		if errors.Is(err, err404) {
 			continue
 		}
 		return downloadURL, err
@@ -346,9 +350,9 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 	options := []retry.Option{
 		retry.RetryIf(isRetryableDownloadError),
 		retry.Context(ctx),
-		retry.Attempts(RetryAttempts),
-		retry.Delay(RetryWaitTime),
-		retry.MaxDelay(MaxRetryWaitTime),
+		retry.Attempts(downloadRetryAttempts),
+		retry.Delay(downloadRetryDelay),
+		retry.MaxDelay(downloadRetryMaxDelay),
 	}
 	retrier := retry.New(options...)
 	err = retrier.Do(func() error {
@@ -362,13 +366,13 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		// Get the data
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 		if err != nil {
-			return fmt.Errorf("failed create request %s: %w", urlForLog, err)
+			return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 		}
 
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to get url %s: %w", urlForLog, err)
+			return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 		}
 		defer resp.Body.Close()
 		// Check server response

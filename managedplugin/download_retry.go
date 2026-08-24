@@ -17,6 +17,13 @@ var (
 	errShortRead = errors.New("truncated response body")
 )
 
+// Overridable so tests do not pay the real backoff.
+var (
+	downloadRetryAttempts = uint(RetryAttempts)
+	downloadRetryDelay    = RetryWaitTime
+	downloadRetryMaxDelay = MaxRetryWaitTime
+)
+
 type httpStatusError struct {
 	statusCode int
 }
@@ -34,8 +41,9 @@ func isRetryableStatusCode(statusCode int) bool {
 }
 
 // Go does not export the HTTP/2 stream and connection error types used by the
-// net/http transport, so the mid-body resets we get from the asset CDN can only
-// be matched on their message.
+// net/http transport, and on Windows the syscall.E* constants are synthetic
+// values that never match a real WSA socket error, so these failures can only be
+// matched on their message.
 var transientTransportMessages = []string{
 	"stream error",
 	"server sent goaway",
@@ -46,6 +54,14 @@ var transientTransportMessages = []string{
 	"server closed idle connection",
 	"transport connection broken",
 	"i/o timeout",
+	"connection refused",
+	"no such host",
+	"network is unreachable",
+	"no route to host",
+	// Windows WSAECONNRESET, WSAECONNREFUSED and WSAETIMEDOUT respectively.
+	"forcibly closed by the remote host",
+	"actively refused it",
+	"did not properly respond after a period of time",
 }
 
 func isRetryableDownloadError(err error) bool {
@@ -69,8 +85,18 @@ func isRetryableDownloadError(err error) bool {
 		errors.Is(err, io.ErrUnexpectedEOF),
 		errors.Is(err, io.EOF),
 		errors.Is(err, syscall.ECONNRESET),
+		errors.Is(err, syscall.ECONNREFUSED),
 		errors.Is(err, syscall.EPIPE),
-		errors.Is(err, syscall.ETIMEDOUT):
+		errors.Is(err, syscall.ETIMEDOUT),
+		errors.Is(err, syscall.EHOSTUNREACH),
+		errors.Is(err, syscall.ENETUNREACH):
+		return true
+	}
+
+	// The asset host is fixed, so a resolution failure against it is a resolver
+	// problem rather than a bad name.
+	var dnsErr *net.DNSError
+	if errors.As(err, &dnsErr) {
 		return true
 	}
 
@@ -98,6 +124,17 @@ func redactURLQuery(rawURL string) string {
 	parsed.RawQuery = ""
 	parsed.Fragment = ""
 	return parsed.String()
+}
+
+// redactURLError rewrites the URL that *url.Error prints verbatim. Wrapping such
+// an error re-exposes the signed token that redactURLQuery removed from the
+// surrounding message.
+func redactURLError(err error) error {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		urlErr.URL = redactURLQuery(urlErr.URL)
+	}
+	return err
 }
 
 // IsTransientDownloadError reports whether err is a transient plugin download

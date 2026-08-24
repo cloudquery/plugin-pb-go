@@ -11,8 +11,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -80,9 +82,14 @@ func TestRedactURLQuery(t *testing.T) {
 // attempt writes part of the body and then the connection drops mid-copy. The retry
 // must start the file from scratch rather than append to the partial bytes.
 func TestDownloadFileRetriesTruncatedBody(t *testing.T) {
+	fastRetries(t)
+
 	body := []byte("cloudquery-plugin-binary-payload")
 
-	var attempts int
+	var (
+		attempts  int
+		hijackErr error
+	)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		attempts++
 		if attempts == 1 {
@@ -92,7 +99,10 @@ func TestDownloadFileRetriesTruncatedBody(t *testing.T) {
 			w.(http.Flusher).Flush()
 			// Close the connection mid-body so the client sees a truncated response.
 			conn, _, err := w.(http.Hijacker).Hijack()
-			require.NoError(t, err)
+			if err != nil {
+				hijackErr = err
+				return
+			}
 			conn.Close()
 			return
 		}
@@ -102,6 +112,7 @@ func TestDownloadFileRetriesTruncatedBody(t *testing.T) {
 
 	localPath := filepath.Join(t.TempDir(), "plugin.zip")
 	checksum, err := downloadFile(context.Background(), localPath, server.URL, DownloaderOptions{NoProgress: true})
+	require.NoError(t, hijackErr)
 	require.NoError(t, err)
 	require.Equal(t, 2, attempts)
 
@@ -141,6 +152,8 @@ func TestDownloadFileDoesNotRetryNotFound(t *testing.T) {
 }
 
 func TestDownloadFileRetriesServerError(t *testing.T) {
+	fastRetries(t)
+
 	body := []byte("payload")
 
 	var attempts int
@@ -162,6 +175,8 @@ func TestDownloadFileRetriesServerError(t *testing.T) {
 }
 
 func TestDownloadFileGivesUpAfterRetryAttempts(t *testing.T) {
+	fastRetries(t)
+
 	var attempts int
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		attempts++
@@ -181,4 +196,98 @@ func sha256Hex(b []byte) string {
 	s := sha256.New()
 	s.Write(b)
 	return fmt.Sprintf("%x", s.Sum(nil))
+}
+
+// fastRetries removes the real backoff so the retry tests do not sleep through it.
+func fastRetries(t *testing.T) {
+	t.Helper()
+
+	delay, maxDelay := downloadRetryDelay, downloadRetryMaxDelay
+	downloadRetryDelay, downloadRetryMaxDelay = time.Millisecond, time.Millisecond
+	t.Cleanup(func() {
+		downloadRetryDelay, downloadRetryMaxDelay = delay, maxDelay
+	})
+}
+
+// TestDownloadFileRedactsSignedTokenFromTransportErrors covers the leak that
+// url.Error reopens: it prints its URL verbatim, so wrapping one puts the signed
+// token back into the message once per attempt.
+func TestDownloadFileRedactsSignedTokenFromTransportErrors(t *testing.T) {
+	fastRetries(t)
+
+	const token = "SUPERSECRETTOKEN"
+
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	server.Config.ConnState = func(c net.Conn, state http.ConnState) {
+		if state == http.StateActive {
+			c.Close()
+		}
+	}
+	server.Start()
+	t.Cleanup(server.Close)
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+	_, err := downloadFile(context.Background(), localPath, server.URL+"/asset?verify="+token, DownloaderOptions{NoProgress: true})
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), token)
+	require.NotContains(t, err.Error(), "verify=")
+}
+
+func TestDownloadFileRetriesConnectionRefused(t *testing.T) {
+	fastRetries(t)
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	addr := listener.Addr().String()
+	require.NoError(t, listener.Close())
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+	_, err = downloadFile(context.Background(), localPath, "http://"+addr+"/asset", DownloaderOptions{NoProgress: true})
+	require.Error(t, err)
+	require.Equal(t, int(downloadRetryAttempts), strings.Count(err.Error(), "connection refused"))
+}
+
+func TestIsRetryableDownloadErrorWindowsSocketMessages(t *testing.T) {
+	cases := []struct {
+		name string
+		msg  string
+	}{
+		{name: "WSAECONNRESET", msg: "wsarecv: An existing connection was forcibly closed by the remote host."},
+		{name: "WSAECONNREFUSED", msg: "connectex: No connection could be made because the target machine actively refused it."},
+		{name: "WSAETIMEDOUT", msg: "connectex: A connection attempt failed because the connected party did not properly respond after a period of time."},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.True(t, isRetryableDownloadError(fmt.Errorf("failed to get url: %w", errors.New(tc.msg))))
+		})
+	}
+}
+
+func TestIsRetryableDownloadErrorDNS(t *testing.T) {
+	require.True(t, isRetryableDownloadError(fmt.Errorf("dial: %w", &net.DNSError{Err: "no such host", Name: "assets.cloudquery.io", IsNotFound: true})))
+}
+
+// TestTransportErrorFromRealRequestIsRetryable pins the gap that left
+// getURLLocation aborting on the first attempt: a transport failure surfaces as a
+// wrapped *url.Error, which its old identity comparison could never match.
+func TestTransportErrorFromRealRequestIsRetryable(t *testing.T) {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	server.Config.ConnState = func(c net.Conn, state http.ConnState) {
+		if state == http.StateActive {
+			c.Close()
+		}
+	}
+	server.Start()
+	t.Cleanup(server.Close)
+
+	resp, err := http.Get(server.URL + "/asset?verify=SUPERSECRETTOKEN")
+	if resp != nil {
+		resp.Body.Close()
+	}
+	require.Error(t, err)
+
+	wrapped := fmt.Errorf("failed to get url %s: %w", redactURLQuery(server.URL), redactURLError(err))
+	require.True(t, isRetryableDownloadError(wrapped))
+	require.NotContains(t, wrapped.Error(), "SUPERSECRETTOKEN")
 }
