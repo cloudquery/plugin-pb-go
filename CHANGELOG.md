@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.27.18](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.17...v1.27.18) (2026-09-01)
+
+
+### Bug Fixes
+
+* **deps:** Update golang.org/x/exp digest to e88cd73 ([#678](https://github.com/cloudquery/plugin-pb-go/issues/678)) ([7aaa606](https://github.com/cloudquery/plugin-pb-go/commit/7aaa606e885c4238d303100f44ce2df8882185f2))
+* **deps:** Update module github.com/docker/go-connections to v0.8.1 ([#679](https://github.com/cloudquery/plugin-pb-go/issues/679)) ([ee3ec97](https://github.com/cloudquery/plugin-pb-go/commit/ee3ec97f0defe1afd76f5afa0359eb6763dc9b4b))
+* **deps:** Update module github.com/stretchr/testify to v1.12.1 ([#682](https://github.com/cloudquery/plugin-pb-go/issues/682)) ([d2fdf9d](https://github.com/cloudquery/plugin-pb-go/commit/d2fdf9d85c7dcb13b0d5cf8bb8027a6b2302123c))
+* **deps:** Update module google.golang.org/grpc to v1.83.1 ([#676](https://github.com/cloudquery/plugin-pb-go/issues/676)) ([d43f9e0](https://github.com/cloudquery/plugin-pb-go/commit/d43f9e0389db04eba5b6deb80573b348f5c8f4f9))
+
 ## [1.27.17](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.16...v1.27.17) (2026-08-24)
 
 
