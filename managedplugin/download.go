@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/avast/retry-go/v5"
@@ -363,8 +364,28 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 			return err
 		}
 
+		// A server that stops sending — headers or body — otherwise holds the
+		// attempt until some middlebox kills the connection minutes later. The
+		// watchdog cancels the attempt after downloadStallTimeout without
+		// progress, and stallErr turns that cancellation into a retryable error
+		// instead of the terminal context.Canceled the caller's own cancel gets.
+		attemptCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		var stalled atomic.Bool
+		watchdog := time.AfterFunc(downloadStallTimeout, func() {
+			stalled.Store(true)
+			cancel()
+		})
+		defer watchdog.Stop()
+		stallErr := func(err error) error {
+			if !stalled.Load() {
+				return nil
+			}
+			return fmt.Errorf("%w: no data from %s for %s: %v", errDownloadStalled, urlForLog, downloadStallTimeout, redactURLError(err))
+		}
+
 		// Get the data
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
+		req, err := http.NewRequestWithContext(attemptCtx, http.MethodGet, downloadURL, nil)
 		if err != nil {
 			return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 		}
@@ -372,9 +393,13 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		// Do http request
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
+			if serr := stallErr(err); serr != nil {
+				return serr
+			}
 			return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 		}
 		defer resp.Body.Close()
+		watchdog.Reset(downloadStallTimeout)
 		// Check server response
 		if resp.StatusCode == http.StatusNotFound {
 			return errNotFound
@@ -398,8 +423,11 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		}
 
 		// Write the body to file
-		written, err := io.Copy(io.MultiWriter(writers...), resp.Body)
+		written, err := io.Copy(io.MultiWriter(writers...), &stallResetReader{r: resp.Body, watchdog: watchdog, timeout: downloadStallTimeout})
 		if err != nil {
+			if serr := stallErr(err); serr != nil {
+				return serr
+			}
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
 		}
 		if resp.ContentLength >= 0 && written != resp.ContentLength {
@@ -415,6 +443,23 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		return "", fmt.Errorf("failed downloading URL %q. Error %w", urlForLog, err)
 	}
 	return checksum, nil
+}
+
+// stallResetReader defers the stall watchdog every time bytes arrive, so it
+// only fires when the peer stops sending entirely — a slow but moving
+// download never trips it.
+type stallResetReader struct {
+	r        io.Reader
+	watchdog *time.Timer
+	timeout  time.Duration
+}
+
+func (s *stallResetReader) Read(p []byte) (n int, err error) {
+	n, err = s.r.Read(p)
+	if n > 0 {
+		s.watchdog.Reset(s.timeout)
+	}
+	return n, err
 }
 
 func truncateFile(f *os.File) error {

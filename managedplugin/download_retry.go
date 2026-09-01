@@ -10,11 +10,13 @@ import (
 	"net/url"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var (
-	errNotFound  = errors.New("not found")
-	errShortRead = errors.New("truncated response body")
+	errNotFound        = errors.New("not found")
+	errShortRead       = errors.New("truncated response body")
+	errDownloadStalled = errors.New("download stalled")
 )
 
 // Overridable so tests do not pay the real backoff.
@@ -22,6 +24,7 @@ var (
 	downloadRetryAttempts = uint(RetryAttempts)
 	downloadRetryDelay    = RetryWaitTime
 	downloadRetryMaxDelay = MaxRetryWaitTime
+	downloadStallTimeout  = 30 * time.Second
 )
 
 type httpStatusError struct {
@@ -81,7 +84,8 @@ func isRetryableDownloadError(err error) bool {
 	}
 
 	switch {
-	case errors.Is(err, errShortRead),
+	case errors.Is(err, errDownloadStalled),
+		errors.Is(err, errShortRead),
 		errors.Is(err, io.ErrUnexpectedEOF),
 		errors.Is(err, io.EOF),
 		errors.Is(err, syscall.ECONNRESET),

@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -58,6 +59,7 @@ func TestIsRetryableDownloadError(t *testing.T) {
 		{name: "bad gateway 502", err: &httpStatusError{statusCode: http.StatusBadGateway}, want: true},
 		{name: "service unavailable 503", err: &httpStatusError{statusCode: http.StatusServiceUnavailable}, want: true},
 
+		{name: "stalled download", err: fmt.Errorf("%w: no data from host for 30s", errDownloadStalled), want: true},
 		{name: "context canceled", err: fmt.Errorf("get url: %w", context.Canceled), want: false},
 		{name: "context deadline exceeded", err: fmt.Errorf("get url: %w", context.DeadlineExceeded), want: false},
 		{name: "checksum mismatch is permanent", err: errors.New("checksum mismatch: expected abc, got def"), want: false},
@@ -206,6 +208,115 @@ func fastRetries(t *testing.T) {
 	t.Cleanup(func() {
 		downloadRetryDelay, downloadRetryMaxDelay = delay, maxDelay
 	})
+}
+
+// fastStall shrinks the stall watchdog so the stall tests do not wait 30s per
+// attempt.
+func fastStall(t *testing.T, d time.Duration) {
+	t.Helper()
+
+	prev := downloadStallTimeout
+	downloadStallTimeout = d
+	t.Cleanup(func() {
+		downloadStallTimeout = prev
+	})
+}
+
+// TestDownloadFileRetriesStalledBody reproduces the assets.cloudquery.io outage
+// mode: the server sends part of the body and then goes silent without closing
+// the connection. Without the watchdog the attempt hangs until a middlebox
+// kills the stream minutes later; with it the attempt dies quickly and the
+// retry succeeds.
+func TestDownloadFileRetriesStalledBody(t *testing.T) {
+	fastRetries(t)
+	fastStall(t, 150*time.Millisecond)
+
+	body := []byte("cloudquery-plugin-binary-payload")
+	release := make(chan struct{})
+
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if attempts.Add(1) == 1 {
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(body)))
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(body[:5])
+			w.(http.Flusher).Flush()
+			<-release
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	t.Cleanup(func() { close(release) })
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+	checksum, err := downloadFile(context.Background(), localPath, server.URL, DownloaderOptions{NoProgress: true})
+	require.NoError(t, err)
+	require.EqualValues(t, 2, attempts.Load())
+
+	written, err := os.ReadFile(localPath)
+	require.NoError(t, err)
+	require.Equal(t, body, written)
+	require.Equal(t, sha256Hex(body), checksum)
+}
+
+// TestDownloadFileRetriesStalledHeaders covers a stall before any response
+// arrives — the watchdog must cut the header wait too, not just the body copy.
+func TestDownloadFileRetriesStalledHeaders(t *testing.T) {
+	fastRetries(t)
+	fastStall(t, 150*time.Millisecond)
+
+	body := []byte("payload")
+	release := make(chan struct{})
+
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if attempts.Add(1) == 1 {
+			<-release
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	t.Cleanup(func() { close(release) })
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+	checksum, err := downloadFile(context.Background(), localPath, server.URL, DownloaderOptions{NoProgress: true})
+	require.NoError(t, err)
+	require.EqualValues(t, 2, attempts.Load())
+	require.Equal(t, sha256Hex(body), checksum)
+}
+
+// TestDownloadFileCallerCancelIsNotRetried pins the boundary between the
+// watchdog's own cancellation (retryable) and the caller's (terminal).
+func TestDownloadFileCallerCancelIsNotRetried(t *testing.T) {
+	fastRetries(t)
+
+	release := make(chan struct{})
+
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		attempts.Add(1)
+		w.Header().Set("Content-Length", "32")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("early"))
+		w.(http.Flusher).Flush()
+		<-release
+	}))
+	t.Cleanup(server.Close)
+	t.Cleanup(func() { close(release) })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+	}()
+
+	localPath := filepath.Join(t.TempDir(), "plugin.zip")
+	_, err := downloadFile(ctx, localPath, server.URL, DownloaderOptions{NoProgress: true})
+	require.Error(t, err)
+	require.EqualValues(t, 1, attempts.Load(), "the caller's own cancellation must not be retried")
+	require.NotErrorIs(t, err, errDownloadStalled)
 }
 
 // TestDownloadFileRedactsSignedTokenFromTransportErrors covers the leak that
