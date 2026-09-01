@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	errNotFound  = errors.New("not found")
-	errShortRead = errors.New("truncated response body")
+	errNotFound        = errors.New("not found")
+	errShortRead       = errors.New("truncated response body")
+	errDownloadStalled = errors.New("download stalled")
 )
 
 // Overridable so tests do not pay the real backoff.
@@ -81,7 +82,8 @@ func isRetryableDownloadError(err error) bool {
 	}
 
 	switch {
-	case errors.Is(err, errShortRead),
+	case errors.Is(err, errDownloadStalled),
+		errors.Is(err, errShortRead),
 		errors.Is(err, io.ErrUnexpectedEOF),
 		errors.Is(err, io.EOF),
 		errors.Is(err, syscall.ECONNRESET),
@@ -112,6 +114,23 @@ func isRetryableDownloadError(err error) bool {
 		}
 	}
 	return false
+}
+
+// downloadTimeoutError re-labels a timeout produced by our own transport, which
+// otherwise reaches the classifier indistinguishable from the caller's deadline:
+// both satisfy errors.Is(err, context.DeadlineExceeded), and only the caller's is
+// terminal. The underlying error is formatted with %v so that shared
+// context.DeadlineExceeded does not travel on in the chain. Returns nil when the
+// caller's own context ended the request, or when err is not a timeout at all.
+func downloadTimeoutError(ctx context.Context, urlForLog string, err error) error {
+	if ctx.Err() != nil {
+		return nil
+	}
+	var netErr net.Error
+	if !errors.As(err, &netErr) || !netErr.Timeout() {
+		return nil
+	}
+	return fmt.Errorf("%w: no data from %s: %v", errDownloadStalled, urlForLog, redactURLError(err))
 }
 
 // redactURLQuery strips the query string so that the signed download token never
