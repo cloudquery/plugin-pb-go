@@ -14,8 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// fastStall shrinks the transport timeouts so the stall tests do not wait the
-// real 30s per attempt.
+// fastStall shrinks the transport timeouts so the tests do not wait the real 30s.
 func fastStall(t *testing.T, d time.Duration) {
 	t.Helper()
 
@@ -28,9 +27,6 @@ func fastStall(t *testing.T, d time.Duration) {
 	})
 }
 
-// TestDownloadFileRetriesStalledHeaders covers a server that accepts the
-// connection and then never responds. Without ResponseHeaderTimeout the attempt
-// hangs until the connection is torn down externally.
 func TestDownloadFileRetriesStalledHeaders(t *testing.T) {
 	fastRetries(t)
 	fastStall(t, 150*time.Millisecond)
@@ -56,8 +52,6 @@ func TestDownloadFileRetriesStalledHeaders(t *testing.T) {
 	require.Equal(t, sha256Hex(body), checksum)
 }
 
-// TestDownloadFileRetriesStalledBody covers a server that sends part of the body
-// and then goes silent without closing the connection.
 func TestDownloadFileRetriesStalledBody(t *testing.T) {
 	fastRetries(t)
 	fastStall(t, 150*time.Millisecond)
@@ -91,9 +85,6 @@ func TestDownloadFileRetriesStalledBody(t *testing.T) {
 	require.Equal(t, sha256Hex(body), checksum)
 }
 
-// TestDownloadFileSlowButProgressingSucceeds pins the boundary the idle deadline
-// must not cross: a transfer whose total duration exceeds the timeout still
-// succeeds in one attempt as long as bytes keep arriving.
 func TestDownloadFileSlowButProgressingSucceeds(t *testing.T) {
 	fastRetries(t)
 	fastStall(t, 300*time.Millisecond)
@@ -120,8 +111,6 @@ func TestDownloadFileSlowButProgressingSucceeds(t *testing.T) {
 	require.Equal(t, sha256Hex(body), checksum)
 }
 
-// TestDownloadFileCallerCancelIsNotRetried pins the boundary between the idle
-// deadline (retryable) and the caller's own cancellation (terminal).
 func TestDownloadFileCallerCancelIsNotRetried(t *testing.T) {
 	fastRetries(t)
 
@@ -152,9 +141,6 @@ func TestDownloadFileCallerCancelIsNotRetried(t *testing.T) {
 	require.False(t, IsTransientDownloadError(err), "the caller's own cancellation must not be retried")
 }
 
-// TestDownloadFileCallerDeadlineIsNotRetried guards the distinction the
-// transport timeouts blur: our own timeout and the caller's deadline both
-// satisfy errors.Is(err, context.DeadlineExceeded), and only ours is retryable.
 func TestDownloadFileCallerDeadlineIsNotRetried(t *testing.T) {
 	fastRetries(t)
 	fastStall(t, 10*time.Second)
