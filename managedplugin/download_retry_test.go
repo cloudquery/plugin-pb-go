@@ -58,6 +58,7 @@ func TestIsRetryableDownloadError(t *testing.T) {
 		{name: "bad gateway 502", err: &httpStatusError{statusCode: http.StatusBadGateway}, want: true},
 		{name: "service unavailable 503", err: &httpStatusError{statusCode: http.StatusServiceUnavailable}, want: true},
 
+		{name: "stalled download", err: fmt.Errorf("%w: no data from host: i/o timeout", errDownloadStalled), want: true},
 		{name: "context canceled", err: fmt.Errorf("get url: %w", context.Canceled), want: false},
 		{name: "context deadline exceeded", err: fmt.Errorf("get url: %w", context.DeadlineExceeded), want: false},
 		{name: "checksum mismatch is permanent", err: errors.New("checksum mismatch: expected abc, got def"), want: false},
