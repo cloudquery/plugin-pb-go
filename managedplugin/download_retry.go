@@ -116,11 +116,6 @@ func isRetryableDownloadError(err error) bool {
 	return false
 }
 
-// downloadTimeoutError re-labels a timeout from our own transport, which reaches
-// the classifier indistinguishable from the caller's deadline: both satisfy
-// errors.Is(err, context.DeadlineExceeded), and only the caller's is terminal.
-// The cause is formatted with %v so that shared error does not travel on in the
-// chain.
 func downloadTimeoutError(ctx context.Context, urlForLog string, err error) error {
 	if ctx.Err() != nil {
 		return nil

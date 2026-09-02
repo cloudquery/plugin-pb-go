@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// fastStall shrinks the transport timeouts so the tests do not wait the real 30s.
 func fastStall(t *testing.T, d time.Duration) {
 	t.Helper()
 

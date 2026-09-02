@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// Overridable so tests do not pay the real timeouts.
 var (
 	downloadDialTimeout           = 10 * time.Second
 	downloadTLSHandshakeTimeout   = 10 * time.Second
@@ -17,9 +16,6 @@ var (
 
 var downloadClient = newDownloadClient()
 
-// idleTimeoutConn arms the deadline per read, not once: a slow but moving
-// transfer never trips, and a caller stalled in its own write path is not
-// blamed on the server.
 type idleTimeoutConn struct {
 	net.Conn
 	idle time.Duration
@@ -32,9 +28,6 @@ func (c *idleTimeoutConn) Read(b []byte) (int, error) {
 	return c.Conn.Read(b)
 }
 
-// ForceAttemptHTTP2 is deliberately left off: a read deadline is per connection,
-// and HTTP/2 would multiplex streams onto one, sharing the idle deadline across
-// concurrent requests.
 func newDownloadClient() *http.Client {
 	dialer := &net.Dialer{
 		Timeout:   downloadDialTimeout,
