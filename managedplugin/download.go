@@ -139,8 +139,10 @@ type DownloaderOptions struct {
 }
 
 func DownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(ops.LocalPath); err == nil {
+	if err := validateBinary(ops.LocalPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", ops.LocalPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromHub(ctx, logger, c, ops, dops)
 }
@@ -193,7 +195,12 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	if len(location) == 0 {
 		return errors.New("failed to get plugin metadata from hub: empty location from response")
 	}
-	pluginZipPath := ops.LocalPath + ".zip"
+	pluginZipPath, err := tempSibling(ops.LocalPath, ".zip")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary file for plugin archive: %w", err)
+	}
+	defer os.Remove(pluginZipPath)
+
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
@@ -216,19 +223,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 
-	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
-	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
-	}
-	_, err = io.Copy(out, fileInArchive)
-	if err != nil {
-		return fmt.Errorf("failed to copy body to file: %w", err)
-	}
-	err = out.Close()
-	if err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
-	}
-	return nil
+	return extractPluginBinary(fileInArchive, ops.LocalPath)
 }
 
 func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
@@ -269,19 +264,26 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 }
 
 func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(localPath); err == nil {
+	if err := validateBinary(localPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", localPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
 }
 
 func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(localPath)
-	pluginZipPath := localPath + ".zip"
 
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
+
+	pluginZipPath, err := tempSibling(localPath, ".zip")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary file for plugin archive: %w", err)
+	}
+	defer os.Remove(pluginZipPath)
 
 	downloadURL, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
@@ -321,19 +323,7 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 	if err != nil {
 		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
 	}
-	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
-	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", localPath, err)
-	}
-	_, err = io.Copy(out, fileInArchive)
-	if err != nil {
-		return fmt.Errorf("failed to copy body to file: %w", err)
-	}
-	err = out.Close()
-	if err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
-	}
-	return nil
+	return extractPluginBinary(fileInArchive, localPath)
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
