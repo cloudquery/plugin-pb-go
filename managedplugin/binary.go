@@ -6,7 +6,6 @@ import (
 	"debug/pe"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -143,62 +142,6 @@ func validatePE(path string) error {
 	}
 	if f.Machine != want {
 		return fmt.Errorf("%w: binary machine is %#x, expected %#x", ErrArchMismatch, f.Machine, want)
-	}
-	return nil
-}
-
-// tempSibling creates a unique empty file next to target and returns its path.
-// It lives in the same directory as target so that renaming it onto target
-// stays within a single filesystem, which is what makes the rename atomic.
-func tempSibling(target, suffix string) (string, error) {
-	if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
-		return "", err
-	}
-	f, err := os.CreateTemp(filepath.Dir(target), filepath.Base(target)+".tmp-*"+suffix)
-	if err != nil {
-		return "", err
-	}
-	name := f.Name()
-	if err := f.Close(); err != nil {
-		os.Remove(name)
-		return "", err
-	}
-	return name, nil
-}
-
-// extractPluginBinary writes the plugin to a temporary sibling of destPath,
-// checks it is usable, and only then renames it into place. Writing in place
-// would let a concurrent sync sharing the cq directory exec a half written
-// binary, and would fail with ETXTBSY against a plugin that is already
-// running; renaming avoids both, since a running plugin keeps its own inode.
-func extractPluginBinary(fileInArchive io.Reader, destPath string) error {
-	tmpPath, err := tempSibling(destPath, "")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary file for plugin: %w", err)
-	}
-	defer os.Remove(tmpPath)
-
-	out, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_TRUNC, 0744)
-	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", tmpPath, err)
-	}
-	if _, err := io.Copy(out, fileInArchive); err != nil {
-		out.Close()
-		return fmt.Errorf("failed to copy body to file: %w", err)
-	}
-	if err := out.Close(); err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
-	}
-	if err := os.Chmod(tmpPath, 0744); err != nil {
-		return fmt.Errorf("failed to make plugin executable: %w", err)
-	}
-
-	if err := validateBinary(tmpPath); err != nil {
-		return fmt.Errorf("downloaded plugin is not usable: %w", err)
-	}
-
-	if err := os.Rename(tmpPath, destPath); err != nil {
-		return fmt.Errorf("failed to move plugin to %s: %w", destPath, err)
 	}
 	return nil
 }

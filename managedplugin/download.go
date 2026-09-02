@@ -195,12 +195,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 	if len(location) == 0 {
 		return errors.New("failed to get plugin metadata from hub: empty location from response")
 	}
-	pluginZipPath, err := tempSibling(ops.LocalPath, ".zip")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary file for plugin archive: %w", err)
-	}
-	defer os.Remove(pluginZipPath)
-
+	pluginZipPath := ops.LocalPath + ".zip"
 	writtenChecksum, err := downloadFile(ctx, pluginZipPath, location, dops)
 	if err != nil {
 		return fmt.Errorf("failed to download plugin: %w", err)
@@ -223,7 +218,19 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 		return fmt.Errorf("failed to open plugin archive: %w", err)
 	}
 
-	return extractPluginBinary(fileInArchive, ops.LocalPath)
+	out, err := os.OpenFile(ops.LocalPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", ops.LocalPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions) (*cloudquery_api.PluginAsset, int, error) {
@@ -274,16 +281,11 @@ func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localP
 
 func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) error {
 	downloadDir := filepath.Dir(localPath)
+	pluginZipPath := localPath + ".zip"
 
 	if err := os.MkdirAll(downloadDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory %s: %w", downloadDir, err)
 	}
-
-	pluginZipPath, err := tempSibling(localPath, ".zip")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary file for plugin archive: %w", err)
-	}
-	defer os.Remove(pluginZipPath)
 
 	downloadURL, err := getURLLocation(ctx, org, name, version, typ)
 	if err != nil {
@@ -323,7 +325,19 @@ func doDownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, loca
 	if err != nil {
 		return fmt.Errorf("failed to open plugin archive plugins/source/%s: %w", name, err)
 	}
-	return extractPluginBinary(fileInArchive, localPath)
+	out, err := os.OpenFile(localPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", localPath, err)
+	}
+	_, err = io.Copy(out, fileInArchive)
+	if err != nil {
+		return fmt.Errorf("failed to copy body to file: %w", err)
+	}
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+	return nil
 }
 
 func downloadFile(ctx context.Context, localPath string, downloadURL string, dops DownloaderOptions) (string, error) {
