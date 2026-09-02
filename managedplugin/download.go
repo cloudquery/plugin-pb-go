@@ -142,8 +142,10 @@ type DownloaderOptions struct {
 }
 
 func DownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(ops.LocalPath); err == nil {
+	if err := validateBinary(ops.LocalPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", ops.LocalPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromHub(ctx, logger, c, ops, dops)
 }
@@ -272,8 +274,10 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 }
 
 func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(localPath); err == nil {
+	if err := validateBinary(localPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", localPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
 }
