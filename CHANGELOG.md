@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.19](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.18...v1.27.19) (2026-09-02)
+
+
+### Bug Fixes
+
+* Bound plugin downloads with transport timeouts ([#684](https://github.com/cloudquery/plugin-pb-go/issues/684)) ([257051a](https://github.com/cloudquery/plugin-pb-go/commit/257051af2a0ca41aed55b6436c8da57dc04de50e))
+
 ## [1.27.18](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.17...v1.27.18) (2026-09-01)
 
 
