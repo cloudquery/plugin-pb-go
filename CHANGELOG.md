@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.20](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.19...v1.27.20) (2026-09-02)
+
+
+### Bug Fixes
+
+* Key plugin cache by target and validate cached binaries ([#686](https://github.com/cloudquery/plugin-pb-go/issues/686)) ([01a8d94](https://github.com/cloudquery/plugin-pb-go/commit/01a8d941227a76e11ffb903b1e24ccfb43f21390))
+
 ## [1.27.19](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.18...v1.27.19) (2026-09-02)
 
 
