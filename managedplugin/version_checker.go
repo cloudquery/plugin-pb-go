@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
@@ -30,6 +31,10 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 	if kind != PluginSource.String() && kind != PluginDestination.String() && kind != PluginTransformer.String() {
 		p.logger.Debug().Str("plugin", name).Str("kind", kind).Msg("invalid kind")
 		return nil, fmt.Errorf("invalid kind: %s", kind)
+	}
+	if org == "" || name == "" || strings.ContainsRune(org, '/') || strings.ContainsRune(name, '/') {
+		p.logger.Debug().Str("org", org).Str("plugin", name).Msg("invalid org or plugin name")
+		return nil, fmt.Errorf("invalid plugin reference: %q/%q", org, name)
 	}
 	resp, err := p.hubClient.GetPluginWithResponse(ctx, org, cloudquery_api.PluginKind(kind), name)
 	if err != nil {
