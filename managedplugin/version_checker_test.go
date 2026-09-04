@@ -17,6 +17,21 @@ func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
 	assert.False(t, warned)
 }
 
+func TestPluginVersionWarnerInvalidOrgOrNameFails(t *testing.T) {
+	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
+	require.NoError(t, err)
+	for _, tc := range []struct{ org, name string }{
+		{org: "", name: ".cq"},
+		{org: "cloudquery", name: ""},
+		{org: "", name: ""},
+		{org: "cloudquery/aws", name: "plugin"},
+	} {
+		warned, err := versionWarner.WarnIfOutdated(context.Background(), tc.org, tc.name, "source", "1.0.0")
+		assert.Error(t, err, "%q/%q", tc.org, tc.name)
+		assert.False(t, warned)
+	}
+}
+
 // Note: this is an integration test that requires Internet access and the hub to be running
 func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
