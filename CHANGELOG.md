@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.21](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.20...v1.27.21) (2026-09-04)
+
+
+### Bug Fixes
+
+* Reject empty or malformed org/name in plugin version warner ([#688](https://github.com/cloudquery/plugin-pb-go/issues/688)) ([dbd0f14](https://github.com/cloudquery/plugin-pb-go/commit/dbd0f14c887fe53f16a27f98e5edb9f3989bcfb5))
+
 ## [1.27.20](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.19...v1.27.20) (2026-09-02)
 
 
