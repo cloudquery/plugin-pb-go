@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -189,8 +188,12 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 			return AssetSourceUnknown, fmt.Errorf("invalid github plugin path: %s. format should be owner/repo", c.config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
-		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
-		c.LocalPath = WithBinarySuffix(c.LocalPath)
+		canonical, legacy := pluginCachePaths(c.directory, typ.String(), org, name, c.config.Version)
+		if cached, ok := resolveCachedPlugin(c.logger, canonical, legacy); ok {
+			c.LocalPath = cached
+			return AssetSourceCached, nil
+		}
+		c.LocalPath = canonical
 		assetSource, err := DownloadPluginFromGithub(ctx, c.logger, c.LocalPath, org, name, c.config.Version, typ, dops)
 		return assetSource, err
 	case RegistryDocker:
@@ -206,8 +209,12 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 			return AssetSourceUnknown, fmt.Errorf("invalid cloudquery plugin path: %s. format should be team/name", c.config.Path)
 		}
 		org, name := pathSplit[0], pathSplit[1]
-		c.LocalPath = filepath.Join(c.directory, "plugins", typ.String(), org, name, c.config.Version, "plugin")
-		c.LocalPath = WithBinarySuffix(c.LocalPath)
+		canonical, legacy := pluginCachePaths(c.directory, typ.String(), org, name, c.config.Version)
+		if cached, ok := resolveCachedPlugin(c.logger, canonical, legacy); ok {
+			c.LocalPath = cached
+			return AssetSourceCached, nil
+		}
+		c.LocalPath = canonical
 
 		ops := HubDownloadOptions{
 			AuthToken:     c.authToken,

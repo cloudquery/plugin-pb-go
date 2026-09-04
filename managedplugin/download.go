@@ -93,8 +93,11 @@ func getURLLocation(ctx context.Context, org string, name string, version string
 			if err != nil {
 				return fmt.Errorf("failed create request %s: %w", urlForLog, redactURLError(err))
 			}
-			resp, err := http.DefaultClient.Do(req)
+			resp, err := downloadClient.Do(req)
 			if err != nil {
+				if terr := downloadTimeoutError(ctx, urlForLog, err); terr != nil {
+					return terr
+				}
 				return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 			}
 			resp.Body.Close()
@@ -139,8 +142,10 @@ type DownloaderOptions struct {
 }
 
 func DownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *cloudquery_api.ClientWithResponses, ops HubDownloadOptions, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(ops.LocalPath); err == nil {
+	if err := validateBinary(ops.LocalPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", ops.LocalPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromHub(ctx, logger, c, ops, dops)
 }
@@ -269,8 +274,10 @@ func downloadPluginAssetFromHub(ctx context.Context, c *cloudquery_api.ClientWit
 }
 
 func DownloadPluginFromGithub(ctx context.Context, logger zerolog.Logger, localPath string, org string, name string, version string, typ PluginType, dops DownloaderOptions) (AssetSource, error) {
-	if _, err := os.Stat(localPath); err == nil {
+	if err := validateBinary(localPath); err == nil {
 		return AssetSourceCached, nil
+	} else if !os.IsNotExist(err) {
+		logger.Warn().Str("path", localPath).Err(err).Msg("cached plugin is unusable, re-downloading")
 	}
 	return AssetSourceRemote, doDownloadPluginFromGithub(ctx, logger, localPath, org, name, version, typ, dops)
 }
@@ -370,8 +377,11 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		}
 
 		// Do http request
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := downloadClient.Do(req)
 		if err != nil {
+			if terr := downloadTimeoutError(ctx, urlForLog, err); terr != nil {
+				return terr
+			}
 			return fmt.Errorf("failed to get url %s: %w", urlForLog, redactURLError(err))
 		}
 		defer resp.Body.Close()
@@ -400,6 +410,9 @@ func downloadFile(ctx context.Context, localPath string, downloadURL string, dop
 		// Write the body to file
 		written, err := io.Copy(io.MultiWriter(writers...), resp.Body)
 		if err != nil {
+			if terr := downloadTimeoutError(ctx, urlForLog, err); terr != nil {
+				return terr
+			}
 			return fmt.Errorf("failed to copy body to file %s: %w", out.Name(), err)
 		}
 		if resp.ContentLength >= 0 && written != resp.ContentLength {

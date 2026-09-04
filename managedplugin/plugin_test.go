@@ -3,7 +3,6 @@ package managedplugin
 import (
 	"context"
 	"os"
-	"path/filepath"
 	"runtime"
 	"testing"
 )
@@ -29,8 +28,7 @@ func TestManagedPluginGitHub(t *testing.T) {
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
 	}
-	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "hackernews", cfg.Version, "plugin")
-	localPath = WithBinarySuffix(localPath)
+	localPath := hnClient.LocalPath
 	cfg = Config{
 		Name:     "hackernews",
 		Registry: RegistryLocal,
@@ -71,8 +69,7 @@ func TestManagedPluginCloudQuery(t *testing.T) {
 	if err := clients.Terminate(); err != nil {
 		t.Fatal(err)
 	}
-	localPath := filepath.Join(tmpDir, "plugins", PluginSource.String(), "cloudquery", "awspricing", cfg.Version, "plugin")
-	localPath = WithBinarySuffix(localPath)
+	localPath := testClient.LocalPath
 	cfg = Config{
 		Name:     "awspricing",
 		Registry: RegistryLocal,
