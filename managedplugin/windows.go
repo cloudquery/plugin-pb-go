@@ -3,6 +3,7 @@
 package managedplugin
 
 import (
+	"os"
 	"syscall"
 )
 
@@ -11,6 +12,12 @@ func getSysProcAttr() *syscall.SysProcAttr {
 		// launch as new process group so that signals are not sent to the child process
 		CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP, // windows
 	}
+}
+
+// interruptProcess terminates the plugin process. Windows has no equivalent of
+// SIGINT that os.Process.Signal can deliver, so the process is killed instead.
+func interruptProcess(p *os.Process) error {
+	return p.Kill()
 }
 
 func (c *Client) terminateProcess() error {

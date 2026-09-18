@@ -16,6 +16,11 @@ func getSysProcAttr() *syscall.SysProcAttr {
 	}
 }
 
+// interruptProcess asks the plugin process to shut down gracefully.
+func interruptProcess(p *os.Process) error {
+	return p.Signal(os.Interrupt)
+}
+
 func (c *Client) terminateProcess() error {
 	c.logger.Debug().Msgf("sending interrupt signal to %s plugin", c.typ.String())
 	if err := c.cmd.Process.Signal(os.Interrupt); err != nil {
