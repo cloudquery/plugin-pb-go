@@ -32,7 +32,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 )
 
 const (
@@ -54,19 +53,13 @@ const (
 
 	// how long a plugin process gets to exit after it is asked to shut down
 	pluginWaitDelay = 30 * time.Second
-
-	// gRPC client keepalive, so that long-lived streams (e.g. Watch) survive
-	// idle periods and dead connections are detected.
-	keepaliveTime    = 30 * time.Second
-	keepaliveTimeout = 20 * time.Second
 )
 
-// grpcKeepaliveParams are applied to every dial to a plugin.
-var grpcKeepaliveParams = keepalive.ClientParameters{
-	Time:                keepaliveTime,
-	Timeout:             keepaliveTimeout,
-	PermitWithoutStream: true,
-}
+// Note: plugin dials deliberately set no client-side keepalive. Released
+// plugins run gRPC servers with the default enforcement policy (MinTime 5m,
+// PermitWithoutStream false), so frequent client pings accumulate ping strikes
+// and the server closes the connection with GOAWAY ENHANCE_YOUR_CALM. Liveness
+// for long-lived streams comes from the server-side keepalive instead.
 
 // PluginType specifies if a plugin is a source or a destination.
 // It actually doesn't really have any effect as plugins can serve both as source and as destinations,
@@ -634,7 +627,6 @@ func (c *Client) connectUsingTCP(ctx context.Context, path string) error {
 	// nolint:staticcheck
 	c.Conn, err = grpc.DialContext(ctx, path,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithKeepaliveParams(grpcKeepaliveParams),
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(maxGrpcMsgSize),
 			grpc.MaxCallSendMsgSize(maxGrpcMsgSize),
@@ -685,7 +677,6 @@ func (c *Client) connectToUnixSocket(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 		grpc.WithContextDialer(dialer),
-		grpc.WithKeepaliveParams(grpcKeepaliveParams),
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(maxGrpcMsgSize),
 			grpc.MaxCallSendMsgSize(maxGrpcMsgSize),
