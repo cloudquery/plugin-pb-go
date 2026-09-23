@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.27.22](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.21...v1.27.22) (2026-09-23)
+
+
+### Bug Fixes
+
+* **deps:** Update module github.com/cloudquery/cloudquery-api-go to v1.14.13 ([#694](https://github.com/cloudquery/plugin-pb-go/issues/694)) ([c4c28b0](https://github.com/cloudquery/plugin-pb-go/commit/c4c28b06b6db7c6b433217c9c8e04b45cf0b605a))
+* **deps:** Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp to v1.45.0 [SECURITY] ([#693](https://github.com/cloudquery/plugin-pb-go/issues/693)) ([fa13102](https://github.com/cloudquery/plugin-pb-go/commit/fa13102d4077cb3efb38ac5b7fd179e36da8c1e0))
+* **deps:** Update module google.golang.org/grpc to v1.83.2 ([#690](https://github.com/cloudquery/plugin-pb-go/issues/690)) ([2605fb0](https://github.com/cloudquery/plugin-pb-go/commit/2605fb0f7b56c4b2d616388b55ed1ae86b5e4d33))
+
 ## [1.27.21](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.20...v1.27.21) (2026-09-04)
 
 
