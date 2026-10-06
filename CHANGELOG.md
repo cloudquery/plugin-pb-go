@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.27.24](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.23...v1.27.24) (2026-10-06)
+
+
+### Bug Fixes
+
+* **deps:** Update go module directive to v1.27.1 ([#701](https://github.com/cloudquery/plugin-pb-go/issues/701)) ([bb0a528](https://github.com/cloudquery/plugin-pb-go/commit/bb0a528c7f111168f271ef5b7cfd08ce9fc71333))
+* **deps:** Update golang.org/x/exp digest to 85c1c22 ([#698](https://github.com/cloudquery/plugin-pb-go/issues/698)) ([84f3c4f](https://github.com/cloudquery/plugin-pb-go/commit/84f3c4f95a68f8f04de90dbd22b873baa56a6a67))
+* Generate Go Code from `plugin-pb` ([#704](https://github.com/cloudquery/plugin-pb-go/issues/704)) ([a522fc1](https://github.com/cloudquery/plugin-pb-go/commit/a522fc1e516892d106acc19d8406cf2b376c2e06))
+* Generate Go Code from `plugin-pb` ([#705](https://github.com/cloudquery/plugin-pb-go/issues/705)) ([c2ad6c6](https://github.com/cloudquery/plugin-pb-go/commit/c2ad6c6d44c878b9f3edc37f9579a01a6b305da3))
+
 ## [1.27.23](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.22...v1.27.23) (2026-09-28)
 
 
