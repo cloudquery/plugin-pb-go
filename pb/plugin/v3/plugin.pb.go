@@ -111,6 +111,7 @@ func (PredicatesGroup_GroupingType) EnumDescriptor() ([]byte, []int) {
 	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{9, 0}
 }
 
+// TABLE_REMOVED applies to tables only, all other values apply to tables and columns
 type AssessTables_Category int32
 
 const (
@@ -2700,6 +2701,7 @@ func (x *AssessTables_Evidence) GetAfter() string {
 	return ""
 }
 
+// Safe mode is a migration with migrate_force false, forced mode with migrate_force true
 type AssessTables_ColumnFinding struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	ColumnName string                 `protobuf:"bytes,1,opt,name=column_name,json=columnName,proto3" json:"column_name,omitempty"`
@@ -2794,15 +2796,15 @@ func (x *AssessTables_ColumnFinding) GetEvidence() []*AssessTables_Evidence {
 }
 
 type AssessTables_TableFinding struct {
-	state                    protoimpl.MessageState        `protogen:"open.v1"`
-	TableName                string                        `protobuf:"bytes,1,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
-	Category                 AssessTables_Category         `protobuf:"varint,2,opt,name=category,proto3,enum=cloudquery.plugin.v3.AssessTables_Category" json:"category,omitempty"`
-	SafeModeBehavior         string                        `protobuf:"bytes,3,opt,name=safe_mode_behavior,json=safeModeBehavior,proto3" json:"safe_mode_behavior,omitempty"`
-	ForcedModeBehavior       string                        `protobuf:"bytes,4,opt,name=forced_mode_behavior,json=forcedModeBehavior,proto3" json:"forced_mode_behavior,omitempty"`
-	Columns                  []*AssessTables_ColumnFinding `protobuf:"bytes,5,rep,name=columns,proto3" json:"columns,omitempty"`
-	Evidence                 []*AssessTables_Evidence      `protobuf:"bytes,6,rep,name=evidence,proto3" json:"evidence,omitempty"`
-	CoverageIncomplete       bool                          `protobuf:"varint,7,opt,name=coverage_incomplete,json=coverageIncomplete,proto3" json:"coverage_incomplete,omitempty"`
-	CoverageIncompleteReason string                        `protobuf:"bytes,8,opt,name=coverage_incomplete_reason,json=coverageIncompleteReason,proto3" json:"coverage_incomplete_reason,omitempty"`
+	state              protoimpl.MessageState        `protogen:"open.v1"`
+	TableName          string                        `protobuf:"bytes,1,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
+	Category           AssessTables_Category         `protobuf:"varint,2,opt,name=category,proto3,enum=cloudquery.plugin.v3.AssessTables_Category" json:"category,omitempty"`
+	SafeModeBehavior   string                        `protobuf:"bytes,3,opt,name=safe_mode_behavior,json=safeModeBehavior,proto3" json:"safe_mode_behavior,omitempty"`
+	ForcedModeBehavior string                        `protobuf:"bytes,4,opt,name=forced_mode_behavior,json=forcedModeBehavior,proto3" json:"forced_mode_behavior,omitempty"`
+	Columns            []*AssessTables_ColumnFinding `protobuf:"bytes,5,rep,name=columns,proto3" json:"columns,omitempty"`
+	Evidence           []*AssessTables_Evidence      `protobuf:"bytes,6,rep,name=evidence,proto3" json:"evidence,omitempty"`
+	// Non-empty when the assessment could not cover the whole table
+	IncompleteCoverageReason string `protobuf:"bytes,7,opt,name=incomplete_coverage_reason,json=incompleteCoverageReason,proto3" json:"incomplete_coverage_reason,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -2879,16 +2881,9 @@ func (x *AssessTables_TableFinding) GetEvidence() []*AssessTables_Evidence {
 	return nil
 }
 
-func (x *AssessTables_TableFinding) GetCoverageIncomplete() bool {
+func (x *AssessTables_TableFinding) GetIncompleteCoverageReason() string {
 	if x != nil {
-		return x.CoverageIncomplete
-	}
-	return false
-}
-
-func (x *AssessTables_TableFinding) GetCoverageIncompleteReason() string {
-	if x != nil {
-		return x.CoverageIncompleteReason
+		return x.IncompleteCoverageReason
 	}
 	return ""
 }
@@ -3132,7 +3127,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\bResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
 	"\ffailure_code\x18\x02 \x01(\tR\vfailureCode\x12/\n" +
-	"\x13failure_description\x18\x03 \x01(\tR\x12failureDescription\"\x83\v\n" +
+	"\x13failure_description\x18\x03 \x01(\tR\x12failureDescription\"\xd2\n" +
+	"\n" +
 	"\fAssessTables\x1aE\n" +
 	"\tTablePair\x12\x1b\n" +
 	"\told_table\x18\x01 \x01(\fR\boldTable\x12\x1b\n" +
@@ -3149,7 +3145,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\bnew_type\x18\x04 \x01(\tR\anewType\x12,\n" +
 	"\x12safe_mode_behavior\x18\x05 \x01(\tR\x10safeModeBehavior\x120\n" +
 	"\x14forced_mode_behavior\x18\x06 \x01(\tR\x12forcedModeBehavior\x12G\n" +
-	"\bevidence\x18\a \x03(\v2+.cloudquery.plugin.v3.AssessTables.EvidenceR\bevidence\x1a\xda\x03\n" +
+	"\bevidence\x18\a \x03(\v2+.cloudquery.plugin.v3.AssessTables.EvidenceR\bevidence\x1a\xa9\x03\n" +
 	"\fTableFinding\x12\x1d\n" +
 	"\n" +
 	"table_name\x18\x01 \x01(\tR\ttableName\x12G\n" +
@@ -3157,9 +3153,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x12safe_mode_behavior\x18\x03 \x01(\tR\x10safeModeBehavior\x120\n" +
 	"\x14forced_mode_behavior\x18\x04 \x01(\tR\x12forcedModeBehavior\x12J\n" +
 	"\acolumns\x18\x05 \x03(\v20.cloudquery.plugin.v3.AssessTables.ColumnFindingR\acolumns\x12G\n" +
-	"\bevidence\x18\x06 \x03(\v2+.cloudquery.plugin.v3.AssessTables.EvidenceR\bevidence\x12/\n" +
-	"\x13coverage_incomplete\x18\a \x01(\bR\x12coverageIncomplete\x12<\n" +
-	"\x1acoverage_incomplete_reason\x18\b \x01(\tR\x18coverageIncompleteReason\x1at\n" +
+	"\bevidence\x18\x06 \x03(\v2+.cloudquery.plugin.v3.AssessTables.EvidenceR\bevidence\x12<\n" +
+	"\x1aincomplete_coverage_reason\x18\a \x01(\tR\x18incompleteCoverageReason\x1at\n" +
 	"\aRequest\x12D\n" +
 	"\x06tables\x18\x01 \x03(\v2,.cloudquery.plugin.v3.AssessTables.TablePairR\x06tables\x12#\n" +
 	"\rmigrate_force\x18\x02 \x01(\bR\fmigrateForce\x1aS\n" +
