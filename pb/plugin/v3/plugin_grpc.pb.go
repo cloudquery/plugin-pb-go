@@ -31,6 +31,7 @@ const (
 	Plugin_TransformSchema_FullMethodName = "/cloudquery.plugin.v3.Plugin/TransformSchema"
 	Plugin_Close_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Close"
 	Plugin_TestConnection_FullMethodName  = "/cloudquery.plugin.v3.Plugin/TestConnection"
+	Plugin_AssessTables_FullMethodName    = "/cloudquery.plugin.v3.Plugin/AssessTables"
 )
 
 // PluginClient is the client API for Plugin service.
@@ -64,6 +65,9 @@ type PluginClient interface {
 	Close(ctx context.Context, in *Close_Request, opts ...grpc.CallOption) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
 	TestConnection(ctx context.Context, in *TestConnection_Request, opts ...grpc.CallOption) (*TestConnection_Response, error)
+	// Assess how the destination plugin would apply table schema changes, without writing anything.
+	// Plugins that do not support assessment return Unimplemented.
+	AssessTables(ctx context.Context, in *AssessTables_Request, opts ...grpc.CallOption) (*AssessTables_Response, error)
 }
 
 type pluginClient struct {
@@ -218,6 +222,16 @@ func (c *pluginClient) TestConnection(ctx context.Context, in *TestConnection_Re
 	return out, nil
 }
 
+func (c *pluginClient) AssessTables(ctx context.Context, in *AssessTables_Request, opts ...grpc.CallOption) (*AssessTables_Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AssessTables_Response)
+	err := c.cc.Invoke(ctx, Plugin_AssessTables_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility.
@@ -249,6 +263,9 @@ type PluginServer interface {
 	Close(context.Context, *Close_Request) (*Close_Response, error)
 	// Validate and test the connections used by the plugin
 	TestConnection(context.Context, *TestConnection_Request) (*TestConnection_Response, error)
+	// Assess how the destination plugin would apply table schema changes, without writing anything.
+	// Plugins that do not support assessment return Unimplemented.
+	AssessTables(context.Context, *AssessTables_Request) (*AssessTables_Response, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -294,6 +311,9 @@ func (UnimplementedPluginServer) Close(context.Context, *Close_Request) (*Close_
 }
 func (UnimplementedPluginServer) TestConnection(context.Context, *TestConnection_Request) (*TestConnection_Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method TestConnection not implemented")
+}
+func (UnimplementedPluginServer) AssessTables(context.Context, *AssessTables_Request) (*AssessTables_Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method AssessTables not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 func (UnimplementedPluginServer) testEmbeddedByValue()                {}
@@ -496,6 +516,24 @@ func _Plugin_TestConnection_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_AssessTables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssessTables_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).AssessTables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Plugin_AssessTables_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).AssessTables(ctx, req.(*AssessTables_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -534,6 +572,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TestConnection",
 			Handler:    _Plugin_TestConnection_Handler,
+		},
+		{
+			MethodName: "AssessTables",
+			Handler:    _Plugin_AssessTables_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
