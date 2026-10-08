@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.24...v1.28.0) (2026-10-08)
+
+
+### Features
+
+* Export `LatestVersion` and remove `WarnIfOutdated` from `PluginVersionWarner` ([#706](https://github.com/cloudquery/plugin-pb-go/issues/706)) ([2f5607b](https://github.com/cloudquery/plugin-pb-go/commit/2f5607bbab1fe302965c76c10669ff138e1da3fb))
+
 ## [1.27.24](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.23...v1.27.24) (2026-10-06)
 
 
