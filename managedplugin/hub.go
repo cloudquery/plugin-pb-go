@@ -39,7 +39,7 @@ func validateDockerPlugin(ctx context.Context, logger zerolog.Logger, c *cloudqu
 			return false, fmt.Errorf(errFailed+": %w", err)
 		}
 
-		ver, err := pvw.getLatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
+		ver, err := pvw.LatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
 		if err != nil {
 			return false, fmt.Errorf(errFailed+": %w", err)
 		}

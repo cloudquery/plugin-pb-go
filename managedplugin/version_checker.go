@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/Masterminds/semver"
 	cloudquery_api "github.com/cloudquery/cloudquery-api-go"
@@ -14,6 +15,14 @@ import (
 type PluginVersionWarner struct {
 	hubClient *cloudquery_api.ClientWithResponses
 	logger    zerolog.Logger
+
+	latestVersionsMu sync.Mutex
+	latestVersions   map[string]latestVersionResult
+}
+
+type latestVersionResult struct {
+	version *semver.Version
+	err     error
 }
 
 func NewPluginVersionWarner(logger zerolog.Logger, optionalAuthToken string) (*PluginVersionWarner, error) {
@@ -21,10 +30,25 @@ func NewPluginVersionWarner(logger zerolog.Logger, optionalAuthToken string) (*P
 	if err != nil {
 		return nil, err
 	}
-	return &PluginVersionWarner{hubClient: hubClient, logger: logger}, nil
+	return &PluginVersionWarner{hubClient: hubClient, logger: logger, latestVersions: map[string]latestVersionResult{}}, nil
 }
 
-func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
+func (p *PluginVersionWarner) LatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
+	if p == nil {
+		return nil, errors.New("plugin version warner is not initialized")
+	}
+	key := strings.Join([]string{org, kind, name}, "/")
+	p.latestVersionsMu.Lock()
+	defer p.latestVersionsMu.Unlock()
+	if result, ok := p.latestVersions[key]; ok {
+		return result.version, result.err
+	}
+	version, err := p.fetchLatestVersion(ctx, org, name, kind)
+	p.latestVersions[key] = latestVersionResult{version: version, err: err}
+	return version, err
+}
+
+func (p *PluginVersionWarner) fetchLatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
 	if p == nil {
 		return nil, errors.New("plugin version warner is not initialized")
 	}
@@ -72,7 +96,7 @@ func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, na
 		p.logger.Debug().Str("plugin", name).Str("version", actualVersion).Err(err).Msg("failed to parse actual version")
 		return false, err
 	}
-	latestVersionSemver, err := p.getLatestVersion(ctx, org, name, kind)
+	latestVersionSemver, err := p.LatestVersion(ctx, org, name, kind)
 	if err != nil {
 		return false, err
 	}

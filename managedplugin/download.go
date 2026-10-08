@@ -175,7 +175,7 @@ func doDownloadPluginFromHub(ctx context.Context, logger zerolog.Logger, c *clou
 			return errRetryWithLogin
 		}
 
-		ver, err := pvw.getLatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
+		ver, err := pvw.LatestVersion(ctx, ops.PluginTeam, ops.PluginName, ops.PluginKind)
 		if err != nil {
 			return errRetryWithLogin
 		}
