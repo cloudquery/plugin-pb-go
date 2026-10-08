@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.0...v1.28.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* Fall back to architecture specific path for missing local plugin path ([#708](https://github.com/cloudquery/plugin-pb-go/issues/708)) ([acc11fd](https://github.com/cloudquery/plugin-pb-go/commit/acc11fd43916d9826785f646de3ffdd9c02fbd6c))
+
 ## [1.28.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.27.24...v1.28.0) (2026-10-08)
 
 
