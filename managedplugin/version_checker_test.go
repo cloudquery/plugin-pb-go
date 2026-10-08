@@ -2,6 +2,8 @@ package managedplugin
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/rs/zerolog"
@@ -12,43 +14,31 @@ import (
 func TestPluginVersionWarnerUnknownPluginFails(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
-	warned, err := versionWarner.WarnIfOutdated(context.Background(), "unknown", "unknown", "source", "1.0.0")
+	latestVersion, err := versionWarner.LatestVersion(context.Background(), "unknown", "unknown", "source")
 	assert.Error(t, err)
-	assert.False(t, warned)
+	assert.Nil(t, latestVersion)
 }
 
-func TestPluginVersionWarnerInvalidOrgOrNameFails(t *testing.T) {
+func TestPluginVersionWarnerLatestVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/plugins/cloudquery/source/aws", r.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"latest_version":"v32.1.0"}`))
+	}))
+	t.Cleanup(server.Close)
+	t.Setenv("CLOUDQUERY_API_URL", server.URL)
+
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
-	for _, tc := range []struct{ org, name string }{
-		{org: "", name: ".cq"},
-		{org: "cloudquery", name: ""},
-		{org: "", name: ""},
-		{org: "cloudquery/aws", name: "plugin"},
-	} {
-		warned, err := versionWarner.WarnIfOutdated(context.Background(), tc.org, tc.name, "source", "1.0.0")
-		assert.Error(t, err, "%q/%q", tc.org, tc.name)
-		assert.False(t, warned)
-	}
+
+	latestVersion, err := versionWarner.LatestVersion(context.Background(), "cloudquery", "aws", "source")
+	require.NoError(t, err)
+	assert.Equal(t, "32.1.0", latestVersion.String())
 }
 
-// Note: this is an integration test that requires Internet access and the hub to be running
-func TestPluginLatestVersionDoesNotWarn(t *testing.T) {
+func TestPluginVersionWarnerInvalidKindFails(t *testing.T) {
 	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
 	require.NoError(t, err)
-	latestVersion, err := versionWarner.getLatestVersion(context.Background(), "cloudquery", "aws", "source")
-	assert.NoError(t, err)
-	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", "source", latestVersion.String())
-	assert.NoError(t, err)
-	assert.False(t, hasWarned)
-}
-
-// Note: this is an integration test that requires Internet access and the hub to be running
-// CloudQuery's aws source plugin must exist in the hub, and be over version v1.0.0
-func TestPluginLatestVersionWarns(t *testing.T) {
-	versionWarner, err := NewPluginVersionWarner(zerolog.Nop(), "")
-	require.NoError(t, err)
-	hasWarned, err := versionWarner.WarnIfOutdated(context.Background(), "cloudquery", "aws", "source", "v1.0.0")
-	assert.NoError(t, err)
-	assert.True(t, hasWarned)
+	_, err = versionWarner.LatestVersion(context.Background(), "cloudquery", "aws", "invalid")
+	assert.Error(t, err)
 }

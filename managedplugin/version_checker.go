@@ -24,7 +24,7 @@ func NewPluginVersionWarner(logger zerolog.Logger, optionalAuthToken string) (*P
 	return &PluginVersionWarner{hubClient: hubClient, logger: logger}, nil
 }
 
-func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
+func (p *PluginVersionWarner) LatestVersion(ctx context.Context, org string, name string, kind string) (*semver.Version, error) {
 	if p == nil {
 		return nil, errors.New("plugin version warner is not initialized")
 	}
@@ -56,35 +56,4 @@ func (p *PluginVersionWarner) getLatestVersion(ctx context.Context, org string, 
 		return nil, err
 	}
 	return latestSemver, nil
-}
-
-// WarnIfOutdated requests the latest version of a plugin from the hub and warns if the client's supplied version is outdated.
-// It returns true if nothing went wrong comparing the versions, and the client's version is outdated; false otherwise.
-func (p *PluginVersionWarner) WarnIfOutdated(ctx context.Context, org string, name string, kind string, actualVersion string) (bool, error) {
-	if p == nil {
-		return false, errors.New("plugin version warner is not initialized")
-	}
-	if actualVersion == "" {
-		return false, nil
-	}
-	actualVersionSemver, err := semver.NewVersion(actualVersion)
-	if err != nil {
-		p.logger.Debug().Str("plugin", name).Str("version", actualVersion).Err(err).Msg("failed to parse actual version")
-		return false, err
-	}
-	latestVersionSemver, err := p.getLatestVersion(ctx, org, name, kind)
-	if err != nil {
-		return false, err
-	}
-	if actualVersionSemver.LessThan(latestVersionSemver) {
-		p.logger.Warn().
-			Str("plugin", name).
-			Str("using_version", actualVersionSemver.String()).
-			Str("latest_version", latestVersionSemver.String()).
-			Str("url", fmt.Sprintf("https://www.cloudquery.io/hub/plugins/%s/%s/%s", kind, org, name)).
-			Msg("Plugin is outdated, consider upgrading to the latest version.")
-		return true, nil
-	}
-
-	return false, nil
 }
