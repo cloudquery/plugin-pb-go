@@ -211,3 +211,65 @@ func TestResolveCachedPluginIsolatesArchitectures(t *testing.T) {
 		t.Fatalf("expected another architecture's cache to be left intact, got %v", err)
 	}
 }
+
+func TestResolveLocalPluginPath(t *testing.T) {
+	hostArch := buildFixture(t, runtime.GOARCH)
+	wrongArch := buildFixture(t, otherArch())
+
+	install := func(t *testing.T, src, dest string) {
+		t.Helper()
+		body, err := os.ReadFile(src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(dest, body, 0744); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for _, tc := range []struct {
+		name         string
+		configured   string
+		target       string
+		wantResolved func(configured, target string) string
+	}{
+		{
+			name:         "configured path exists",
+			configured:   hostArch,
+			target:       hostArch,
+			wantResolved: func(configured, _ string) string { return configured },
+		},
+		{
+			name:         "configured path missing falls back to architecture specific path",
+			target:       hostArch,
+			wantResolved: func(_, target string) string { return target },
+		},
+		{
+			name:         "architecture specific path with other arch is ignored",
+			target:       wrongArch,
+			wantResolved: func(configured, _ string) string { return configured },
+		},
+		{
+			name:         "no binary keeps configured path",
+			wantResolved: func(configured, _ string) string { return configured },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, configured := pluginCachePaths(t.TempDir(), "source", "cloudquery", "aws", "v34.9.0")
+			target := filepath.Join(filepath.Dir(configured), runtime.GOOS+"_"+runtime.GOARCH, filepath.Base(configured))
+			if tc.configured != "" {
+				install(t, tc.configured, configured)
+			}
+			if tc.target != "" {
+				install(t, tc.target, target)
+			}
+
+			if got, want := resolveLocalPluginPath(zerolog.Nop(), configured), tc.wantResolved(configured, target); got != want {
+				t.Errorf("got %q, want %q", got, want)
+			}
+		})
+	}
+}
