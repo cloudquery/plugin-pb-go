@@ -181,6 +181,7 @@ func (c *Client) downloadPlugin(ctx context.Context, typ PluginType) (AssetSourc
 	case RegistryGrpc:
 		return AssetSourceUnknown, nil // GRPC plugins are not downloaded
 	case RegistryLocal:
+		c.config.Path = resolveLocalPluginPath(c.logger, c.config.Path)
 		return AssetSourceUnknown, validateLocalExecPath(c.config.Path)
 	case RegistryGithub:
 		pathSplit := strings.Split(c.config.Path, "/")

@@ -53,10 +53,25 @@ var peMachines = map[string]uint16{
 // path is the pre-namespacing location, which is read but never written.
 func pluginCachePaths(directory, kind, org, name, version string) (canonical, legacy string) {
 	base := filepath.Join(directory, "plugins", kind, org, name, version)
-	target := runtime.GOOS + "_" + runtime.GOARCH
-	canonical = WithBinarySuffix(filepath.Join(base, target, "plugin"))
+	canonical = WithBinarySuffix(filepath.Join(base, hostTarget(), "plugin"))
 	legacy = WithBinarySuffix(filepath.Join(base, "plugin"))
 	return canonical, legacy
+}
+
+func hostTarget() string {
+	return runtime.GOOS + "_" + runtime.GOARCH
+}
+
+func resolveLocalPluginPath(logger zerolog.Logger, path string) string {
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		return path
+	}
+	targetPath := filepath.Join(filepath.Dir(path), hostTarget(), filepath.Base(path))
+	if err := validateBinary(targetPath); err != nil {
+		return path
+	}
+	logger.Warn().Str("path", path).Str("resolved_path", targetPath).Msg("local plugin path does not exist, using architecture specific path from the plugins cache")
+	return targetPath
 }
 
 // resolveCachedPlugin reports which of the cache locations holds a binary that
