@@ -1457,8 +1457,15 @@ func (x *Sync_MessageError) GetError() string {
 	return ""
 }
 
-// State backend rows (key, value, version) to persist once every message sent before the checkpoint is committed to all destinations.
+// State backend rows to persist once every message sent before the checkpoint is committed to all destinations.
 // Only sent when Sync.Request.supports_checkpoints is set.
+//
+// The record must:
+// - have the cq:table_name schema metadata set to Sync.BackendOptions.table_name
+// - have a "key" column and a "value" column, both of the arrow utf8 type (not large_utf8)
+// - have a "version" column of the arrow uint64 type, if the state table has one
+// - hold only the keys that changed. Each row is an upsert of its key; keys not in the record keep their state.
+// When the same key is in several checkpoints, the row with the highest version wins, or the last row without a version column.
 type Sync_MessageCheckpoint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// marshalled arrow.Record
