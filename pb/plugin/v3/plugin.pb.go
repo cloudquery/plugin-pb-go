@@ -1106,7 +1106,9 @@ func (x *Init_Request) GetInvocationId() string {
 }
 
 type Init_Response struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The plugin supports WriteStream and Write.MessageFlush
+	SupportsFlush bool `protobuf:"varint,1,opt,name=supports_flush,json=supportsFlush,proto3" json:"supports_flush,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1139,6 +1141,13 @@ func (x *Init_Response) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Init_Response.ProtoReflect.Descriptor instead.
 func (*Init_Response) Descriptor() ([]byte, []int) {
 	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{3, 1}
+}
+
+func (x *Init_Response) GetSupportsFlush() bool {
+	if x != nil {
+		return x.SupportsFlush
+	}
+	return false
 }
 
 type GetTables_Request struct {
@@ -1448,6 +1457,53 @@ func (x *Sync_MessageError) GetError() string {
 	return ""
 }
 
+// State backend rows (key, value, version) to persist once every message sent before the checkpoint is committed to all destinations.
+// Only sent when Sync.Request.supports_checkpoints is set.
+type Sync_MessageCheckpoint struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// marshalled arrow.Record
+	Record        []byte `protobuf:"bytes,1,opt,name=record,proto3" json:"record,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Sync_MessageCheckpoint) Reset() {
+	*x = Sync_MessageCheckpoint{}
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Sync_MessageCheckpoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sync_MessageCheckpoint) ProtoMessage() {}
+
+func (x *Sync_MessageCheckpoint) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sync_MessageCheckpoint.ProtoReflect.Descriptor instead.
+func (*Sync_MessageCheckpoint) Descriptor() ([]byte, []int) {
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 4}
+}
+
+func (x *Sync_MessageCheckpoint) GetRecord() []byte {
+	if x != nil {
+		return x.Record
+	}
+	return nil
+}
+
 type Sync_BackendOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// table name to use for state backend
@@ -1460,7 +1516,7 @@ type Sync_BackendOptions struct {
 
 func (x *Sync_BackendOptions) Reset() {
 	*x = Sync_BackendOptions{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[30]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1472,7 +1528,7 @@ func (x *Sync_BackendOptions) String() string {
 func (*Sync_BackendOptions) ProtoMessage() {}
 
 func (x *Sync_BackendOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[30]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1485,7 +1541,7 @@ func (x *Sync_BackendOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sync_BackendOptions.ProtoReflect.Descriptor instead.
 func (*Sync_BackendOptions) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 4}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 5}
 }
 
 func (x *Sync_BackendOptions) GetTableName() string {
@@ -1511,13 +1567,16 @@ type Sync_Request struct {
 	Backend             *Sync_BackendOptions   `protobuf:"bytes,5,opt,name=backend,proto3" json:"backend,omitempty"`
 	Shard               *Sync_Request_Shard    `protobuf:"bytes,6,opt,name=shard,proto3,oneof" json:"shard,omitempty"`
 	WithErrorMessages   bool                   `protobuf:"varint,7,opt,name=withErrorMessages,proto3" json:"withErrorMessages,omitempty"` // If true, the plugin will send error messages in the response stream
+	// If true, the client persists state backend writes from Sync.MessageCheckpoint,
+	// so the plugin sends them on the stream instead of writing to the state backend
+	SupportsCheckpoints bool `protobuf:"varint,8,opt,name=supports_checkpoints,json=supportsCheckpoints,proto3" json:"supports_checkpoints,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *Sync_Request) Reset() {
 	*x = Sync_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1529,7 +1588,7 @@ func (x *Sync_Request) String() string {
 func (*Sync_Request) ProtoMessage() {}
 
 func (x *Sync_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1542,7 +1601,7 @@ func (x *Sync_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sync_Request.ProtoReflect.Descriptor instead.
 func (*Sync_Request) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 5}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 6}
 }
 
 func (x *Sync_Request) GetTables() []string {
@@ -1594,6 +1653,13 @@ func (x *Sync_Request) GetWithErrorMessages() bool {
 	return false
 }
 
+func (x *Sync_Request) GetSupportsCheckpoints() bool {
+	if x != nil {
+		return x.SupportsCheckpoints
+	}
+	return false
+}
+
 type Sync_Response struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Message:
@@ -1602,6 +1668,7 @@ type Sync_Response struct {
 	//	*Sync_Response_Insert
 	//	*Sync_Response_DeleteRecord
 	//	*Sync_Response_Error
+	//	*Sync_Response_Checkpoint
 	Message       isSync_Response_Message `protobuf_oneof:"message"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1609,7 +1676,7 @@ type Sync_Response struct {
 
 func (x *Sync_Response) Reset() {
 	*x = Sync_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1621,7 +1688,7 @@ func (x *Sync_Response) String() string {
 func (*Sync_Response) ProtoMessage() {}
 
 func (x *Sync_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1634,7 +1701,7 @@ func (x *Sync_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sync_Response.ProtoReflect.Descriptor instead.
 func (*Sync_Response) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 6}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 7}
 }
 
 func (x *Sync_Response) GetMessage() isSync_Response_Message {
@@ -1680,6 +1747,15 @@ func (x *Sync_Response) GetError() *Sync_MessageError {
 	return nil
 }
 
+func (x *Sync_Response) GetCheckpoint() *Sync_MessageCheckpoint {
+	if x != nil {
+		if x, ok := x.Message.(*Sync_Response_Checkpoint); ok {
+			return x.Checkpoint
+		}
+	}
+	return nil
+}
+
 type isSync_Response_Message interface {
 	isSync_Response_Message()
 }
@@ -1700,6 +1776,10 @@ type Sync_Response_Error struct {
 	Error *Sync_MessageError `protobuf:"bytes,4,opt,name=error,proto3,oneof"`
 }
 
+type Sync_Response_Checkpoint struct {
+	Checkpoint *Sync_MessageCheckpoint `protobuf:"bytes,5,opt,name=checkpoint,proto3,oneof"`
+}
+
 func (*Sync_Response_MigrateTable) isSync_Response_Message() {}
 
 func (*Sync_Response_Insert) isSync_Response_Message() {}
@@ -1707,6 +1787,8 @@ func (*Sync_Response_Insert) isSync_Response_Message() {}
 func (*Sync_Response_DeleteRecord) isSync_Response_Message() {}
 
 func (*Sync_Response_Error) isSync_Response_Message() {}
+
+func (*Sync_Response_Checkpoint) isSync_Response_Message() {}
 
 type Sync_Request_Shard struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1718,7 +1800,7 @@ type Sync_Request_Shard struct {
 
 func (x *Sync_Request_Shard) Reset() {
 	*x = Sync_Request_Shard{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1730,7 +1812,7 @@ func (x *Sync_Request_Shard) String() string {
 func (*Sync_Request_Shard) ProtoMessage() {}
 
 func (x *Sync_Request_Shard) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1743,7 +1825,7 @@ func (x *Sync_Request_Shard) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sync_Request_Shard.ProtoReflect.Descriptor instead.
 func (*Sync_Request_Shard) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 5, 0}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{5, 6, 0}
 }
 
 func (x *Sync_Request_Shard) GetNum() int32 {
@@ -1770,7 +1852,7 @@ type Read_Request struct {
 
 func (x *Read_Request) Reset() {
 	*x = Read_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1782,7 +1864,7 @@ func (x *Read_Request) String() string {
 func (*Read_Request) ProtoMessage() {}
 
 func (x *Read_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[34]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1815,7 +1897,7 @@ type Read_Response struct {
 
 func (x *Read_Response) Reset() {
 	*x = Read_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1827,7 +1909,7 @@ func (x *Read_Response) String() string {
 func (*Read_Response) ProtoMessage() {}
 
 func (x *Read_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[35]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1861,7 +1943,7 @@ type Write_MessageMigrateTable struct {
 
 func (x *Write_MessageMigrateTable) Reset() {
 	*x = Write_MessageMigrateTable{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1873,7 +1955,7 @@ func (x *Write_MessageMigrateTable) String() string {
 func (*Write_MessageMigrateTable) ProtoMessage() {}
 
 func (x *Write_MessageMigrateTable) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[36]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1913,7 +1995,7 @@ type Write_MessageInsert struct {
 
 func (x *Write_MessageInsert) Reset() {
 	*x = Write_MessageInsert{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1925,7 +2007,7 @@ func (x *Write_MessageInsert) String() string {
 func (*Write_MessageInsert) ProtoMessage() {}
 
 func (x *Write_MessageInsert) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[37]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1963,7 +2045,7 @@ type Write_MessageDeleteStale struct {
 
 func (x *Write_MessageDeleteStale) Reset() {
 	*x = Write_MessageDeleteStale{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1975,7 +2057,7 @@ func (x *Write_MessageDeleteStale) String() string {
 func (*Write_MessageDeleteStale) ProtoMessage() {}
 
 func (x *Write_MessageDeleteStale) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[38]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2031,7 +2113,7 @@ type Write_MessageDeleteRecord struct {
 
 func (x *Write_MessageDeleteRecord) Reset() {
 	*x = Write_MessageDeleteRecord{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2043,7 +2125,7 @@ func (x *Write_MessageDeleteRecord) String() string {
 func (*Write_MessageDeleteRecord) ProtoMessage() {}
 
 func (x *Write_MessageDeleteRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[39]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2080,6 +2162,51 @@ func (x *Write_MessageDeleteRecord) GetTableRelations() []*TableRelation {
 	return nil
 }
 
+// Commit every message sent before this one. Only valid on WriteStream.
+type Write_MessageFlush struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Write_MessageFlush) Reset() {
+	*x = Write_MessageFlush{}
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Write_MessageFlush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Write_MessageFlush) ProtoMessage() {}
+
+func (x *Write_MessageFlush) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Write_MessageFlush.ProtoReflect.Descriptor instead.
+func (*Write_MessageFlush) Descriptor() ([]byte, []int) {
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{10, 4}
+}
+
+func (x *Write_MessageFlush) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
 type Write_Request struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Message:
@@ -2088,6 +2215,7 @@ type Write_Request struct {
 	//	*Write_Request_Insert
 	//	*Write_Request_Delete
 	//	*Write_Request_DeleteRecord
+	//	*Write_Request_Flush
 	Message       isWrite_Request_Message `protobuf_oneof:"message"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2095,7 +2223,7 @@ type Write_Request struct {
 
 func (x *Write_Request) Reset() {
 	*x = Write_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2107,7 +2235,7 @@ func (x *Write_Request) String() string {
 func (*Write_Request) ProtoMessage() {}
 
 func (x *Write_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2120,7 +2248,7 @@ func (x *Write_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Write_Request.ProtoReflect.Descriptor instead.
 func (*Write_Request) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{10, 4}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{10, 5}
 }
 
 func (x *Write_Request) GetMessage() isWrite_Request_Message {
@@ -2166,6 +2294,15 @@ func (x *Write_Request) GetDeleteRecord() *Write_MessageDeleteRecord {
 	return nil
 }
 
+func (x *Write_Request) GetFlush() *Write_MessageFlush {
+	if x != nil {
+		if x, ok := x.Message.(*Write_Request_Flush); ok {
+			return x.Flush
+		}
+	}
+	return nil
+}
+
 type isWrite_Request_Message interface {
 	isWrite_Request_Message()
 }
@@ -2186,6 +2323,10 @@ type Write_Request_DeleteRecord struct {
 	DeleteRecord *Write_MessageDeleteRecord `protobuf:"bytes,4,opt,name=delete_record,json=deleteRecord,proto3,oneof"`
 }
 
+type Write_Request_Flush struct {
+	Flush *Write_MessageFlush `protobuf:"bytes,5,opt,name=flush,proto3,oneof"`
+}
+
 func (*Write_Request_MigrateTable) isWrite_Request_Message() {}
 
 func (*Write_Request_Insert) isWrite_Request_Message() {}
@@ -2194,15 +2335,19 @@ func (*Write_Request_Delete) isWrite_Request_Message() {}
 
 func (*Write_Request_DeleteRecord) isWrite_Request_Message() {}
 
+func (*Write_Request_Flush) isWrite_Request_Message() {}
+
 type Write_Response struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// WriteStream only: id of the Write.MessageFlush that completed
+	FlushId       uint64 `protobuf:"varint,1,opt,name=flush_id,json=flushId,proto3" json:"flush_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Write_Response) Reset() {
 	*x = Write_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2214,7 +2359,7 @@ func (x *Write_Response) String() string {
 func (*Write_Response) ProtoMessage() {}
 
 func (x *Write_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[41]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2227,7 +2372,14 @@ func (x *Write_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Write_Response.ProtoReflect.Descriptor instead.
 func (*Write_Response) Descriptor() ([]byte, []int) {
-	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{10, 5}
+	return file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP(), []int{10, 6}
+}
+
+func (x *Write_Response) GetFlushId() uint64 {
+	if x != nil {
+		return x.FlushId
+	}
+	return 0
 }
 
 type Transform_Request struct {
@@ -2240,7 +2392,7 @@ type Transform_Request struct {
 
 func (x *Transform_Request) Reset() {
 	*x = Transform_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2252,7 +2404,7 @@ func (x *Transform_Request) String() string {
 func (*Transform_Request) ProtoMessage() {}
 
 func (x *Transform_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2285,7 +2437,7 @@ type Transform_Response struct {
 
 func (x *Transform_Response) Reset() {
 	*x = Transform_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2297,7 +2449,7 @@ func (x *Transform_Response) String() string {
 func (*Transform_Response) ProtoMessage() {}
 
 func (x *Transform_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[43]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2330,7 +2482,7 @@ type TransformSchema_Request struct {
 
 func (x *TransformSchema_Request) Reset() {
 	*x = TransformSchema_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2342,7 +2494,7 @@ func (x *TransformSchema_Request) String() string {
 func (*TransformSchema_Request) ProtoMessage() {}
 
 func (x *TransformSchema_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[44]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2375,7 +2527,7 @@ type TransformSchema_Response struct {
 
 func (x *TransformSchema_Response) Reset() {
 	*x = TransformSchema_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2387,7 +2539,7 @@ func (x *TransformSchema_Response) String() string {
 func (*TransformSchema_Response) ProtoMessage() {}
 
 func (x *TransformSchema_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[45]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2418,7 +2570,7 @@ type Close_Request struct {
 
 func (x *Close_Request) Reset() {
 	*x = Close_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2430,7 +2582,7 @@ func (x *Close_Request) String() string {
 func (*Close_Request) ProtoMessage() {}
 
 func (x *Close_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[46]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2454,7 +2606,7 @@ type Close_Response struct {
 
 func (x *Close_Response) Reset() {
 	*x = Close_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2466,7 +2618,7 @@ func (x *Close_Response) String() string {
 func (*Close_Response) ProtoMessage() {}
 
 func (x *Close_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[47]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2491,7 +2643,7 @@ type TestConnection_Request struct {
 
 func (x *TestConnection_Request) Reset() {
 	*x = TestConnection_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[48]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2503,7 +2655,7 @@ func (x *TestConnection_Request) String() string {
 func (*TestConnection_Request) ProtoMessage() {}
 
 func (x *TestConnection_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[48]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2537,7 +2689,7 @@ type TestConnection_Response struct {
 
 func (x *TestConnection_Response) Reset() {
 	*x = TestConnection_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[49]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2549,7 +2701,7 @@ func (x *TestConnection_Response) String() string {
 func (*TestConnection_Response) ProtoMessage() {}
 
 func (x *TestConnection_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[49]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2598,7 +2750,7 @@ type AssessTables_TablePair struct {
 
 func (x *AssessTables_TablePair) Reset() {
 	*x = AssessTables_TablePair{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[50]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2610,7 +2762,7 @@ func (x *AssessTables_TablePair) String() string {
 func (*AssessTables_TablePair) ProtoMessage() {}
 
 func (x *AssessTables_TablePair) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[50]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2652,7 +2804,7 @@ type AssessTables_Evidence struct {
 
 func (x *AssessTables_Evidence) Reset() {
 	*x = AssessTables_Evidence{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[51]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2664,7 +2816,7 @@ func (x *AssessTables_Evidence) String() string {
 func (*AssessTables_Evidence) ProtoMessage() {}
 
 func (x *AssessTables_Evidence) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[51]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2718,7 +2870,7 @@ type AssessTables_ColumnFinding struct {
 
 func (x *AssessTables_ColumnFinding) Reset() {
 	*x = AssessTables_ColumnFinding{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[52]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2730,7 +2882,7 @@ func (x *AssessTables_ColumnFinding) String() string {
 func (*AssessTables_ColumnFinding) ProtoMessage() {}
 
 func (x *AssessTables_ColumnFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[52]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2811,7 +2963,7 @@ type AssessTables_TableFinding struct {
 
 func (x *AssessTables_TableFinding) Reset() {
 	*x = AssessTables_TableFinding{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[53]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2823,7 +2975,7 @@ func (x *AssessTables_TableFinding) String() string {
 func (*AssessTables_TableFinding) ProtoMessage() {}
 
 func (x *AssessTables_TableFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[53]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2898,7 +3050,7 @@ type AssessTables_Request struct {
 
 func (x *AssessTables_Request) Reset() {
 	*x = AssessTables_Request{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[54]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2910,7 +3062,7 @@ func (x *AssessTables_Request) String() string {
 func (*AssessTables_Request) ProtoMessage() {}
 
 func (x *AssessTables_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[54]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2949,7 +3101,7 @@ type AssessTables_Response struct {
 
 func (x *AssessTables_Response) Reset() {
 	*x = AssessTables_Response{}
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[55]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2961,7 +3113,7 @@ func (x *AssessTables_Response) String() string {
 func (*AssessTables_Response) ProtoMessage() {}
 
 func (x *AssessTables_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[55]
+	mi := &file_plugin_pb_plugin_v3_plugin_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3003,14 +3155,14 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\bResponse\x12$\n" +
 	"\vjson_schema\x18\x01 \x01(\tH\x00R\n" +
 	"jsonSchema\x88\x01\x01B\x0e\n" +
-	"\f_json_schema\"{\n" +
+	"\f_json_schema\"\xa2\x01\n" +
 	"\x04Init\x1ag\n" +
 	"\aRequest\x12\x12\n" +
 	"\x04spec\x18\x01 \x01(\fR\x04spec\x12#\n" +
 	"\rno_connection\x18\x02 \x01(\bR\fnoConnection\x12#\n" +
-	"\rinvocation_id\x18\x03 \x01(\tR\finvocationId\x1a\n" +
-	"\n" +
-	"\bResponse\"\xa7\x01\n" +
+	"\rinvocation_id\x18\x03 \x01(\tR\finvocationId\x1a1\n" +
+	"\bResponse\x12%\n" +
+	"\x0esupports_flush\x18\x01 \x01(\bR\rsupportsFlush\"\xa7\x01\n" +
 	"\tGetTables\x1av\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06tables\x18\x01 \x03(\tR\x06tables\x12\x1f\n" +
@@ -3018,7 +3170,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"skipTables\x122\n" +
 	"\x15skip_dependent_tables\x18\x03 \x01(\bR\x13skipDependentTables\x1a\"\n" +
 	"\bResponse\x12\x16\n" +
-	"\x06tables\x18\x01 \x03(\fR\x06tables\"\xa8\t\n" +
+	"\x06tables\x18\x01 \x03(\fR\x06tables\"\xd8\n" +
+	"\n" +
 	"\x04Sync\x1a'\n" +
 	"\rMessageInsert\x12\x16\n" +
 	"\x06record\x18\x01 \x01(\fR\x06record\x1a+\n" +
@@ -3032,13 +3185,15 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\fMessageError\x12\x1d\n" +
 	"\n" +
 	"table_name\x18\x01 \x01(\tR\ttableName\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\x1aO\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x1a+\n" +
+	"\x11MessageCheckpoint\x12\x16\n" +
+	"\x06record\x18\x01 \x01(\fR\x06record\x1aO\n" +
 	"\x0eBackendOptions\x12\x1d\n" +
 	"\n" +
 	"table_name\x18\x01 \x01(\tR\ttableName\x12\x1e\n" +
 	"\n" +
 	"connection\x18\x02 \x01(\tR\n" +
-	"connection\x1a\x99\x03\n" +
+	"connection\x1a\xcc\x03\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06tables\x18\x01 \x03(\tR\x06tables\x12\x1f\n" +
 	"\vskip_tables\x18\x02 \x03(\tR\n" +
@@ -3047,16 +3202,20 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x13deterministic_cq_id\x18\x04 \x01(\bR\x11deterministicCqId\x12C\n" +
 	"\abackend\x18\x05 \x01(\v2).cloudquery.plugin.v3.Sync.BackendOptionsR\abackend\x12C\n" +
 	"\x05shard\x18\x06 \x01(\v2(.cloudquery.plugin.v3.Sync.Request.ShardH\x00R\x05shard\x88\x01\x01\x12,\n" +
-	"\x11withErrorMessages\x18\a \x01(\bR\x11withErrorMessages\x1a/\n" +
+	"\x11withErrorMessages\x18\a \x01(\bR\x11withErrorMessages\x121\n" +
+	"\x14supports_checkpoints\x18\b \x01(\bR\x13supportsCheckpoints\x1a/\n" +
 	"\x05Shard\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x05R\x03num\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05totalB\b\n" +
-	"\x06_shard\x1a\xc8\x02\n" +
+	"\x06_shard\x1a\x98\x03\n" +
 	"\bResponse\x12U\n" +
 	"\rmigrate_table\x18\x01 \x01(\v2..cloudquery.plugin.v3.Sync.MessageMigrateTableH\x00R\fmigrateTable\x12B\n" +
 	"\x06insert\x18\x02 \x01(\v2(.cloudquery.plugin.v3.Sync.MessageInsertH\x00R\x06insert\x12U\n" +
 	"\rdelete_record\x18\x03 \x01(\v2..cloudquery.plugin.v3.Sync.MessageDeleteRecordH\x00R\fdeleteRecord\x12?\n" +
-	"\x05error\x18\x04 \x01(\v2'.cloudquery.plugin.v3.Sync.MessageErrorH\x00R\x05errorB\t\n" +
+	"\x05error\x18\x04 \x01(\v2'.cloudquery.plugin.v3.Sync.MessageErrorH\x00R\x05error\x12N\n" +
+	"\n" +
+	"checkpoint\x18\x05 \x01(\v2,.cloudquery.plugin.v3.Sync.MessageCheckpointH\x00R\n" +
+	"checkpointB\t\n" +
 	"\amessage\"K\n" +
 	"\x04Read\x1a\x1f\n" +
 	"\aRequest\x12\x14\n" +
@@ -3080,7 +3239,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"predicates\"\x1f\n" +
 	"\fGroupingType\x12\a\n" +
 	"\x03AND\x10\x00\x12\x06\n" +
-	"\x02OR\x10\x01\"\xdd\x06\n" +
+	"\x02OR\x10\x01\"\xda\a\n" +
 	"\x05Write\x1aP\n" +
 	"\x13MessageMigrateTable\x12\x14\n" +
 	"\x05table\x18\x01 \x01(\fR\x05table\x12#\n" +
@@ -3098,15 +3257,18 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\n" +
 	"table_name\x18\x01 \x01(\tR\ttableName\x12H\n" +
 	"\fwhere_clause\x18\x02 \x03(\v2%.cloudquery.plugin.v3.PredicatesGroupR\vwhereClause\x12L\n" +
-	"\x0ftable_relations\x18\x03 \x03(\v2#.cloudquery.plugin.v3.TableRelationR\x0etableRelations\x1a\xd3\x02\n" +
+	"\x0ftable_relations\x18\x03 \x03(\v2#.cloudquery.plugin.v3.TableRelationR\x0etableRelations\x1a\x1e\n" +
+	"\fMessageFlush\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x1a\x95\x03\n" +
 	"\aRequest\x12V\n" +
 	"\rmigrate_table\x18\x01 \x01(\v2/.cloudquery.plugin.v3.Write.MessageMigrateTableH\x00R\fmigrateTable\x12C\n" +
 	"\x06insert\x18\x02 \x01(\v2).cloudquery.plugin.v3.Write.MessageInsertH\x00R\x06insert\x12H\n" +
 	"\x06delete\x18\x03 \x01(\v2..cloudquery.plugin.v3.Write.MessageDeleteStaleH\x00R\x06delete\x12V\n" +
-	"\rdelete_record\x18\x04 \x01(\v2/.cloudquery.plugin.v3.Write.MessageDeleteRecordH\x00R\fdeleteRecordB\t\n" +
-	"\amessage\x1a\n" +
-	"\n" +
-	"\bResponse\"R\n" +
+	"\rdelete_record\x18\x04 \x01(\v2/.cloudquery.plugin.v3.Write.MessageDeleteRecordH\x00R\fdeleteRecord\x12@\n" +
+	"\x05flush\x18\x05 \x01(\v2(.cloudquery.plugin.v3.Write.MessageFlushH\x00R\x05flushB\t\n" +
+	"\amessage\x1a%\n" +
+	"\bResponse\x12\x19\n" +
+	"\bflush_id\x18\x01 \x01(\x04R\aflushId\"R\n" +
 	"\tTransform\x1a!\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06record\x18\x01 \x01(\fR\x06record\x1a\"\n" +
@@ -3166,7 +3328,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"!CATEGORY_AUTOMATICALLY_MIGRATABLE\x10\x02\x12&\n" +
 	"\"CATEGORY_MANUAL_MIGRATION_REQUIRED\x10\x03\x12\x1a\n" +
 	"\x16CATEGORY_TABLE_REMOVED\x10\x04\x12 \n" +
-	"\x1cCATEGORY_FILE_SCHEMA_CHANGED\x10\x052\xe0\t\n" +
+	"\x1cCATEGORY_FILE_SCHEMA_CHANGED\x10\x052\xbe\n" +
+	"\n" +
 	"\x06Plugin\x12X\n" +
 	"\aGetName\x12%.cloudquery.plugin.v3.GetName.Request\x1a&.cloudquery.plugin.v3.GetName.Response\x12a\n" +
 	"\n" +
@@ -3181,7 +3344,8 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x0fTransformSchema\x12-.cloudquery.plugin.v3.TransformSchema.Request\x1a..cloudquery.plugin.v3.TransformSchema.Response\x12R\n" +
 	"\x05Close\x12#.cloudquery.plugin.v3.Close.Request\x1a$.cloudquery.plugin.v3.Close.Response\x12m\n" +
 	"\x0eTestConnection\x12,.cloudquery.plugin.v3.TestConnection.Request\x1a-.cloudquery.plugin.v3.TestConnection.Response\x12g\n" +
-	"\fAssessTables\x12*.cloudquery.plugin.v3.AssessTables.Request\x1a+.cloudquery.plugin.v3.AssessTables.ResponseBS\n" +
+	"\fAssessTables\x12*.cloudquery.plugin.v3.AssessTables.Request\x1a+.cloudquery.plugin.v3.AssessTables.Response\x12\\\n" +
+	"\vWriteStream\x12#.cloudquery.plugin.v3.Write.Request\x1a$.cloudquery.plugin.v3.Write.Response(\x010\x01BS\n" +
 	"\x17io.cloudquery.plugin.v3P\x01Z6github.com/cloudquery/plugin-pb-go/pb/plugin/v3;pluginb\x06proto3"
 
 var (
@@ -3197,7 +3361,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_rawDescGZIP() []byte {
 }
 
 var file_plugin_pb_plugin_v3_plugin_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_plugin_pb_plugin_v3_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 56)
+var file_plugin_pb_plugin_v3_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 58)
 var file_plugin_pb_plugin_v3_plugin_proto_goTypes = []any{
 	(Predicate_Operator)(0),            // 0: cloudquery.plugin.v3.Predicate.Operator
 	(PredicatesGroup_GroupingType)(0),  // 1: cloudquery.plugin.v3.PredicatesGroup.GroupingType
@@ -3232,33 +3396,35 @@ var file_plugin_pb_plugin_v3_plugin_proto_goTypes = []any{
 	(*Sync_MessageMigrateTable)(nil),   // 30: cloudquery.plugin.v3.Sync.MessageMigrateTable
 	(*Sync_MessageDeleteRecord)(nil),   // 31: cloudquery.plugin.v3.Sync.MessageDeleteRecord
 	(*Sync_MessageError)(nil),          // 32: cloudquery.plugin.v3.Sync.MessageError
-	(*Sync_BackendOptions)(nil),        // 33: cloudquery.plugin.v3.Sync.BackendOptions
-	(*Sync_Request)(nil),               // 34: cloudquery.plugin.v3.Sync.Request
-	(*Sync_Response)(nil),              // 35: cloudquery.plugin.v3.Sync.Response
-	(*Sync_Request_Shard)(nil),         // 36: cloudquery.plugin.v3.Sync.Request.Shard
-	(*Read_Request)(nil),               // 37: cloudquery.plugin.v3.Read.Request
-	(*Read_Response)(nil),              // 38: cloudquery.plugin.v3.Read.Response
-	(*Write_MessageMigrateTable)(nil),  // 39: cloudquery.plugin.v3.Write.MessageMigrateTable
-	(*Write_MessageInsert)(nil),        // 40: cloudquery.plugin.v3.Write.MessageInsert
-	(*Write_MessageDeleteStale)(nil),   // 41: cloudquery.plugin.v3.Write.MessageDeleteStale
-	(*Write_MessageDeleteRecord)(nil),  // 42: cloudquery.plugin.v3.Write.MessageDeleteRecord
-	(*Write_Request)(nil),              // 43: cloudquery.plugin.v3.Write.Request
-	(*Write_Response)(nil),             // 44: cloudquery.plugin.v3.Write.Response
-	(*Transform_Request)(nil),          // 45: cloudquery.plugin.v3.Transform.Request
-	(*Transform_Response)(nil),         // 46: cloudquery.plugin.v3.Transform.Response
-	(*TransformSchema_Request)(nil),    // 47: cloudquery.plugin.v3.TransformSchema.Request
-	(*TransformSchema_Response)(nil),   // 48: cloudquery.plugin.v3.TransformSchema.Response
-	(*Close_Request)(nil),              // 49: cloudquery.plugin.v3.Close.Request
-	(*Close_Response)(nil),             // 50: cloudquery.plugin.v3.Close.Response
-	(*TestConnection_Request)(nil),     // 51: cloudquery.plugin.v3.TestConnection.Request
-	(*TestConnection_Response)(nil),    // 52: cloudquery.plugin.v3.TestConnection.Response
-	(*AssessTables_TablePair)(nil),     // 53: cloudquery.plugin.v3.AssessTables.TablePair
-	(*AssessTables_Evidence)(nil),      // 54: cloudquery.plugin.v3.AssessTables.Evidence
-	(*AssessTables_ColumnFinding)(nil), // 55: cloudquery.plugin.v3.AssessTables.ColumnFinding
-	(*AssessTables_TableFinding)(nil),  // 56: cloudquery.plugin.v3.AssessTables.TableFinding
-	(*AssessTables_Request)(nil),       // 57: cloudquery.plugin.v3.AssessTables.Request
-	(*AssessTables_Response)(nil),      // 58: cloudquery.plugin.v3.AssessTables.Response
-	(*timestamppb.Timestamp)(nil),      // 59: google.protobuf.Timestamp
+	(*Sync_MessageCheckpoint)(nil),     // 33: cloudquery.plugin.v3.Sync.MessageCheckpoint
+	(*Sync_BackendOptions)(nil),        // 34: cloudquery.plugin.v3.Sync.BackendOptions
+	(*Sync_Request)(nil),               // 35: cloudquery.plugin.v3.Sync.Request
+	(*Sync_Response)(nil),              // 36: cloudquery.plugin.v3.Sync.Response
+	(*Sync_Request_Shard)(nil),         // 37: cloudquery.plugin.v3.Sync.Request.Shard
+	(*Read_Request)(nil),               // 38: cloudquery.plugin.v3.Read.Request
+	(*Read_Response)(nil),              // 39: cloudquery.plugin.v3.Read.Response
+	(*Write_MessageMigrateTable)(nil),  // 40: cloudquery.plugin.v3.Write.MessageMigrateTable
+	(*Write_MessageInsert)(nil),        // 41: cloudquery.plugin.v3.Write.MessageInsert
+	(*Write_MessageDeleteStale)(nil),   // 42: cloudquery.plugin.v3.Write.MessageDeleteStale
+	(*Write_MessageDeleteRecord)(nil),  // 43: cloudquery.plugin.v3.Write.MessageDeleteRecord
+	(*Write_MessageFlush)(nil),         // 44: cloudquery.plugin.v3.Write.MessageFlush
+	(*Write_Request)(nil),              // 45: cloudquery.plugin.v3.Write.Request
+	(*Write_Response)(nil),             // 46: cloudquery.plugin.v3.Write.Response
+	(*Transform_Request)(nil),          // 47: cloudquery.plugin.v3.Transform.Request
+	(*Transform_Response)(nil),         // 48: cloudquery.plugin.v3.Transform.Response
+	(*TransformSchema_Request)(nil),    // 49: cloudquery.plugin.v3.TransformSchema.Request
+	(*TransformSchema_Response)(nil),   // 50: cloudquery.plugin.v3.TransformSchema.Response
+	(*Close_Request)(nil),              // 51: cloudquery.plugin.v3.Close.Request
+	(*Close_Response)(nil),             // 52: cloudquery.plugin.v3.Close.Response
+	(*TestConnection_Request)(nil),     // 53: cloudquery.plugin.v3.TestConnection.Request
+	(*TestConnection_Response)(nil),    // 54: cloudquery.plugin.v3.TestConnection.Response
+	(*AssessTables_TablePair)(nil),     // 55: cloudquery.plugin.v3.AssessTables.TablePair
+	(*AssessTables_Evidence)(nil),      // 56: cloudquery.plugin.v3.AssessTables.Evidence
+	(*AssessTables_ColumnFinding)(nil), // 57: cloudquery.plugin.v3.AssessTables.ColumnFinding
+	(*AssessTables_TableFinding)(nil),  // 58: cloudquery.plugin.v3.AssessTables.TableFinding
+	(*AssessTables_Request)(nil),       // 59: cloudquery.plugin.v3.AssessTables.Request
+	(*AssessTables_Response)(nil),      // 60: cloudquery.plugin.v3.AssessTables.Response
+	(*timestamppb.Timestamp)(nil),      // 61: google.protobuf.Timestamp
 }
 var file_plugin_pb_plugin_v3_plugin_proto_depIdxs = []int32{
 	0,  // 0: cloudquery.plugin.v3.Predicate.operator:type_name -> cloudquery.plugin.v3.Predicate.Operator
@@ -3266,57 +3432,61 @@ var file_plugin_pb_plugin_v3_plugin_proto_depIdxs = []int32{
 	11, // 2: cloudquery.plugin.v3.PredicatesGroup.predicates:type_name -> cloudquery.plugin.v3.Predicate
 	12, // 3: cloudquery.plugin.v3.Sync.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
 	10, // 4: cloudquery.plugin.v3.Sync.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
-	33, // 5: cloudquery.plugin.v3.Sync.Request.backend:type_name -> cloudquery.plugin.v3.Sync.BackendOptions
-	36, // 6: cloudquery.plugin.v3.Sync.Request.shard:type_name -> cloudquery.plugin.v3.Sync.Request.Shard
+	34, // 5: cloudquery.plugin.v3.Sync.Request.backend:type_name -> cloudquery.plugin.v3.Sync.BackendOptions
+	37, // 6: cloudquery.plugin.v3.Sync.Request.shard:type_name -> cloudquery.plugin.v3.Sync.Request.Shard
 	30, // 7: cloudquery.plugin.v3.Sync.Response.migrate_table:type_name -> cloudquery.plugin.v3.Sync.MessageMigrateTable
 	29, // 8: cloudquery.plugin.v3.Sync.Response.insert:type_name -> cloudquery.plugin.v3.Sync.MessageInsert
 	31, // 9: cloudquery.plugin.v3.Sync.Response.delete_record:type_name -> cloudquery.plugin.v3.Sync.MessageDeleteRecord
 	32, // 10: cloudquery.plugin.v3.Sync.Response.error:type_name -> cloudquery.plugin.v3.Sync.MessageError
-	59, // 11: cloudquery.plugin.v3.Write.MessageDeleteStale.sync_time:type_name -> google.protobuf.Timestamp
-	12, // 12: cloudquery.plugin.v3.Write.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
-	10, // 13: cloudquery.plugin.v3.Write.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
-	39, // 14: cloudquery.plugin.v3.Write.Request.migrate_table:type_name -> cloudquery.plugin.v3.Write.MessageMigrateTable
-	40, // 15: cloudquery.plugin.v3.Write.Request.insert:type_name -> cloudquery.plugin.v3.Write.MessageInsert
-	41, // 16: cloudquery.plugin.v3.Write.Request.delete:type_name -> cloudquery.plugin.v3.Write.MessageDeleteStale
-	42, // 17: cloudquery.plugin.v3.Write.Request.delete_record:type_name -> cloudquery.plugin.v3.Write.MessageDeleteRecord
-	2,  // 18: cloudquery.plugin.v3.AssessTables.ColumnFinding.category:type_name -> cloudquery.plugin.v3.AssessTables.Category
-	54, // 19: cloudquery.plugin.v3.AssessTables.ColumnFinding.evidence:type_name -> cloudquery.plugin.v3.AssessTables.Evidence
-	2,  // 20: cloudquery.plugin.v3.AssessTables.TableFinding.category:type_name -> cloudquery.plugin.v3.AssessTables.Category
-	55, // 21: cloudquery.plugin.v3.AssessTables.TableFinding.columns:type_name -> cloudquery.plugin.v3.AssessTables.ColumnFinding
-	54, // 22: cloudquery.plugin.v3.AssessTables.TableFinding.evidence:type_name -> cloudquery.plugin.v3.AssessTables.Evidence
-	53, // 23: cloudquery.plugin.v3.AssessTables.Request.tables:type_name -> cloudquery.plugin.v3.AssessTables.TablePair
-	56, // 24: cloudquery.plugin.v3.AssessTables.Response.tables:type_name -> cloudquery.plugin.v3.AssessTables.TableFinding
-	19, // 25: cloudquery.plugin.v3.Plugin.GetName:input_type -> cloudquery.plugin.v3.GetName.Request
-	21, // 26: cloudquery.plugin.v3.Plugin.GetVersion:input_type -> cloudquery.plugin.v3.GetVersion.Request
-	23, // 27: cloudquery.plugin.v3.Plugin.GetSpecSchema:input_type -> cloudquery.plugin.v3.GetSpecSchema.Request
-	25, // 28: cloudquery.plugin.v3.Plugin.Init:input_type -> cloudquery.plugin.v3.Init.Request
-	27, // 29: cloudquery.plugin.v3.Plugin.GetTables:input_type -> cloudquery.plugin.v3.GetTables.Request
-	34, // 30: cloudquery.plugin.v3.Plugin.Sync:input_type -> cloudquery.plugin.v3.Sync.Request
-	37, // 31: cloudquery.plugin.v3.Plugin.Read:input_type -> cloudquery.plugin.v3.Read.Request
-	43, // 32: cloudquery.plugin.v3.Plugin.Write:input_type -> cloudquery.plugin.v3.Write.Request
-	45, // 33: cloudquery.plugin.v3.Plugin.Transform:input_type -> cloudquery.plugin.v3.Transform.Request
-	47, // 34: cloudquery.plugin.v3.Plugin.TransformSchema:input_type -> cloudquery.plugin.v3.TransformSchema.Request
-	49, // 35: cloudquery.plugin.v3.Plugin.Close:input_type -> cloudquery.plugin.v3.Close.Request
-	51, // 36: cloudquery.plugin.v3.Plugin.TestConnection:input_type -> cloudquery.plugin.v3.TestConnection.Request
-	57, // 37: cloudquery.plugin.v3.Plugin.AssessTables:input_type -> cloudquery.plugin.v3.AssessTables.Request
-	20, // 38: cloudquery.plugin.v3.Plugin.GetName:output_type -> cloudquery.plugin.v3.GetName.Response
-	22, // 39: cloudquery.plugin.v3.Plugin.GetVersion:output_type -> cloudquery.plugin.v3.GetVersion.Response
-	24, // 40: cloudquery.plugin.v3.Plugin.GetSpecSchema:output_type -> cloudquery.plugin.v3.GetSpecSchema.Response
-	26, // 41: cloudquery.plugin.v3.Plugin.Init:output_type -> cloudquery.plugin.v3.Init.Response
-	28, // 42: cloudquery.plugin.v3.Plugin.GetTables:output_type -> cloudquery.plugin.v3.GetTables.Response
-	35, // 43: cloudquery.plugin.v3.Plugin.Sync:output_type -> cloudquery.plugin.v3.Sync.Response
-	38, // 44: cloudquery.plugin.v3.Plugin.Read:output_type -> cloudquery.plugin.v3.Read.Response
-	44, // 45: cloudquery.plugin.v3.Plugin.Write:output_type -> cloudquery.plugin.v3.Write.Response
-	46, // 46: cloudquery.plugin.v3.Plugin.Transform:output_type -> cloudquery.plugin.v3.Transform.Response
-	48, // 47: cloudquery.plugin.v3.Plugin.TransformSchema:output_type -> cloudquery.plugin.v3.TransformSchema.Response
-	50, // 48: cloudquery.plugin.v3.Plugin.Close:output_type -> cloudquery.plugin.v3.Close.Response
-	52, // 49: cloudquery.plugin.v3.Plugin.TestConnection:output_type -> cloudquery.plugin.v3.TestConnection.Response
-	58, // 50: cloudquery.plugin.v3.Plugin.AssessTables:output_type -> cloudquery.plugin.v3.AssessTables.Response
-	38, // [38:51] is the sub-list for method output_type
-	25, // [25:38] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	33, // 11: cloudquery.plugin.v3.Sync.Response.checkpoint:type_name -> cloudquery.plugin.v3.Sync.MessageCheckpoint
+	61, // 12: cloudquery.plugin.v3.Write.MessageDeleteStale.sync_time:type_name -> google.protobuf.Timestamp
+	12, // 13: cloudquery.plugin.v3.Write.MessageDeleteRecord.where_clause:type_name -> cloudquery.plugin.v3.PredicatesGroup
+	10, // 14: cloudquery.plugin.v3.Write.MessageDeleteRecord.table_relations:type_name -> cloudquery.plugin.v3.TableRelation
+	40, // 15: cloudquery.plugin.v3.Write.Request.migrate_table:type_name -> cloudquery.plugin.v3.Write.MessageMigrateTable
+	41, // 16: cloudquery.plugin.v3.Write.Request.insert:type_name -> cloudquery.plugin.v3.Write.MessageInsert
+	42, // 17: cloudquery.plugin.v3.Write.Request.delete:type_name -> cloudquery.plugin.v3.Write.MessageDeleteStale
+	43, // 18: cloudquery.plugin.v3.Write.Request.delete_record:type_name -> cloudquery.plugin.v3.Write.MessageDeleteRecord
+	44, // 19: cloudquery.plugin.v3.Write.Request.flush:type_name -> cloudquery.plugin.v3.Write.MessageFlush
+	2,  // 20: cloudquery.plugin.v3.AssessTables.ColumnFinding.category:type_name -> cloudquery.plugin.v3.AssessTables.Category
+	56, // 21: cloudquery.plugin.v3.AssessTables.ColumnFinding.evidence:type_name -> cloudquery.plugin.v3.AssessTables.Evidence
+	2,  // 22: cloudquery.plugin.v3.AssessTables.TableFinding.category:type_name -> cloudquery.plugin.v3.AssessTables.Category
+	57, // 23: cloudquery.plugin.v3.AssessTables.TableFinding.columns:type_name -> cloudquery.plugin.v3.AssessTables.ColumnFinding
+	56, // 24: cloudquery.plugin.v3.AssessTables.TableFinding.evidence:type_name -> cloudquery.plugin.v3.AssessTables.Evidence
+	55, // 25: cloudquery.plugin.v3.AssessTables.Request.tables:type_name -> cloudquery.plugin.v3.AssessTables.TablePair
+	58, // 26: cloudquery.plugin.v3.AssessTables.Response.tables:type_name -> cloudquery.plugin.v3.AssessTables.TableFinding
+	19, // 27: cloudquery.plugin.v3.Plugin.GetName:input_type -> cloudquery.plugin.v3.GetName.Request
+	21, // 28: cloudquery.plugin.v3.Plugin.GetVersion:input_type -> cloudquery.plugin.v3.GetVersion.Request
+	23, // 29: cloudquery.plugin.v3.Plugin.GetSpecSchema:input_type -> cloudquery.plugin.v3.GetSpecSchema.Request
+	25, // 30: cloudquery.plugin.v3.Plugin.Init:input_type -> cloudquery.plugin.v3.Init.Request
+	27, // 31: cloudquery.plugin.v3.Plugin.GetTables:input_type -> cloudquery.plugin.v3.GetTables.Request
+	35, // 32: cloudquery.plugin.v3.Plugin.Sync:input_type -> cloudquery.plugin.v3.Sync.Request
+	38, // 33: cloudquery.plugin.v3.Plugin.Read:input_type -> cloudquery.plugin.v3.Read.Request
+	45, // 34: cloudquery.plugin.v3.Plugin.Write:input_type -> cloudquery.plugin.v3.Write.Request
+	47, // 35: cloudquery.plugin.v3.Plugin.Transform:input_type -> cloudquery.plugin.v3.Transform.Request
+	49, // 36: cloudquery.plugin.v3.Plugin.TransformSchema:input_type -> cloudquery.plugin.v3.TransformSchema.Request
+	51, // 37: cloudquery.plugin.v3.Plugin.Close:input_type -> cloudquery.plugin.v3.Close.Request
+	53, // 38: cloudquery.plugin.v3.Plugin.TestConnection:input_type -> cloudquery.plugin.v3.TestConnection.Request
+	59, // 39: cloudquery.plugin.v3.Plugin.AssessTables:input_type -> cloudquery.plugin.v3.AssessTables.Request
+	45, // 40: cloudquery.plugin.v3.Plugin.WriteStream:input_type -> cloudquery.plugin.v3.Write.Request
+	20, // 41: cloudquery.plugin.v3.Plugin.GetName:output_type -> cloudquery.plugin.v3.GetName.Response
+	22, // 42: cloudquery.plugin.v3.Plugin.GetVersion:output_type -> cloudquery.plugin.v3.GetVersion.Response
+	24, // 43: cloudquery.plugin.v3.Plugin.GetSpecSchema:output_type -> cloudquery.plugin.v3.GetSpecSchema.Response
+	26, // 44: cloudquery.plugin.v3.Plugin.Init:output_type -> cloudquery.plugin.v3.Init.Response
+	28, // 45: cloudquery.plugin.v3.Plugin.GetTables:output_type -> cloudquery.plugin.v3.GetTables.Response
+	36, // 46: cloudquery.plugin.v3.Plugin.Sync:output_type -> cloudquery.plugin.v3.Sync.Response
+	39, // 47: cloudquery.plugin.v3.Plugin.Read:output_type -> cloudquery.plugin.v3.Read.Response
+	46, // 48: cloudquery.plugin.v3.Plugin.Write:output_type -> cloudquery.plugin.v3.Write.Response
+	48, // 49: cloudquery.plugin.v3.Plugin.Transform:output_type -> cloudquery.plugin.v3.Transform.Response
+	50, // 50: cloudquery.plugin.v3.Plugin.TransformSchema:output_type -> cloudquery.plugin.v3.TransformSchema.Response
+	52, // 51: cloudquery.plugin.v3.Plugin.Close:output_type -> cloudquery.plugin.v3.Close.Response
+	54, // 52: cloudquery.plugin.v3.Plugin.TestConnection:output_type -> cloudquery.plugin.v3.TestConnection.Response
+	60, // 53: cloudquery.plugin.v3.Plugin.AssessTables:output_type -> cloudquery.plugin.v3.AssessTables.Response
+	46, // 54: cloudquery.plugin.v3.Plugin.WriteStream:output_type -> cloudquery.plugin.v3.Write.Response
+	41, // [41:55] is the sub-list for method output_type
+	27, // [27:41] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_plugin_pb_plugin_v3_plugin_proto_init() }
@@ -3325,18 +3495,20 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 		return
 	}
 	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[21].OneofWrappers = []any{}
-	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[31].OneofWrappers = []any{}
-	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32].OneofWrappers = []any{
+	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[32].OneofWrappers = []any{}
+	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[33].OneofWrappers = []any{
 		(*Sync_Response_MigrateTable)(nil),
 		(*Sync_Response_Insert)(nil),
 		(*Sync_Response_DeleteRecord)(nil),
 		(*Sync_Response_Error)(nil),
+		(*Sync_Response_Checkpoint)(nil),
 	}
-	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[40].OneofWrappers = []any{
+	file_plugin_pb_plugin_v3_plugin_proto_msgTypes[42].OneofWrappers = []any{
 		(*Write_Request_MigrateTable)(nil),
 		(*Write_Request_Insert)(nil),
 		(*Write_Request_Delete)(nil),
 		(*Write_Request_DeleteRecord)(nil),
+		(*Write_Request_Flush)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -3344,7 +3516,7 @@ func file_plugin_pb_plugin_v3_plugin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_plugin_pb_plugin_v3_plugin_proto_rawDesc), len(file_plugin_pb_plugin_v3_plugin_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   56,
+			NumMessages:   58,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
