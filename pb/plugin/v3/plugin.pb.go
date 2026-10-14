@@ -2348,7 +2348,9 @@ type Write_Response struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// WriteStream only: id of the Write.MessageFlush that completed
 	FlushId uint64 `protobuf:"varint,1,opt,name=flush_id,json=flushId,proto3" json:"flush_id,omitempty"`
-	// WriteStream only: why some messages sent before the flush could not be committed. The stream stays open.
+	// WriteStream only: why some messages sent since the previous flush could not be committed. A failure is reported
+	// once, so a later flush can succeed although earlier messages were lost: clients must treat the first failure as
+	// final. The stream stays open, though a plugin may also end the stream instead of reporting a failure.
 	FlushError    string `protobuf:"bytes,2,opt,name=flush_error,json=flushError,proto3" json:"flush_error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
