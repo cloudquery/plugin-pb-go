@@ -70,7 +70,8 @@ type PluginClient interface {
 	// Plugins that do not support assessment return Unimplemented.
 	AssessTables(ctx context.Context, in *AssessTables_Request, opts ...grpc.CallOption) (*AssessTables_Response, error)
 	// Write resources, like Write, and also accept Write.MessageFlush.
-	// The plugin sends one Write.Response per Write.MessageFlush, once every message sent before the flush is committed.
+	// The plugin sends one Write.Response per Write.MessageFlush, once every message sent before the flush is committed,
+	// or with Write.Response.flush_error set if some of them could not be committed.
 	// Only use it with plugins that set Init.Response.supports_flush.
 	WriteStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Write_Request, Write_Response], error)
 }
@@ -285,7 +286,8 @@ type PluginServer interface {
 	// Plugins that do not support assessment return Unimplemented.
 	AssessTables(context.Context, *AssessTables_Request) (*AssessTables_Response, error)
 	// Write resources, like Write, and also accept Write.MessageFlush.
-	// The plugin sends one Write.Response per Write.MessageFlush, once every message sent before the flush is committed.
+	// The plugin sends one Write.Response per Write.MessageFlush, once every message sent before the flush is committed,
+	// or with Write.Response.flush_error set if some of them could not be committed.
 	// Only use it with plugins that set Init.Response.supports_flush.
 	WriteStream(grpc.BidiStreamingServer[Write_Request, Write_Response]) error
 	mustEmbedUnimplementedPluginServer()

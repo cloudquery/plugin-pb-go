@@ -2347,7 +2347,9 @@ func (*Write_Request_Flush) isWrite_Request_Message() {}
 type Write_Response struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// WriteStream only: id of the Write.MessageFlush that completed
-	FlushId       uint64 `protobuf:"varint,1,opt,name=flush_id,json=flushId,proto3" json:"flush_id,omitempty"`
+	FlushId uint64 `protobuf:"varint,1,opt,name=flush_id,json=flushId,proto3" json:"flush_id,omitempty"`
+	// WriteStream only: why some messages sent before the flush could not be committed. The stream stays open.
+	FlushError    string `protobuf:"bytes,2,opt,name=flush_error,json=flushError,proto3" json:"flush_error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2387,6 +2389,13 @@ func (x *Write_Response) GetFlushId() uint64 {
 		return x.FlushId
 	}
 	return 0
+}
+
+func (x *Write_Response) GetFlushError() string {
+	if x != nil {
+		return x.FlushError
+	}
+	return ""
 }
 
 type Transform_Request struct {
@@ -3246,7 +3255,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"predicates\"\x1f\n" +
 	"\fGroupingType\x12\a\n" +
 	"\x03AND\x10\x00\x12\x06\n" +
-	"\x02OR\x10\x01\"\xda\a\n" +
+	"\x02OR\x10\x01\"\xfb\a\n" +
 	"\x05Write\x1aP\n" +
 	"\x13MessageMigrateTable\x12\x14\n" +
 	"\x05table\x18\x01 \x01(\fR\x05table\x12#\n" +
@@ -3273,9 +3282,11 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x06delete\x18\x03 \x01(\v2..cloudquery.plugin.v3.Write.MessageDeleteStaleH\x00R\x06delete\x12V\n" +
 	"\rdelete_record\x18\x04 \x01(\v2/.cloudquery.plugin.v3.Write.MessageDeleteRecordH\x00R\fdeleteRecord\x12@\n" +
 	"\x05flush\x18\x05 \x01(\v2(.cloudquery.plugin.v3.Write.MessageFlushH\x00R\x05flushB\t\n" +
-	"\amessage\x1a%\n" +
+	"\amessage\x1aF\n" +
 	"\bResponse\x12\x19\n" +
-	"\bflush_id\x18\x01 \x01(\x04R\aflushId\"R\n" +
+	"\bflush_id\x18\x01 \x01(\x04R\aflushId\x12\x1f\n" +
+	"\vflush_error\x18\x02 \x01(\tR\n" +
+	"flushError\"R\n" +
 	"\tTransform\x1a!\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06record\x18\x01 \x01(\fR\x06record\x1a\"\n" +
