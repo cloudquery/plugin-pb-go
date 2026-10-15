@@ -2348,10 +2348,13 @@ type Write_Response struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// WriteStream only: id of the Write.MessageFlush that completed
 	FlushId uint64 `protobuf:"varint,1,opt,name=flush_id,json=flushId,proto3" json:"flush_id,omitempty"`
-	// WriteStream only: why some messages sent since the previous flush could not be committed. A failure is reported
-	// once, so a later flush can succeed although earlier messages were lost: clients must treat the first failure as
-	// final. The stream stays open, though a plugin may also end the stream instead of reporting a failure.
-	FlushError    string `protobuf:"bytes,2,opt,name=flush_error,json=flushError,proto3" json:"flush_error,omitempty"`
+	// WriteStream only: why some messages sent since the previous flush may not have been committed. A failure may be
+	// reported only once, so a later flush can succeed although earlier messages were lost: clients must treat the
+	// first failure as final. A plugin may end the stream after reporting a failure, or instead of reporting it.
+	FlushError string `protobuf:"bytes,2,opt,name=flush_error,json=flushError,proto3" json:"flush_error,omitempty"`
+	// WriteStream only: with flush_error, the tables whose messages may not have been committed. Empty if the plugin
+	// cannot tell, in which case messages of any table may have been lost.
+	FailedTables  []string `protobuf:"bytes,3,rep,name=failed_tables,json=failedTables,proto3" json:"failed_tables,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2398,6 +2401,13 @@ func (x *Write_Response) GetFlushError() string {
 		return x.FlushError
 	}
 	return ""
+}
+
+func (x *Write_Response) GetFailedTables() []string {
+	if x != nil {
+		return x.FailedTables
+	}
+	return nil
 }
 
 type Transform_Request struct {
@@ -3257,7 +3267,7 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"predicates\"\x1f\n" +
 	"\fGroupingType\x12\a\n" +
 	"\x03AND\x10\x00\x12\x06\n" +
-	"\x02OR\x10\x01\"\xfb\a\n" +
+	"\x02OR\x10\x01\"\xa0\b\n" +
 	"\x05Write\x1aP\n" +
 	"\x13MessageMigrateTable\x12\x14\n" +
 	"\x05table\x18\x01 \x01(\fR\x05table\x12#\n" +
@@ -3284,11 +3294,12 @@ const file_plugin_pb_plugin_v3_plugin_proto_rawDesc = "" +
 	"\x06delete\x18\x03 \x01(\v2..cloudquery.plugin.v3.Write.MessageDeleteStaleH\x00R\x06delete\x12V\n" +
 	"\rdelete_record\x18\x04 \x01(\v2/.cloudquery.plugin.v3.Write.MessageDeleteRecordH\x00R\fdeleteRecord\x12@\n" +
 	"\x05flush\x18\x05 \x01(\v2(.cloudquery.plugin.v3.Write.MessageFlushH\x00R\x05flushB\t\n" +
-	"\amessage\x1aF\n" +
+	"\amessage\x1ak\n" +
 	"\bResponse\x12\x19\n" +
 	"\bflush_id\x18\x01 \x01(\x04R\aflushId\x12\x1f\n" +
 	"\vflush_error\x18\x02 \x01(\tR\n" +
-	"flushError\"R\n" +
+	"flushError\x12#\n" +
+	"\rfailed_tables\x18\x03 \x03(\tR\ffailedTables\"R\n" +
 	"\tTransform\x1a!\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06record\x18\x01 \x01(\fR\x06record\x1a\"\n" +
