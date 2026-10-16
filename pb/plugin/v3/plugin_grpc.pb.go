@@ -32,6 +32,7 @@ const (
 	Plugin_Close_FullMethodName           = "/cloudquery.plugin.v3.Plugin/Close"
 	Plugin_TestConnection_FullMethodName  = "/cloudquery.plugin.v3.Plugin/TestConnection"
 	Plugin_AssessTables_FullMethodName    = "/cloudquery.plugin.v3.Plugin/AssessTables"
+	Plugin_WriteStream_FullMethodName     = "/cloudquery.plugin.v3.Plugin/WriteStream"
 )
 
 // PluginClient is the client API for Plugin service.
@@ -68,6 +69,12 @@ type PluginClient interface {
 	// Assess how the destination plugin would apply table schema changes, without writing anything.
 	// Plugins that do not support assessment return Unimplemented.
 	AssessTables(ctx context.Context, in *AssessTables_Request, opts ...grpc.CallOption) (*AssessTables_Response, error)
+	// Write resources, like Write, and also accept Write.MessageFlush.
+	// The plugin sends one Write.Response per Write.MessageFlush, once it has tried to commit every message sent before
+	// the flush. Write.Response.flush_error is set if some messages sent since the previous flush may not have been
+	// committed.
+	// Only use it with plugins that set Init.Response.supports_flush.
+	WriteStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Write_Request, Write_Response], error)
 }
 
 type pluginClient struct {
@@ -232,6 +239,19 @@ func (c *pluginClient) AssessTables(ctx context.Context, in *AssessTables_Reques
 	return out, nil
 }
 
+func (c *pluginClient) WriteStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Write_Request, Write_Response], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[4], Plugin_WriteStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[Write_Request, Write_Response]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Plugin_WriteStreamClient = grpc.BidiStreamingClient[Write_Request, Write_Response]
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility.
@@ -266,6 +286,12 @@ type PluginServer interface {
 	// Assess how the destination plugin would apply table schema changes, without writing anything.
 	// Plugins that do not support assessment return Unimplemented.
 	AssessTables(context.Context, *AssessTables_Request) (*AssessTables_Response, error)
+	// Write resources, like Write, and also accept Write.MessageFlush.
+	// The plugin sends one Write.Response per Write.MessageFlush, once it has tried to commit every message sent before
+	// the flush. Write.Response.flush_error is set if some messages sent since the previous flush may not have been
+	// committed.
+	// Only use it with plugins that set Init.Response.supports_flush.
+	WriteStream(grpc.BidiStreamingServer[Write_Request, Write_Response]) error
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -314,6 +340,9 @@ func (UnimplementedPluginServer) TestConnection(context.Context, *TestConnection
 }
 func (UnimplementedPluginServer) AssessTables(context.Context, *AssessTables_Request) (*AssessTables_Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method AssessTables not implemented")
+}
+func (UnimplementedPluginServer) WriteStream(grpc.BidiStreamingServer[Write_Request, Write_Response]) error {
+	return status.Error(codes.Unimplemented, "method WriteStream not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 func (UnimplementedPluginServer) testEmbeddedByValue()                {}
@@ -534,6 +563,13 @@ func _Plugin_AssessTables_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_WriteStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PluginServer).WriteStream(&grpc.GenericServerStream[Write_Request, Write_Response]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Plugin_WriteStreamServer = grpc.BidiStreamingServer[Write_Request, Write_Response]
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -597,6 +633,12 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Transform",
 			Handler:       _Plugin_Transform_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "WriteStream",
+			Handler:       _Plugin_WriteStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
