@@ -9,10 +9,9 @@ import (
 	"strings"
 
 	"github.com/distribution/reference"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/pkg/authconfig"
+	"github.com/moby/moby/api/types/registry"
+	"github.com/moby/moby/client"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -73,10 +72,7 @@ func (pr *dockerProgressReader) Read(_ []byte) (n int, err error) {
 }
 
 func newDockerClient(options ...client.Opt) (*client.Client, error) {
-	defaultOptions := make([]client.Opt, 0, 2+len(options))
-	defaultOptions = append(defaultOptions, client.FromEnv, client.WithAPIVersionNegotiation())
-	options = append(defaultOptions, options...)
-	return client.NewClientWithOpts(options...)
+	return client.New(append([]client.Opt{client.FromEnv}, options...)...)
 }
 
 func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error) {
@@ -86,21 +82,21 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	}
 
 	// List the images matching the given name
-	images, err := cli.ImageList(ctx, image.ListOptions{
-		Filters: filters.NewArgs(filters.Arg("reference", imageName)),
+	images, err := cli.ImageList(ctx, client.ImageListOptions{
+		Filters: make(client.Filters).Add("reference", imageName),
 	})
 	if err != nil {
 		return false, fmt.Errorf("failed to list Docker images: %w", err)
 	}
 
 	// Check if the image with the specified name was found
-	return len(images) > 0, nil
+	return len(images.Items) > 0, nil
 }
 
 func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string, dops DownloaderOptions) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
-	opts := image.PullOptions{}
+	opts := client.ImagePullOptions{}
 	if strings.HasPrefix(imageName, "docker.cloudquery.io") {
 		if authToken == "" {
 			return ErrLoginRequired
@@ -122,7 +118,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 			Username: "managedplugin",
 			Password: authToken,
 		}
-		encodedAuth, err := registry.EncodeAuthConfig(authConfig)
+		encodedAuth, err := authconfig.Encode(authConfig)
 		if err != nil {
 			return fmt.Errorf("failed to encode Docker auth config: %v", err)
 		}
