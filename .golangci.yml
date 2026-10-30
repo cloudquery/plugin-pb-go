@@ -82,6 +82,11 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      - path: managedplugin/plugin\.go
+        linters:
+          - staticcheck
+        text: "SA1019: github.com/cloudquery/plugin-pb-go/pb/(base|discovery|source)/v0 is deprecated"
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0

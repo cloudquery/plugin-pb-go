@@ -1,3 +1,6 @@
+// Package metrics contains the sync metrics reported by the legacy source and destination protocols.
+//
+// Deprecated: This package is only used by the legacy protocols and by the sync summary sent to the analytics v0 service. There is no replacement.
 package metrics //nolint:revive // var-naming: package name conflicts with standard library but is appropriate for this context
 
 import (
