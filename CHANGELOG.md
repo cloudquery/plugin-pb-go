@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.2...v1.28.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* Move from github.com/docker/docker to github.com/moby/moby client modules ([#713](https://github.com/cloudquery/plugin-pb-go/issues/713)) ([7a02d1f](https://github.com/cloudquery/plugin-pb-go/commit/7a02d1f1c8d4fee945091d74e7c3032200f486cc))
+
 ## [1.28.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.1...v1.28.2) (2026-10-16)
 
 
