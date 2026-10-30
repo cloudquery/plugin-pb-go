@@ -21,11 +21,10 @@ import (
 	pbDiscovery "github.com/cloudquery/plugin-pb-go/pb/discovery/v0"
 	pbDiscoveryV1 "github.com/cloudquery/plugin-pb-go/pb/discovery/v1"
 	pbSource "github.com/cloudquery/plugin-pb-go/pb/source/v0"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
-	dockerClient "github.com/docker/docker/client"
-	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
+	dockerClient "github.com/moby/moby/client"
 	containerSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
@@ -296,23 +295,16 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to create Docker client: %w", err)
 	}
-	cli.NegotiateAPIVersion(ctx)
 	pluginArgs := c.getPluginArgs()
 
-	portMappings, err := nat.ParsePortSpec("7777/tcp")
+	pluginPort, err := network.ParsePort("7777/tcp")
 	if err != nil {
 		return fmt.Errorf("failed to parse port spec: %w", err)
 	}
 
-	if len(portMappings) == 0 {
-		return fmt.Errorf("failed to parse port spec: %w", errors.New("no port mappings found"))
-	}
-
-	portMapping := portMappings[0]
-
 	config := &container.Config{
-		ExposedPorts: nat.PortSet{
-			portMapping.Port: {},
+		ExposedPorts: network.PortSet{
+			pluginPort: {},
 		},
 		Image: configPath,
 		Cmd:   pluginArgs,
@@ -322,20 +314,26 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 
 	hostConfig := &container.HostConfig{
 		ExtraHosts: c.dockerExtraHosts,
-		PortBindings: map[nat.Port][]nat.PortBinding{
-			portMapping.Port: {portMapping.Binding},
+		PortBindings: network.PortMap{
+			pluginPort: {{}},
 		},
 	}
 
 	networkingConfig := &network.NetworkingConfig{}
 	platform := &containerSpecs.Platform{}
 	containerName := c.config.Name + "-" + uuid.New().String()
-	resp, err := cli.ContainerCreate(ctx, config, hostConfig, networkingConfig, platform, containerName)
+	resp, err := cli.ContainerCreate(ctx, dockerClient.ContainerCreateOptions{
+		Config:           config,
+		HostConfig:       hostConfig,
+		NetworkingConfig: networkingConfig,
+		Platform:         platform,
+		Name:             containerName,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to create container: %w", err)
 	}
 	c.containerID = resp.ID
-	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+	if _, err := cli.ContainerStart(ctx, resp.ID, dockerClient.ContainerStartOptions{}); err != nil {
 		return fmt.Errorf("failed to start container: %w", err)
 	}
 	// wait for container to start
@@ -359,13 +357,13 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	}
 	retrier := retry.New(options...)
 	err = retrier.Do(func() error {
-		hostConnection, err = getHostConnection(ctx, cli, resp.ID, portMapping.Port)
+		hostConnection, err = getHostConnection(ctx, cli, resp.ID, pluginPort)
 		return err
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get host connection: %w", err)
 	}
-	reader, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{
+	reader, err := cli.ContainerLogs(ctx, resp.ID, dockerClient.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     true,
@@ -381,23 +379,24 @@ func (c *Client) startDockerPlugin(ctx context.Context, configPath string) error
 	return c.connectUsingTCP(ctx, hostConnection)
 }
 
-func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string, port nat.Port) (string, error) {
+func getHostConnection(ctx context.Context, cli *dockerClient.Client, containerID string, port network.Port) (string, error) {
 	// Retrieve the dynamically assigned HOST port
-	containerJSON, err := cli.ContainerInspect(ctx, containerID)
+	inspectResult, err := cli.ContainerInspect(ctx, containerID, dockerClient.ContainerInspectOptions{})
 	if err != nil {
 		return "", fmt.Errorf("failed to inspect container: %w", err)
 	}
+	containerJSON := inspectResult.Container
 	if containerJSON.State != nil {
 		switch containerJSON.State.Status {
 		case "removing", "exited", "dead":
-			return "", errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+			return "", errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + string(containerJSON.State.Status))
 		}
 	}
 	if len(containerJSON.NetworkSettings.Ports) == 0 || len(containerJSON.NetworkSettings.Ports[port]) == 0 {
 		return "", errors.New("failed to get port mapping for container")
 	}
 	portBinding := containerJSON.NetworkSettings.Ports[port][0]
-	return portBinding.HostIP + ":" + portBinding.HostPort, nil
+	return net.JoinHostPort(portBinding.HostIP.String(), portBinding.HostPort), nil
 }
 
 func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, containerID string) error {
@@ -412,14 +411,15 @@ func waitForContainerRunning(ctx context.Context, cli *dockerClient.Client, cont
 	}
 	retrier := retry.New(options...)
 	err := retrier.Do(func() error {
-		containerJSON, err := cli.ContainerInspect(ctx, containerID)
+		inspectResult, err := cli.ContainerInspect(ctx, containerID, dockerClient.ContainerInspectOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to inspect container: %w", err)
 		}
+		containerJSON := inspectResult.Container
 		if containerJSON.State != nil {
 			switch containerJSON.State.Status {
 			case "removing", "exited", "dead":
-				return errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + containerJSON.State.Status)
+				return errors.New("container exited prematurely with error " + containerJSON.State.Error + ", exit code " + strconv.Itoa(containerJSON.State.ExitCode) + " and status " + string(containerJSON.State.Status))
 			case "running":
 				return nil
 			}
@@ -779,10 +779,10 @@ func (c *Client) Terminate() error {
 			return fmt.Errorf("failed to create Docker client: %w", err)
 		}
 		timeout := containerStopTimeoutSeconds
-		if err := cli.ContainerStop(context.Background(), c.containerID, container.StopOptions{Timeout: &timeout}); err != nil {
+		if _, err := cli.ContainerStop(context.Background(), c.containerID, dockerClient.ContainerStopOptions{Timeout: &timeout}); err != nil {
 			return fmt.Errorf("failed to stop container: %w", err)
 		}
-		if err := cli.ContainerRemove(context.Background(), c.containerID, container.RemoveOptions{}); err != nil {
+		if _, err := cli.ContainerRemove(context.Background(), c.containerID, dockerClient.ContainerRemoveOptions{}); err != nil {
 			return fmt.Errorf("failed to remove container: %w", err)
 		}
 	}

@@ -5,6 +5,8 @@ import (
 	"os"
 	"runtime"
 	"testing"
+
+	dockerClient "github.com/moby/moby/client"
 )
 
 func TestManagedPluginGitHub(t *testing.T) {
@@ -96,7 +98,7 @@ func TestManagedPluginCloudQueryDocker(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = cli.Ping(ctx)
+	_, err = cli.Ping(ctx, dockerClient.PingOptions{})
 	if err != nil {
 		t.Skip("docker not running")
 	}
@@ -150,7 +152,7 @@ func TestManagedPluginDocker(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = cli.Ping(ctx)
+	_, err = cli.Ping(ctx, dockerClient.PingOptions{})
 	if err != nil {
 		t.Skip("docker not running")
 	}
