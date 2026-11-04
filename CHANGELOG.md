@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.29.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.3...v1.29.0) (2026-11-02)
+
+
+### Features
+
+* Deprecate legacy protocol packages ([#720](https://github.com/cloudquery/plugin-pb-go/issues/720)) ([847dab5](https://github.com/cloudquery/plugin-pb-go/commit/847dab59f29cbe4a72f0d19e51bbdcd7da462666))
+
+
+### Bug Fixes
+
+* **deps:** Update go module directive to v1.27.2 ([#717](https://github.com/cloudquery/plugin-pb-go/issues/717)) ([044f02c](https://github.com/cloudquery/plugin-pb-go/commit/044f02cd6116863613d0b29c1a1d356672b41058))
+* **deps:** Update golang.org/x/exp digest to f0251eb ([#716](https://github.com/cloudquery/plugin-pb-go/issues/716)) ([2c9caa8](https://github.com/cloudquery/plugin-pb-go/commit/2c9caa8e9dc173e6ac446190b96ce5d8867a1619))
+
 ## [1.28.3](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.2...v1.28.3) (2026-10-30)
 
 
