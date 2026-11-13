@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/distribution/reference"
 	"github.com/moby/moby/api/pkg/authconfig"
@@ -93,11 +92,19 @@ func isDockerImageAvailable(ctx context.Context, imageName string) (bool, error)
 	return len(images.Items) > 0, nil
 }
 
+func isCloudQueryRegistryImage(imageName string) bool {
+	namedRef, err := reference.ParseNormalizedNamed(imageName)
+	if err != nil {
+		return false
+	}
+	return reference.Domain(namedRef) == DefaultCloudQueryDockerHost
+}
+
 func pullDockerImage(ctx context.Context, imageName string, authToken string, teamName string, dockerHubAuth string, dops DownloaderOptions) error {
 	// Pull the image
 	additionalHeaders := make(map[string]string)
 	opts := client.ImagePullOptions{}
-	if strings.HasPrefix(imageName, "docker.cloudquery.io") {
+	if isCloudQueryRegistryImage(imageName) {
 		if authToken == "" {
 			return ErrLoginRequired
 		}
