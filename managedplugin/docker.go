@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 
 	"github.com/distribution/reference"
@@ -120,7 +119,7 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 			Password:      authToken,
 			ServerAddress: reference.Domain(namedRef),
 		}
-		bearerToken, err := fetchRegistryBearerToken(ctx, http.DefaultClient, "https://"+reference.Domain(namedRef), nameWithTag, authToken, teamName)
+		bearerToken, err := fetchRegistryBearerToken(ctx, noRedirectHTTPClient(), "https://"+reference.Domain(namedRef), nameWithTag, authToken, teamName)
 		if err != nil {
 			return fmt.Errorf("failed to get a registry token for %s: %w", imageName, err)
 		}

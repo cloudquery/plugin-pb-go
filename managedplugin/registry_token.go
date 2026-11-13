@@ -22,6 +22,14 @@ const (
 
 var authChallengeParamRegexp = regexp.MustCompile(`([a-zA-Z0-9_-]+)="([^"]*)"`)
 
+func noRedirectHTTPClient() *http.Client {
+	return &http.Client{
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+}
+
 type registryAuthChallenge struct {
 	realm   string
 	service string
@@ -60,7 +68,7 @@ func fetchRegistryBearerToken(ctx context.Context, httpClient *http.Client, regi
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
-		return "", fmt.Errorf("registry auth request returned %s: %s", resp.Status, strings.TrimSpace(string(body)))
+		return "", fmt.Errorf("registry auth request returned %s: %s (token length %d, location %q)", resp.Status, strings.TrimSpace(string(body)), len(authToken), resp.Header.Get("Location"))
 	}
 
 	var payload struct {
