@@ -69,7 +69,7 @@ func fetchRegistryBearerToken(ctx context.Context, httpClient *http.Client, regi
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
-		return "", fmt.Errorf("registry auth request returned %s: %s (token length %d, location %q)", resp.Status, strings.TrimSpace(string(body)), len(authToken), resp.Header.Get("Location"))
+		return "", fmt.Errorf("registry auth request returned %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
 	var payload struct {
