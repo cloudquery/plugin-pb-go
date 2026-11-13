@@ -69,6 +69,9 @@ func TestFetchRegistryBearerToken(t *testing.T) {
 	if got := authRequest.URL.Query().Get("service"); got != "cq-docker-registry" {
 		t.Fatalf("got service %q", got)
 	}
+	if got := authRequest.URL.Query().Get("account"); got != dockerRegistryUsername {
+		t.Fatalf("got account %q", got)
+	}
 }
 
 func TestFetchRegistryBearerTokenErrors(t *testing.T) {

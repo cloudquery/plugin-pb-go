@@ -46,6 +46,7 @@ func fetchRegistryBearerToken(ctx context.Context, httpClient *http.Client, regi
 		return "", fmt.Errorf("failed to parse registry auth realm %q: %w", challenge.realm, err)
 	}
 	query := tokenURL.Query()
+	query.Set("account", dockerRegistryUsername)
 	query.Set("scope", fmt.Sprintf("repository:%s:pull", reference.Path(ref)))
 	if challenge.service != "" {
 		query.Set("service", challenge.service)
