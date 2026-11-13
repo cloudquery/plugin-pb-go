@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/distribution/reference"
@@ -112,11 +113,15 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 		if !ok {
 			return fmt.Errorf("failed to parse Docker image tag: %v", err)
 		}
-		additionalHeaders["X-Meta-Plugin-Version"] = nameWithTag.Tag()
-		additionalHeaders["X-Meta-User-Team-Name"] = teamName
+		additionalHeaders[pluginVersionHeader] = nameWithTag.Tag()
+		additionalHeaders[teamNameHeader] = teamName
 		authConfig := registry.AuthConfig{
-			Username: "managedplugin",
-			Password: authToken,
+			Username:      dockerRegistryUsername,
+			Password:      authToken,
+			ServerAddress: reference.Domain(namedRef),
+		}
+		if bearerToken, tokenErr := fetchRegistryBearerToken(ctx, http.DefaultClient, "https://"+reference.Domain(namedRef), nameWithTag, authToken, teamName); tokenErr == nil {
+			authConfig.RegistryToken = bearerToken
 		}
 		encodedAuth, err := authconfig.Encode(authConfig)
 		if err != nil {
