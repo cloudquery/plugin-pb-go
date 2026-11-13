@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -58,7 +59,8 @@ func fetchRegistryBearerToken(ctx context.Context, httpClient *http.Client, regi
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("registry auth request returned %s", resp.Status)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
+		return "", fmt.Errorf("registry auth request returned %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
 	var payload struct {

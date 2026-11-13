@@ -120,9 +120,11 @@ func pullDockerImage(ctx context.Context, imageName string, authToken string, te
 			Password:      authToken,
 			ServerAddress: reference.Domain(namedRef),
 		}
-		if bearerToken, tokenErr := fetchRegistryBearerToken(ctx, http.DefaultClient, "https://"+reference.Domain(namedRef), nameWithTag, authToken, teamName); tokenErr == nil {
-			authConfig.RegistryToken = bearerToken
+		bearerToken, err := fetchRegistryBearerToken(ctx, http.DefaultClient, "https://"+reference.Domain(namedRef), nameWithTag, authToken, teamName)
+		if err != nil {
+			return fmt.Errorf("failed to get a registry token for %s: %w", imageName, err)
 		}
+		authConfig.RegistryToken = bearerToken
 		encodedAuth, err := authconfig.Encode(authConfig)
 		if err != nil {
 			return fmt.Errorf("failed to encode Docker auth config: %v", err)
