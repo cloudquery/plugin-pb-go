@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.29.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.29.0...v1.29.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **deps:** Update module google.golang.org/grpc to v1.85.0 ([#721](https://github.com/cloudquery/plugin-pb-go/issues/721)) ([9d77502](https://github.com/cloudquery/plugin-pb-go/commit/9d7750222e6d2967d22304d5d27cff7feb36a9d3))
+* Fetch the CloudQuery registry token in-process so Docker 29 pulls authenticate ([#724](https://github.com/cloudquery/plugin-pb-go/issues/724)) ([4ecdf0a](https://github.com/cloudquery/plugin-pb-go/commit/4ecdf0ac5e76d3ad0ea93b47c1714f87f443f90a))
+
 ## [1.29.0](https://github.com/cloudquery/plugin-pb-go/compare/v1.28.3...v1.29.0) (2026-11-02)
 
 
