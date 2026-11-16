@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.29.2](https://github.com/cloudquery/plugin-pb-go/compare/v1.29.1...v1.29.2) (2026-11-16)
+
+
+### Bug Fixes
+
+* **deps:** Update module go.opentelemetry.io/otel/trace to v1.47.0 [SECURITY] ([#727](https://github.com/cloudquery/plugin-pb-go/issues/727)) ([55753b1](https://github.com/cloudquery/plugin-pb-go/commit/55753b19c605eed35f89d429bac932d11268de55))
+* Send the CloudQuery registry token only to the exact registry host ([#723](https://github.com/cloudquery/plugin-pb-go/issues/723)) ([d65db68](https://github.com/cloudquery/plugin-pb-go/commit/d65db68e57ffd54113405b99f8cb026d2b8dc5d5))
+
 ## [1.29.1](https://github.com/cloudquery/plugin-pb-go/compare/v1.29.0...v1.29.1) (2026-11-13)
 
 
